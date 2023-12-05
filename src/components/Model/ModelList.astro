@@ -1,0 +1,62 @@
+---
+interface Props {
+	fetchURL?: string;
+	title?: string;
+}
+const {fetchURL = '', title = 'Модельный ряд'} = Astro.props;
+const models = await fetch(fetchURL).then((response) => response.json());
+import {Icon} from 'astro-icon';
+---
+
+{
+	models.length > 1 && (
+		<section class="models py-10 sm:py-20">
+			<div class="container">
+				<h2 class="text-center font-medium mobile-title-size sm:text-4xl mb-8 sm:mb-14">
+					{title}
+				</h2>
+
+				<div class="grid grid-cols-2 lg:grid-cols-6 gap-5 text-xs 2xl:text-base">
+					{models.map((model: any, idx: number) => (
+						<a
+							href={`#${model.id}`}
+							class={`${
+								models.length === 2 && idx === 0 ? 'lg:!col-start-2' : ''
+							} lg:col-span-2 flex flex-col border p-3 sm:pt-10 sm:pb-4 sm:px-5 overflow-hidden shadow-xl transition-all duration-500 in-expo group hover:border-gray-400 hover:shadow-md`}>
+							<div>
+								<span class="text-xl sm:text-5xl uppercase font-bold transition-colors duration-500 group-hover:text-accent">
+									{model.name}
+								</span>
+							</div>
+							<div class="flex-grow flex items-center justify-center">
+								<img
+									src={model.thumb}
+									class="scale-100 transition-transform duration-500 in-expo group-hover:scale-105"
+									alt={model.name}
+									loading="lazy"
+								/>
+							</div>
+							<div class="flex flex-col sm:flex-row sm:mt-10 sm:divide-x">
+								{Object.keys(model.chars).map((key) => (
+									<div class="flex-1 py-1.5 sm:py-0 sm:p-4 flex sm:flex-col items-center gap-0.5 sm:gap-2">
+										<Icon
+											name={
+												key === 'seats'
+													? 'mdi:car-seat'
+													: key === 'fuel'
+													? 'mdi:fuel-pump'
+													: 'mdi:car-manual-transmission'
+											}
+											class="text-gray-700 h-5 sm:h-8"
+										/>
+										<span>{model.chars[key]}</span>
+									</div>
+								))}
+							</div>
+						</a>
+					))}
+				</div>
+			</div>
+		</section>
+	)
+}

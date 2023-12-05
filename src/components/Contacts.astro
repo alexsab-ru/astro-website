@@ -1,0 +1,37 @@
+---
+interface Props {
+	fetchURL?: string;
+	mapImg?: string;
+	title?: string;
+}
+
+const {fetchURL, mapImg, title} = Astro.props;
+
+const salons = await fetch(fetchURL).then((response) => response.json());
+
+import Map from './Map/Map.astro';
+
+import MapInfo from './Map/MapInfo.astro';
+---
+
+<section
+	class={`section bg-gray-50 ${title ? 'pt-8 sm:pt-16 pb-0' : 'p-0'}`}
+	id="contacts">
+	<div class="container relative">
+		{
+			title && (
+				<h2 class="text-xl sm:text-4xl font-medium mb-14 before:hidden text-left mx-0">
+					{title}
+				</h2>
+			)
+		}
+
+		{
+		(salons.length < 2 && salons.length != 0) && (
+			<MapInfo fetchURL={`${Astro.url.href}src/data/salons.json`}' />
+		)}
+	</div>
+
+	<Map mapImg={mapImg} />
+
+</section>
