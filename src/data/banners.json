@@ -1,35 +1,44 @@
 [
     {
         "id": 1,
-        "type": "video",
-        "videoUrl": "https://alexsab.ru/video/jetour-dashing-compress.mp4",
-        "imageUrl": "https://gac-smr.ru/img/banners/1.jpg",
-        "title": "Заголовок баннера",
-        "descr": "Подзаголовок баннера может быть длиннее или короче",
-        "btn": "Онлайн запись",
+        "type": "",
+        "videoUrl": "",
+        "imageUrl": "https://geely-expertauto.ru/wp-content/uploads/2023/07/OOH_Atlas_Pro_-010723.png",
+        "title": "Только в&nbsp;ДЕКАБРЕ выгода на&nbsp;Atlas Pro до&nbsp;640&nbsp;000&nbsp;₽",
+        "descr": "",
+        "btn": "Подробнее",
         "btnUrl": "#common-modal",
-        "dataTitle": "Онлайн запись",
-        "dataFormName": "Онлайн запись. Баннер",
-        "badge": {
-            "autoname": "Jetour Dashing",
-            "title": "Ежегодная национальная премия",
-            "descr": "Победитель номинации <br>«новинка в&nbsp;массовом сегменте»",
-            "image": "https://jetour-alpha.ru/img/car-year-white.png"
-        },
-        "autoplay": 6000
+        "dataTitle": "Выгода на Atlas Pro до 640000₽",
+        "dataFormName": "Подробнее. Выгода на Atlas Pro до 640000₽. Баннер",
+        "badge": {},
+        "autoplay": 5000
     },
     {
         "id": 2,
         "type": "",
         "videoUrl": "",
-        "imageUrl": "https://gac-smr.ru/img/banners/1.jpg",
-        "title": "Заголовок баннера 2",
-        "descr": "Подзаголовок баннера",
-        "btn": "Онлайн запись",
+        "imageUrl": "https://geely-expertauto.ru/wp-content/uploads/2023/07/OOH_New-Tugella_010723.png",
+        "title": "Только в&nbsp;ДЕКАБРЕ выгода на&nbsp;Tuggela до&nbsp;490&nbsp;000&nbsp;₽",
+        "descr": "",
+        "btn": "Подробнее",
         "btnUrl": "#common-modal",
-        "dataTitle": "Онлайн запись",
-        "dataFormName": "Онлайн запись. Баннер",
-        "badge": "",
+        "dataTitle": "Выгода на Tuggela до 490000₽",
+        "dataFormName": "Подробнее. Выгода на Tuggela до 490000₽. Баннер",
+        "badge": {},
+        "autoplay": 5000
+    },
+    {
+        "id": 3,
+        "type": "",
+        "videoUrl": "",
+        "imageUrl": "https://geely-expertauto.ru/wp-content/uploads/2023/06/OOH_Coolray_010623-scaled.jpg",
+        "title": "Только в&nbsp;ДЕКАБРЕ выгода на&nbsp;Coolray до&nbsp;575&nbsp;000&nbsp;₽",
+        "descr": "",
+        "btn": "Подробнее",
+        "btnUrl": "#common-modal",
+        "dataTitle": "Выгода на Coolray до 575000₽",
+        "dataFormName": "Подробнее. Выгода на Coolray до 575000₽. Баннер",
+        "badge": {},
         "autoplay": 5000
     }
 ]
