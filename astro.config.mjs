@@ -8,4 +8,6 @@ export default defineConfig({
 		tailwind(), 
 		alpinejs()
 	],
+	site: 'https://alexsab-ru.github.io',
+	base: 'astro-website'
 });
