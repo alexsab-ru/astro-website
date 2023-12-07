@@ -11,5 +11,5 @@ export default defineConfig({
 		alpinejs()
 	],
 	site: 'https://alexsab-ru.github.io',
-	base: 'astro-website'
+	base: '/astro-website'
 });
