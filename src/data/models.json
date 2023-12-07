@@ -388,5 +388,149 @@
                 "measure": ""
             }
         ]
+    },
+    {
+        "id": "monjaro",
+        "homeImg": "https://baic-krasnodar.ru/img/u5-plus/bg.jpg",
+        "slogan": "",
+        "name": "Monjaro",
+        "price": 4167990,
+        "thumb": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/emerald-metallic_500px.webp",
+        "colors": [
+            {
+                "id": "black",
+                "name": "Черный металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/black-metallic.webp",
+                "style": ""
+            },
+            {
+                "id": "emerald",
+                "name": "Изумрудный металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/emerald-metallic.webp",
+                "style": "background-color: #518D9B;"
+            },
+            {
+                "id": "gray",
+                "name": "Серый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/gray-metallic.webp",
+                "style": ""
+            },
+            {
+                "id": "silver",
+                "name": "Серебристый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/silver-metallic.webp",
+                "style": "background-color: #B8B3B3;"
+            },
+            {
+                "id": "white",
+                "name": "Белый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/white-metallic.webp",
+                "style": ""
+            }
+        ],
+        "photos": "",
+        "chars": {
+            "seats": "5 мест",
+            "fuel": "Бензин",
+            "gearbox": "8AT"
+        },
+        "globalChars": [
+            {
+                "id": "wheelbase",
+                "title": "Колёсная база",
+                "value": "2845",
+                "measure": "мм"
+            },
+            {
+                "id": "length",
+                "title": "Длина",
+                "value": "4770",
+                "measure": "мм"
+            },
+            {
+                "id": "width",
+                "title": "Ширина",
+                "value": "1895",
+                "measure": "мм"
+            },
+            {
+                "id": "engine",
+                "title": "Объем двигателя",
+                "value": "2.0",
+                "measure": "л."
+            },
+            {
+                "id": "torque",
+                "title": "Крутящий момент",
+                "value": "350",
+                "measure": "н.м."
+            },
+            {
+                "id": "transmission",
+                "title": "Привод",
+                "value": "Полный",
+                "measure": ""
+            }
+        ]
+    },
+    {
+        "id": "belgee-x50",
+        "homeImg": "https://baic-krasnodar.ru/img/u5-plus/bg.jpg",
+        "slogan": "",
+        "name": "Belgee X50",
+        "price": 1935990,
+        "thumb": "https://imgproxy.autocrm.ru/iui0TRSZe9_kT9tHFEuw1DJjZwovqYBuNR0tI-vw_e0/rs:auto:0:0:1/dpr:1/q:100/g:sm/aHR0cHM6Ly8xOTUwMDQuc2VsY2RuLnJ1L3JlZi9hY2ViMTQ4ZWI1NDlmNjEzZjc4YWQ1YmM1YWNjMDdhZjY4ZjVlNzFlLnBuZw.png",
+        "colors": [
+            {
+                "id": "black",
+                "name": "Черный металлик",
+                "carImage": "https://imgproxy.autocrm.ru/iui0TRSZe9_kT9tHFEuw1DJjZwovqYBuNR0tI-vw_e0/rs:auto:0:0:1/dpr:1/q:100/g:sm/aHR0cHM6Ly8xOTUwMDQuc2VsY2RuLnJ1L3JlZi9hY2ViMTQ4ZWI1NDlmNjEzZjc4YWQ1YmM1YWNjMDdhZjY4ZjVlNzFlLnBuZw.png",
+                "style": ""
+            }
+        ],
+        "photos": "",
+        "chars": {
+            "seats": "5 мест",
+            "fuel": "Бензин",
+            "gearbox": "7DCT"
+        },
+        "globalChars": [
+            {
+                "id": "wheelbase",
+                "title": "Колёсная база",
+                "value": "2600",
+                "measure": "мм"
+            },
+            {
+                "id": "length",
+                "title": "Длина",
+                "value": "4330",
+                "measure": "мм"
+            },
+            {
+                "id": "width",
+                "title": "Ширина",
+                "value": "1800",
+                "measure": "мм"
+            },
+            {
+                "id": "engine",
+                "title": "Объем двигателя",
+                "value": "1.5",
+                "measure": "л."
+            },
+            {
+                "id": "torque",
+                "title": "Крутящий момент",
+                "value": "150",
+                "measure": "н.м."
+            },
+            {
+                "id": "transmission",
+                "title": "Привод",
+                "value": "Передний",
+                "measure": ""
+            }
+        ]
     }
 ]
