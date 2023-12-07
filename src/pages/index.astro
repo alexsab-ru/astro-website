@@ -14,11 +14,11 @@ import models from '@/data/models.json'
 	<Banner fetchURL={`${Astro.url.origin}/src/data/banners.json`} />
 	<ModelList fetchURL={`${Astro.url.origin}/src/data/models.json`} />
 	{models && models.map((model: any) => <Model model={model}/>)}
-	<Callback bgUrl="https://baic-krasnodar.ru/img/x35/konkurenty.jpg" />
+	<Callback bgUrl="https://imgproxy.autocrm.ru/DArpoK-AuqQzcCZGWyXpOVwnXE86UTxQu-OsLdBO5Qs/rs:auto:0:0:1/dpr:1/q:100/g:sm/aHR0cHM6Ly8xOTUwMDQuc2VsY2RuLnJ1L3JlZi9jMTA2MDNiOWRiZTFjZTk5MmJjMTBlNTMzOTc4MWQ0OGQwZjJmY2UwLnBuZw.png" />
 	<Services fetchURL={`${Astro.url.origin}/src/data/services.json`} />
 	<Contacts
 		fetchURL={`${Astro.url.origin}/src/data/salons.json`}
-		mapImg="https://baic-alpha.ru/img/map_bg.jpg"
+		mapImg="/img/map-bg.jpg"
 		title="Наши контакты"
 	/>
 </Layout>

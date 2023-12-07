@@ -25,16 +25,16 @@ import logo from '@/components/Logo/logo.svg';
 			<img src={logo.src} class="w-full" alt={SITE_NAME} />
 		</div>
 		<div
-			class="text-xl sm:text-2xl leading-none uppercase tracking-wider sm:tracking-normal">
+			class="text-xl sm:text-2xl leading-none uppercase font-semibold tracking-wider sm:tracking-normal">
 			{SITE_NAME}
 		</div>
 	</div>
 	{
 		salons[0].address && (
-			<div class="flex flex-nowrap gap-2 sm:gap-3 mb-4">
+			<div class="flex flex-nowrap gap-2 sm:gap-3 mb-4 xs:text-sm sm:text-lg">
 				<Icon name="mdi:map-marker-outline" class="h-8 flex-shrink-0" />
 				<div>
-					<div class="font-medium mb-2 sm:text-lg"><Fragment set:html={salons[0].address} /></div>
+					<div class="font-medium mb-2"><Fragment set:html={salons[0].address} /></div>
 					{LEGAL_ENTITY && <div>{LEGAL_ENTITY}</div>}
 					{LEGAL_INN && <div>ИНН: {LEGAL_INN}</div>}
 				</div>
@@ -45,7 +45,7 @@ import logo from '@/components/Logo/logo.svg';
 		salons[0].work_hours && (
 			<div class="flex flex-nowrap gap-2 sm:gap-3 mb-4">
 				<Icon name="mdi:clock-time-three-outline" class="h-8 flex-shrink-0" />
-				<div class="font-medium mb-2 sm:text-lg"><Fragment set:html={salons[0].work_hours} /></div>
+				<div class="font-medium mb-2 xs:text-sm sm:text-lg"><Fragment set:html={salons[0].work_hours} /></div>
 			</div>
 		)
 	}
@@ -55,14 +55,14 @@ import logo from '@/components/Logo/logo.svg';
 				<Icon name="ic:outline-phone-android" class="h-8 flex-shrink-0" />
 				<a
 					href={`tel:${phoneFormat(salons[0].phone)}`}
-					class="font-medium mb-2 sm:text-xl goal-click-lead-tel">
+					class="font-bold mb-2 text-lg sm:text-xl">
 					{salons[0].phone}
 				</a>
 			</div>
 		)
 	}
 
-	<div class="font-bold sm:text-xl mb-4">
+	<div class="font-semibold xs:text-sm text-center sm:text-xl mb-4">
 		Остались вопросы? Мы&nbsp;перезвоним!
 	</div>
 	<a

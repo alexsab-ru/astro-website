@@ -29,16 +29,20 @@ const carImagePath = model.colors[0].carImage || `/img/${model.id}/${model.color
 			<div class="flex justify-between items-start flex-col lg:flex-row">
 				<div>
 					<div
-						class="text-2xl sm:text-5xl text-accent-500 tracking-wider font-medium uppercase">
+						class="text-2xl sm:text-5xl text-blue-500 tracking-wider font-medium uppercase">
 						{BRAND}
 						<b
-							class="font-bold tracking-tighter text-5xl sm:text-8xl uppercase text-white"
+							class="font-bold tracking-tighter text-5xl sm:text-7xl uppercase text-white"
 							>{model?.name}</b
 						>
 					</div>
-					<p class="uppercase text-lg sm:text-2xl opacity-80">
-						{model?.slogan}
-					</p>
+					{
+						model.slogan && (
+						<p class="uppercase text-lg sm:text-2xl opacity-80">
+							{model.slogan}
+						</p>
+						)
+					}
 				</div>
 				<a
 					href="#common-modal"
@@ -91,7 +95,7 @@ const carImagePath = model.colors[0].carImage || `/img/${model.id}/${model.color
 			class="flex flex-col justify-center">
 			<img
 				src={carImagePath}
-				class="w-full color-img-preview"
+				class="w-full max-h-full object-cover object-center color-img-preview"
 				alt={`${BRAND} ${model?.name}`}
 				loading="lazy"
 			/>
@@ -150,7 +154,7 @@ const carImagePath = model.colors[0].carImage || `/img/${model.id}/${model.color
 
 		<div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-14">
 			<Button 
-				classes="popup-link btn black btn-o !px-4" 
+				classes="popup-link btn btn-o !px-4" 
 				url="#common-modal" 
 				title="Узнать цену"
 				dataTitle="Узнать цену"

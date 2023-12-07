@@ -1,60 +1,66 @@
 [
     {
-        "id": "u5-plus",
+        "id": "atlas-pro",
         "homeImg": "https://baic-krasnodar.ru/img/u5-plus/bg.jpg",
-        "slogan": "Практичность и комфорт",
-        "name": "U5 Plus",
-        "price": "",
-        "thumb": "https://baic-krasnodar.ru/img/u5-plus/black.png",
+        "slogan": "",
+        "name": "Atlas Pro",
+        "price": 2188990,
+        "thumb": "https://china.avto-provereno.ru/storage/promo/china/Geely/Atlas%20Pro/black-metallic_500px.webp",
         "colors": [
             {
                 "id": "red",
                 "name": "Красный металлик",
-                "carImage": "https://baic-alpha.ru/img/u5-plus/red.png",
-                "style": "background-color: #E51036;"
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Atlas%20Pro/red-metallic.webp",
+                "style": ""
             },
             {
                 "id": "gray",
                 "name": "Серый металлик",
-                "carImage": "https://baic-alpha.ru/img/u5-plus/gray.png",
-                "style": "background-color: #9CA3AF;"
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Atlas%20Pro/gray-metallic.webp",
+                "style": ""
             },
             {
                 "id": "white",
                 "name": "Белый металлик",
-                "carImage": "https://baic-alpha.ru/img/u5-plus/white.png",
-                "style": "background-color: #E5E7EB;"
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Atlas%20Pro/white.webp",
+                "style": ""
+            },
+            {
+                "id": "silver",
+                "name": "Серебристый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Atlas%20Pro/silver-metallic.webp",
+                "style": "background-color: #B9B4B4;"
             },
             {
                 "id": "black",
                 "name": "Черный металлик",
-                "carImage": "https://baic-alpha.ru/img/u5-plus/black.png",
-                "style": "background-color: #000000;"
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Atlas%20Pro/black-metallic.webp",
+                "style": ""
             }
         ],
-        "photos": "https://baic-krasnodar.ru/data/u5plus.json",
+        "photos": "",
         "chars": {
             "seats": "5 мест",
             "fuel": "Бензин",
-            "gearbox": "CVT"
+            "gearbox": "6AT/7DCT"
         },
         "globalChars": [
             {
                 "id": "wheelbase",
                 "title": "Колёсная база",
-                "value": "2570",
+                "value": "2670",
                 "measure": "мм"
             },
             {
                 "id": "length",
                 "title": "Длина",
-                "value": "4500",
+                "value": "4544",
                 "measure": "мм"
             },
             {
                 "id": "width",
                 "title": "Ширина",
-                "value": "2200",
+                "value": "1831",
                 "measure": "мм"
             },
             {
@@ -66,7 +72,457 @@
             {
                 "id": "torque",
                 "title": "Крутящий момент",
-                "value": "134",
+                "value": "255",
+                "measure": "н.м."
+            },
+            {
+                "id": "transmission",
+                "title": "Привод",
+                "value": "2WD/4WD",
+                "measure": ""
+            }
+        ]
+    },
+    {
+        "id": "emgrand",
+        "homeImg": "https://baic-krasnodar.ru/img/u5-plus/bg.jpg",
+        "slogan": "",
+        "name": "Emgrand",
+        "price": 1799990,
+        "thumb": "https://china.avto-provereno.ru/storage/promo/china/Geely/Emgrand/emgrand_500px.webp",
+        "colors": [
+            {
+                "id": "white",
+                "name": "Белый металлик",
+                "carImage": "https://global.geely.com/-/media/project/web-portal/2023/emgrand/models/white/white090.png",
+                "style": ""
+            },
+            {
+                "id": "blue",
+                "name": "Голубой металлик",
+                "carImage": "https://global.geely.com/-/media/project/web-portal/2023/emgrand/models/blue/blue090.png",
+                "style": "background-color: #50AECE;"
+            },
+            {
+                "id": "gray",
+                "name": "Серый металлик",
+                "carImage": "https://global.geely.com/-/media/project/web-portal/2023/emgrand/models/grey/grey090.png",
+                "style": ""
+            },
+            {
+                "id": "gold",
+                "name": "Золотой металлик",
+                "carImage": "https://global.geely.com/-/media/project/web-portal/2023/emgrand/models/gold/gold090.png",
+                "style": "background-color: #AC9579;"
+            },
+            {
+                "id": "black",
+                "name": "Черный металлик",
+                "carImage": "https://global.geely.com/-/media/project/web-portal/2023/emgrand/models/black/black090.png",
+                "style": ""
+            }
+        ],
+        "photos": "",
+        "chars": {
+            "seats": "5 мест",
+            "fuel": "Бензин",
+            "gearbox": "5MT/6AT"
+        },
+        "globalChars": [
+            {
+                "id": "wheelbase",
+                "title": "Колёсная база",
+                "value": "2650",
+                "measure": "мм"
+            },
+            {
+                "id": "length",
+                "title": "Длина",
+                "value": "4638",
+                "measure": "мм"
+            },
+            {
+                "id": "width",
+                "title": "Ширина",
+                "value": "1822",
+                "measure": "мм"
+            },
+            {
+                "id": "engine",
+                "title": "Объем двигателя",
+                "value": "1.5",
+                "measure": "л."
+            },
+            {
+                "id": "torque",
+                "title": "Крутящий момент",
+                "value": "122",
+                "measure": "н.м."
+            },
+            {
+                "id": "transmission",
+                "title": "Привод",
+                "value": "Передний",
+                "measure": ""
+            }
+        ]
+    },
+    {
+        "id": "coolray",
+        "homeImg": "https://baic-krasnodar.ru/img/u5-plus/bg.jpg",
+        "slogan": "",
+        "name": "Coolray",
+        "price": 2009990,
+        "thumb": "https://china.avto-provereno.ru/storage/promo/china/Geely/Coolray/blue-metallic_500px.webp",
+        "colors": [
+            {
+                "id": "blue",
+                "name": "Голубой металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Coolray/blue-metallic.webp",
+                "style": "background-color: #50AECE;"
+            },
+            {
+                "id": "gray",
+                "name": "Серый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Coolray/grey.webp",
+                "style": ""
+            },
+            {
+                "id": "red",
+                "name": "Красный металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Coolray/red.webp",
+                "style": ""
+            },
+            {
+                "id": "silver",
+                "name": "Серебристый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Coolray/silver-metallic.webp",
+                "style": "background-color: #B9B4B4;"
+            },
+            {
+                "id": "white",
+                "name": "Белый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Coolray/white.webp",
+                "style": ""
+            }
+        ],
+        "photos": "",
+        "chars": {
+            "seats": "5 мест",
+            "fuel": "Бензин",
+            "gearbox": "7DCT"
+        },
+        "globalChars": [
+            {
+                "id": "wheelbase",
+                "title": "Колёсная база",
+                "value": "2600",
+                "measure": "мм"
+            },
+            {
+                "id": "length",
+                "title": "Длина",
+                "value": "4330",
+                "measure": "мм"
+            },
+            {
+                "id": "width",
+                "title": "Ширина",
+                "value": "1800",
+                "measure": "мм"
+            },
+            {
+                "id": "engine",
+                "title": "Объем двигателя",
+                "value": "1.5",
+                "measure": "л."
+            },
+            {
+                "id": "torque",
+                "title": "Крутящий момент",
+                "value": "150",
+                "measure": "н.м."
+            },
+            {
+                "id": "transmission",
+                "title": "Привод",
+                "value": "Передний",
+                "measure": ""
+            }
+        ]
+    },
+    {
+        "id": "new_coolray",
+        "homeImg": "https://baic-krasnodar.ru/img/u5-plus/bg.jpg",
+        "slogan": "",
+        "name": "Новый Coolray",
+        "price": 2404990,
+        "thumb": "https://195004.selcdn.ru/ref/64543a543423d0c4b5d63e4826835a0566ece5a6.png",
+        "colors": [
+            {
+                "id": "lilac",
+                "name": "Лиловый перламутр",
+                "carImage": "https://195004.selcdn.ru/ref/64543a543423d0c4b5d63e4826835a0566ece5a6.png",
+                "style": "background-color: #666B7F;"
+            }
+        ],
+        "photos": "",
+        "chars": {
+            "seats": "5 мест",
+            "fuel": "Бензин",
+            "gearbox": "7DCT"
+        },
+        "globalChars": [
+            {
+                "id": "wheelbase",
+                "title": "Колёсная база",
+                "value": "2600",
+                "measure": "мм"
+            },
+            {
+                "id": "length",
+                "title": "Длина",
+                "value": "4380",
+                "measure": "мм"
+            },
+            {
+                "id": "width",
+                "title": "Ширина",
+                "value": "1810",
+                "measure": "мм"
+            },
+            {
+                "id": "engine",
+                "title": "Объем двигателя",
+                "value": "1.5",
+                "measure": "л."
+            },
+            {
+                "id": "torque",
+                "title": "Крутящий момент",
+                "value": "147",
+                "measure": "н.м."
+            },
+            {
+                "id": "transmission",
+                "title": "Привод",
+                "value": "Передний",
+                "measure": ""
+            }
+        ]
+    },
+    {
+        "id": "tugella",
+        "homeImg": "https://baic-krasnodar.ru/img/u5-plus/bg.jpg",
+        "slogan": "",
+        "name": "Tugella",
+        "price": 3454990,
+        "thumb": "https://china.avto-provereno.ru/storage/promo/china/Geely/Tugella/gray-metallic_500px.webp",
+        "colors": [
+            {
+                "id": "black",
+                "name": "Черный металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Tugella/black-metallic.webp",
+                "style": ""
+            },
+            {
+                "id": "white",
+                "name": "Белый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Tugella/white-metallic.webp",
+                "style": ""
+            },
+            {
+                "id": "gray-blue",
+                "name": "Серо-голубой металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Tugella/gray-blue-metallic.webp",
+                "style": "background-color: #ABB5C1;"
+            },
+            {
+                "id": "gray",
+                "name": "Серый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Tugella/gray-metallic.webp",
+                "style": ""
+            }
+        ],
+        "photos": "",
+        "chars": {
+            "seats": "5 мест",
+            "fuel": "Бензин",
+            "gearbox": "8AT"
+        },
+        "globalChars": [
+            {
+                "id": "wheelbase",
+                "title": "Колёсная база",
+                "value": "2700",
+                "measure": "мм"
+            },
+            {
+                "id": "length",
+                "title": "Длина",
+                "value": "4605",
+                "measure": "мм"
+            },
+            {
+                "id": "width",
+                "title": "Ширина",
+                "value": "1878",
+                "measure": "мм"
+            },
+            {
+                "id": "engine",
+                "title": "Объем двигателя",
+                "value": "2.0",
+                "measure": "л."
+            },
+            {
+                "id": "torque",
+                "title": "Крутящий момент",
+                "value": "350",
+                "measure": "н.м."
+            },
+            {
+                "id": "transmission",
+                "title": "Привод",
+                "value": "Полный",
+                "measure": ""
+            }
+        ]
+    },
+    {
+        "id": "monjaro",
+        "homeImg": "https://baic-krasnodar.ru/img/u5-plus/bg.jpg",
+        "slogan": "",
+        "name": "Monjaro",
+        "price": 4167990,
+        "thumb": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/emerald-metallic_500px.webp",
+        "colors": [
+            {
+                "id": "black",
+                "name": "Черный металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/black-metallic.webp",
+                "style": ""
+            },
+            {
+                "id": "emerald",
+                "name": "Изумрудный металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/emerald-metallic.webp",
+                "style": "background-color: #518D9B;"
+            },
+            {
+                "id": "gray",
+                "name": "Серый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/gray-metallic.webp",
+                "style": ""
+            },
+            {
+                "id": "silver",
+                "name": "Серебристый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/silver-metallic.webp",
+                "style": "background-color: #B8B3B3;"
+            },
+            {
+                "id": "white",
+                "name": "Белый металлик",
+                "carImage": "https://china.avto-provereno.ru/storage/promo/china/Geely/Monjaro/white-metallic.webp",
+                "style": ""
+            }
+        ],
+        "photos": "",
+        "chars": {
+            "seats": "5 мест",
+            "fuel": "Бензин",
+            "gearbox": "8AT"
+        },
+        "globalChars": [
+            {
+                "id": "wheelbase",
+                "title": "Колёсная база",
+                "value": "2845",
+                "measure": "мм"
+            },
+            {
+                "id": "length",
+                "title": "Длина",
+                "value": "4770",
+                "measure": "мм"
+            },
+            {
+                "id": "width",
+                "title": "Ширина",
+                "value": "1895",
+                "measure": "мм"
+            },
+            {
+                "id": "engine",
+                "title": "Объем двигателя",
+                "value": "2.0",
+                "measure": "л."
+            },
+            {
+                "id": "torque",
+                "title": "Крутящий момент",
+                "value": "350",
+                "measure": "н.м."
+            },
+            {
+                "id": "transmission",
+                "title": "Привод",
+                "value": "Полный",
+                "measure": ""
+            }
+        ]
+    },
+    {
+        "id": "belgee-x50",
+        "homeImg": "https://baic-krasnodar.ru/img/u5-plus/bg.jpg",
+        "slogan": "",
+        "name": "Belgee X50",
+        "price": 1935990,
+        "thumb": "https://imgproxy.autocrm.ru/iui0TRSZe9_kT9tHFEuw1DJjZwovqYBuNR0tI-vw_e0/rs:auto:0:0:1/dpr:1/q:100/g:sm/aHR0cHM6Ly8xOTUwMDQuc2VsY2RuLnJ1L3JlZi9hY2ViMTQ4ZWI1NDlmNjEzZjc4YWQ1YmM1YWNjMDdhZjY4ZjVlNzFlLnBuZw.png",
+        "colors": [
+            {
+                "id": "black",
+                "name": "Черный металлик",
+                "carImage": "https://imgproxy.autocrm.ru/iui0TRSZe9_kT9tHFEuw1DJjZwovqYBuNR0tI-vw_e0/rs:auto:0:0:1/dpr:1/q:100/g:sm/aHR0cHM6Ly8xOTUwMDQuc2VsY2RuLnJ1L3JlZi9hY2ViMTQ4ZWI1NDlmNjEzZjc4YWQ1YmM1YWNjMDdhZjY4ZjVlNzFlLnBuZw.png",
+                "style": ""
+            }
+        ],
+        "photos": "",
+        "chars": {
+            "seats": "5 мест",
+            "fuel": "Бензин",
+            "gearbox": "7DCT"
+        },
+        "globalChars": [
+            {
+                "id": "wheelbase",
+                "title": "Колёсная база",
+                "value": "2600",
+                "measure": "мм"
+            },
+            {
+                "id": "length",
+                "title": "Длина",
+                "value": "4330",
+                "measure": "мм"
+            },
+            {
+                "id": "width",
+                "title": "Ширина",
+                "value": "1800",
+                "measure": "мм"
+            },
+            {
+                "id": "engine",
+                "title": "Объем двигателя",
+                "value": "1.5",
+                "measure": "л."
+            },
+            {
+                "id": "torque",
+                "title": "Крутящий момент",
+                "value": "150",
                 "measure": "н.м."
             },
             {
