@@ -15,10 +15,17 @@ export const theme = {
       '3xl': '0 35px 60px rgba(0, 0, 0, 0.3)',
     },
     colors: {
+      'sand-silver': '#E2E2E2',
+      'lunar-maria-gray': '#A3B0BA',
+      'space-gray': '#313E48',
+      'purple': '#7D5EA8',
+      'orange': '#F48026',
+      'red': '#DF202A',
       yellow: {
         500: '#FECA57',
       },
       blue: {
+        300: '#77C8F0',
         400: '#5A9AD3',
         500: '#3D91CE',
       },
