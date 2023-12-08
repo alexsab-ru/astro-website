@@ -22,9 +22,9 @@
 		}
 	}
 	&.danger {
-		@apply bg-red text-white border-red hover:bg-red hover:opacity-90;
+		@apply bg-red-500 text-white border-red-500 hover:opacity-90;
 		&.btn-o {
-			@apply bg-transparent text-red hover:bg-red hover:text-white;
+			@apply bg-transparent text-red-500 hover:bg-red-500 hover:text-white;
 		}
 	}
 	&[disabled]{
