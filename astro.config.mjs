@@ -16,6 +16,6 @@ export default defineConfig({
 		alpinejs(),
 		mdx()
 	],
-	site: 'https://site.com',
+	site: 'https://dev.diywebdev.ru/',
 	base: "/"
 });
