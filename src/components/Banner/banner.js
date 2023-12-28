@@ -25,6 +25,7 @@ const initSlider = () => {
 		modules: [Navigation, Pagination, Autoplay, Parallax],
 		loop,
 		speed: 1000,
+		resizeObserver: false,
 		parallax: {
 			enabled: true,
 		},
@@ -42,7 +43,7 @@ const initSlider = () => {
 				if (slides.length > 1) {
 					progressCircle.closest('.autoplay-progress').style.display = 'flex';
 					if (this.slides[0].querySelector('video')) {
-						videoPrev.play();
+						this.slides[0].querySelector('video').play();
 					}
 				}
 			},
@@ -50,7 +51,8 @@ const initSlider = () => {
 				progressCircle.style.setProperty("--progress", 1 - progress);
 				progressContent.textContent = `${Math.ceil(time / 1000)}с.`;
 			},
-			slideChange(s) {
+			slideChangeTransitionStart(s) {
+				console.log('CHANGE');
 				const prevIdx = this.activeIndex - 1 < 0 ? 0 : this.activeIndex - 1;
 				videoPrev = this.slides[prevIdx].querySelector("video");
 				if (videoPrev) {

@@ -8,9 +8,9 @@ import Badge from './Badge.astro';
 ---
 
 <div class="swiper-slide banner-slide" data-swiper-autoplay={banner.autoplay}>
-	<div class="container h-full relative z-[2] py-10 lg:py-20">
+	<div class="container h-full relative z-[2] py-8 lg:py-10 2xl:py-20">
 		<div class="h-full flex flex-col justify-between">
-			<div class="max-w-4xl mb-10">
+			<div class="max-w-4xl mb-6 sm:mb-10">
 				{
 					banner.title && (
 						<div
@@ -25,7 +25,7 @@ import Badge from './Badge.astro';
 					banner.descr && (
 						<p
 							data-swiper-parallax="-40%"
-							class="text-sm sm:text-xl md:text-3xl mt-3 sm:mt-5">
+							class="text-sm sm:text-xl md:text-3xl mt-2 sm:mt-5">
 							<Fragment set:html={banner.descr} />
 						</p>
 					)
@@ -35,7 +35,7 @@ import Badge from './Badge.astro';
 					banner.btn && (
 						<div data-swiper-parallax="-55%">
 							<Button
-								classes="white inline-block !py-2 sm:py-3 text-sm sm:text-base mt-8 sm:mt-10"
+								classes="white inline-block !py-2 sm:py-3 text-sm sm:text-base mt-4 sm:mt-10"
 								view={banner?.view}
 								url={banner.btnUrl}
 								title={banner.btn}
