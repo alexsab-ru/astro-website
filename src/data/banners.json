@@ -1,5 +1,27 @@
 [
     {
+        "id": 2,
+        "show": true,
+        "type": "",
+        "videoUrl": "",
+        "imageUrl": "https://gac-smr.ru/img/banners/1.jpg",
+        "srcset": {
+            "(min-width: 1280px)": "https://placehold.co/1920x820/333333/F1F1F1/png",
+            "(min-width: 1024px)": "https://placehold.co/1024x576/444444/F1F1F1/png", 
+            "(min-width: 768px)": "https://placehold.co/768x528/555555/F1F1F1/png", 
+            "(min-width: 320px)": "https://placehold.co/1080x1440/666666/F1F1F1/png"
+        },
+        "title": "Заголовок баннера 2",
+        "descr": "Подзаголовок баннера",
+        "btn": "Онлайн запись",
+        "btnUrl": "#common-modal",
+        "dataTitle": "Онлайн запись",
+        "dataFormName": "Онлайн запись. Баннер",
+        "view": "popup-link", 
+        "badge": "",
+        "autoplay": 5000
+    },
+    {
         "id": 1,
         "show": true,
         "type": "video",
@@ -19,21 +41,5 @@
             "image": "https://jetour-alpha.ru/img/car-year-white.png"
         },
         "autoplay": 6000
-    },
-    {
-        "id": 2,
-        "show": true,
-        "type": "",
-        "videoUrl": "",
-        "imageUrl": "https://gac-smr.ru/img/banners/1.jpg",
-        "title": "Заголовок баннера 2",
-        "descr": "Подзаголовок баннера",
-        "btn": "Онлайн запись",
-        "btnUrl": "#common-modal",
-        "dataTitle": "Онлайн запись",
-        "dataFormName": "Онлайн запись. Баннер",
-        "view": "popup-link", 
-        "badge": "",
-        "autoplay": 5000
     }
 ]

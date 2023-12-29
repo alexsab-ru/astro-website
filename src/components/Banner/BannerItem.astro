@@ -68,6 +68,22 @@ import Badge from './Badge.astro';
 				class="absolute inset-0 h-full w-full object-cover">
 				<source src={banner.videoUrl} type="video/mp4" />
 			</video>
+		) : Object.keys(banner.srcset).length ? (
+			<picture>
+				{
+					Object.keys(banner.srcset).map(key => (
+						banner.srcset[key] && (
+							<source media={key} srcset={banner.srcset[key]}>
+						)
+						
+					))
+				}
+				<img
+					src={banner.imageUrl}
+					class="absolute inset-0 h-full w-full object-cover object-center"
+					alt={banner.title}
+				/>
+			</picture>
 		) : (
 			<img
 				src={banner.imageUrl}
