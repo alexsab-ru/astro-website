@@ -80,6 +80,11 @@ jobs:
         if: env.changes == 'true'
         # Automatically uploads an artifact from the './_site' directory by default
         uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.name }}
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: ${{ inputs.retention-days }}
+          if-no-files-found: error
 
     outputs:
       changes: ${{ steps.check_changes.outputs.changes }}
