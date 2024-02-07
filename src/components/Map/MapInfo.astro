@@ -12,7 +12,7 @@ import { SITE_NAME, LEGAL_ENTITY, LEGAL_INN } from '@/const'
 
 import { phoneFormat } from '@/js/utils/numbers.format';
 
-import Icon from 'astro-icon';
+import {Icon} from 'astro-icon/components';
 
 import logo from '@/components/Logo/logo.svg';
 ---
@@ -32,7 +32,7 @@ import logo from '@/components/Logo/logo.svg';
 	{
 		salons[0].address && (
 			<div class="flex flex-nowrap gap-2 sm:gap-3 mb-4">
-				<Icon name="mdi:map-marker-outline" class="h-8 flex-shrink-0" />
+				<Icon name="mdi:map-marker-outline" class="text-3xl flex-shrink-0" />
 				<div>
 					<div class="font-medium mb-2 sm:text-lg"><Fragment set:html={salons[0].address} /></div>
 					{LEGAL_ENTITY && <div>{LEGAL_ENTITY}</div>}
@@ -44,7 +44,7 @@ import logo from '@/components/Logo/logo.svg';
 	{
 		salons[0].work_hours && (
 			<div class="flex flex-nowrap gap-2 sm:gap-3 mb-4">
-				<Icon name="mdi:clock-time-three-outline" class="h-8 flex-shrink-0" />
+				<Icon name="mdi:clock-time-three-outline" class="text-2xl flex-shrink-0" />
 				<div class="font-medium mb-2 sm:text-lg"><Fragment set:html={salons[0].work_hours} /></div>
 			</div>
 		)
@@ -52,7 +52,7 @@ import logo from '@/components/Logo/logo.svg';
 	{
 		salons[0].phone && (
 			<div class="flex flex-nowrap gap-2 sm:gap-3 mb-4">
-				<Icon name="ic:outline-phone-android" class="h-8 flex-shrink-0" />
+				<Icon name="mdi:cellphone" class="text-2xl flex-shrink-0" />
 				<a
 					href={`tel:${phoneFormat(salons[0].phone)}`}
 					class="font-medium mb-2 sm:text-xl goal-click-lead-tel">
