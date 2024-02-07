@@ -31,5 +31,23 @@
         "dataFormName": "Онлайн запись. Баннер",
         "badge": "",
         "autoplay": 5000
+    },
+    {
+        "id": 4,
+        "show": true,
+        "type": "",
+        "view": "",
+        "videoUrl": "",
+        "imageUrl": "https://jetour-alpha.ru/img/banners/t2-kv.webp",
+        "bannerUrl": "/special-offers/test/",
+        "target": "",
+        "title": "",
+        "descr": "",
+        "btn": "",
+        "btnUrl": "",
+        "dataTitle": "",
+        "dataFormName": "",
+        "badge": "",
+        "autoplay": 5000
     }
 ]
