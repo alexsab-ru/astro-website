@@ -7,7 +7,6 @@ const {model} = Astro.props;
 import {Icon} from 'astro-icon/components';
 import './model.scss';
 import {BRAND} from '@/const';
-import { currencyFormat } from '@/js/utils/numbers.format';
 const photoSlides = !model.photos
 	? []
 	: [].concat(
@@ -202,6 +201,7 @@ const carImagePath = model.colors[0].carImage || `/img/${model.id}/${model.color
 
 <script>
 	import GLightbox from 'glightbox';
+	import 'glightbox/dist/css/glightbox.min.css';
 	import Swiper from 'swiper';
 	import {Autoplay} from 'swiper/modules';
 	const photo = new Swiper('.photo-slider', {
