@@ -1,14 +1,16 @@
 ---
-interface Props{
-    mapImg: string
-}
-const {mapImg} = Astro.props
+// interface Props{
+// 	mapImg: string;
+// 	salons?: any;
+// }
+const {salons = [], mapImg, class: className, ...rest} = Astro.props
+
 import './map.sass';
 ---
 
-<div class="map h-[400px] lg:h-[500px]" style={`background-image: url(${mapImg})`}>
-    <div class="loader loader-default"></div>
-    <div id="map"></div>
+<div style={`background-image: url(${mapImg})`} class={`map ${className}`} {...rest}>
+	<div class="loader loader-default"></div>
+	<div id="map"></div>
 </div>
 
 <script>
