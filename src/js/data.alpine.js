@@ -1,4 +1,11 @@
 import Alpine from 'alpinejs';
+import { BASE_URL, SITE_URL } from '../const';
+async function getModels() {
+    let response = await fetch(`${BASE_URL}${SITE_URL}/data/models.json`) 
+    return await response.json();
+}
+// const models = await getModels();
+// console.log(models);
 
 document.addEventListener('alpine:init', () => {
 	Alpine.data('header', () => ({
@@ -67,6 +74,77 @@ document.addEventListener('alpine:init', () => {
 			this.$nextTick(() => {
 				window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 			});
+		}
+	}));
+	Alpine.data("sorting", () => ({
+		open: false,
+		carItems: document.querySelectorAll(".car-item"),
+		carListWrapper: document.querySelector(".car-list"), //wrapper
+		cars: [],
+		options: [
+			{ id: "default", title: "По умолчанию" },
+			{ id: "price_up", title: "По возрастанию цены" },
+			{ id: "price_down", title: "По убыванию цены" },
+			{ id: "asc", title: "По моделям" },
+		],
+		current: "default",
+		value: "",
+		setTitle() {
+			this.options.find((c) => {
+				if (c.id === this.current) {
+					this.value = c.title;
+				}
+			});
+		},
+		sortBy(id) {
+			this.current = id;
+			this.setTitle();
+			this.open = false;
+            if(id != 'default'){
+                this.cars.sort(function (a, b) {
+                    var priceA = parseFloat(a.getAttribute("data-price"));
+                    var priceB = parseFloat(b.getAttribute("data-price"));
+                    var modelA = a.getAttribute('data-model').toLowerCase();
+                    var modelB = b.getAttribute('data-model').toLowerCase();
+                    if(id === "price_up"){
+                        return priceA - priceB; //увелечение
+                    }else if(id == "price_down"){
+                        return priceB - priceA; //уменьшение
+                    }else if(id === 'asc'){
+                        if (modelA < modelB) {
+                            return -1;
+                        }
+                    }
+                })
+            }else{
+                this.cars = Array.from(this.carItems);
+            }
+
+			while (this.carListWrapper.firstChild) {
+				this.carListWrapper.removeChild(this.carListWrapper.firstChild);
+			}
+			this.cars.forEach(function (element) {
+				document.querySelector(".car-list").appendChild(element);
+			});
+		},
+		init() {
+			this.cars = Array.from(this.carItems);
+			this.setTitle();
+            // this.sortBy(this.current)
+		},
+	}));
+	Alpine.data("modelsData", () => ({
+		models: null,
+		current: null,
+		async getModels() {
+			this.models = await (await fetch(`${BASE_URL}${SITE_URL}/data/models.json`)).json()
+		},
+		async currentModel(id){
+			this.current =  await this.models.find(m => m.id === id)
+		},
+		async init(){
+			await this.getModels()
+			await this.currentModel(this.models[0].id)
 		}
 	}));
 });

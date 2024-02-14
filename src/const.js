@@ -9,6 +9,7 @@ export const BRAND = 'Baic';
 export const LINKS_MENU = [
 	{url: 'special-offers/', name: 'Спецпредложения'},
 	{url: 'news/', name: 'Новости'},
+	{url: 'test-drive', name: 'Запись на тест-драйв'},
 	{url: '#services', name: 'Услуги'},
 	{url: '#contacts', name: 'Контакты'},
 ];
