@@ -50,8 +50,7 @@ import logo from '@/components/Logo/logo.svg';
 		)
 	}
 	{
-		salons.length && salons.map((salon: any, index) => {
-							return index < 2 && (
+		salons[0].phone && (
 			<div class="flex items-center flex-nowrap gap-2 sm:gap-3 mb-4">
 				<Icon name="mdi:cellphone" class="text-2xl flex-shrink-0" />
 				<a
