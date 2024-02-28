@@ -18,28 +18,45 @@ section {
 }
 
 .content {
-	h1{
+	h1 {
 		@apply text-2xl sm:text-4xl font-extrabold mb-7;
 	}
 	p, b, ul, ol, a {
 		@apply text-sm sm:text-lg mb-4;
 	}
-	a {
+	a:not(.filter-model-link) {
 		@apply text-accent-500 underline hover:no-underline;
 	}
 	li {
 		@apply mb-1;
 	}
-	img{
+	img {
 		@apply block max-w-full mx-auto;
 	}
-	blockquote{
+	blockquote {
 		@apply text-xs;
-		p{
+		p {
 			@apply text-xs text-gray-500;
 		}
-		a{
+		a {
 			@apply text-xs;
 		}
 	}
+	table {
+		@apply border-collapse w-full bg-white;
+		thead {
+			@apply bg-slate-50;
+			th {
+				@apply border border-slate-300 font-semibold p-4;
+			}
+		}
+		tbody {
+			td {
+				@apply border border-slate-300 p-4;
+			}
+		}
+	}
+}
+.modal-img{
+	@apply h-[calc(calc(1vw+1vh)*40)] sm:absolute inset-0 w-full sm:h-full object-cover object-center;
 }

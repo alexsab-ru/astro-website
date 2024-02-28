@@ -1,5 +1,5 @@
 export const BASE_URL = 'https://alexsab-ru.github.io/astro-json/'; // Название сайта по умолчанию
-export const SITE_URL = 'localhost';
+export const SITE_URL = 'localhost'; // Название сайта по умолчанию
 export const SITE_NAME = 'Название сайта'; // Название сайта по умолчанию
 export const LEGAL_ENTITY = 'ООО «Юридическое название»'; // Юр лицо
 export const LEGAL_INN = '1234567890'; // ИНН
@@ -10,13 +10,13 @@ export const SITE_DESCR = 'Официальный дилерский центр'
 export const BRAND = 'Baic';
 
 export const LINKS_MENU = [
+	{url: 'cars/', name: 'Авто в наличии'},
 	{url: 'special-offers/', name: 'Спецпредложения'},
 	{url: 'news/', name: 'Новости'},
-	{url: 'test-drive', name: 'Запись на тест-драйв'},
-	{url: 'service-request', name: 'Запись на сервис'},
-	{url: 'contacts', name: 'Контакты'},
+	{url: 'test-drive/', name: 'Запись на тест-драйв'},
+	{url: 'service-request/', name: 'Запись на сервис'},
 	{url: '#services', name: 'Услуги'},
-	{url: '#contacts', name: 'Контакты'},
+	{url: 'contacts/', name: 'Контакты'},
 ];
 
 export const HEADER_TOP_LINE = '';

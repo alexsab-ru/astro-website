@@ -6,9 +6,9 @@ interface Props {
 }
 
 const {fetchURL, mapImg, title} = Astro.props;
-
-// const salons = await fetch(fetchURL).then((response) => response.json());
-import salons from '@/data/salons.json'
+import {BASE_URL, SITE_URL} from '@/const'
+const salons = await fetch(fetchURL).then((response) => response.json());
+// import salons from '@/data/salons.json'
 
 import Map from './Map/Map.astro';
 
@@ -26,11 +26,7 @@ import MapInfo from './Map/MapInfo.astro';
 				</h2>
 			)
 		}
-
-		{
-		(salons.length < 2 && salons.length != 0) && (
-			<MapInfo fetchURL={`${Astro.url.origin}/src/data/salons.json`}' />
-		)}
+			<MapInfo salons={salons} />
 	</div>
 
 	<Map mapImg={mapImg} salons={salons} class="h-[400px] lg:h-[540px]"></Map>

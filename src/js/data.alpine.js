@@ -1,46 +1,88 @@
 import Alpine from 'alpinejs';
 import { BASE_URL, SITE_URL } from '../const';
 
+import { declOfNums } from "@/js/utils/numbers.format";
+
 document.addEventListener('alpine:init', () => {
+	Alpine.data("usedPreviewGallery", t=>({
+		activeIndex: 0,
+		total: 0,
+		init() {
+			if(this.$refs.wrapper){
+				this.total = this.$refs.wrapper.children.length;
+			}
+
+		},
+		get activeSlide() {
+			return Array.from(this.$refs.wrapper.children).find(e=>e.dataset.slide == this.activeIndex)
+		},
+		get windowWidth() {
+			return window.innerWidth || document.documentElement.clientWidth
+		},
+		onPrevClick() {
+			this.showSlideAt(this.activeIndex === 0 ? this.total - 1 : this.activeIndex - 1)
+		},
+		onNextClick() {
+			const e = this.activeIndex + 1;
+			this.showSlideAt(e === this.total ? 0 : e)
+		},
+		showSlideAt(e) {
+			if (e == this.activeIndex)
+				return;
+			const i = this.activeSlide.getBoundingClientRect();
+			this.activeIndex = e;
+			const r = this.activeSlide.getBoundingClientRect();
+			this.$refs.wrapper.scrollTo({
+				left: r.x - i.x + this.$refs.wrapper.scrollLeft,
+				behavior: "instant"
+			})
+		}
+	}));
 	Alpine.data('header', () => ({
 		open: false,
 		scrolling: false,
+		showTopLine: localStorage.getItem('show-top-line') || 1,
+		hideTopLine() {
+			localStorage.setItem('show-top-line', 0);
+			this.showTopLine = 0;
+		},
 		init() {
-			const $siteHeader = this.$root;
-			let hideHeaderPos = $siteHeader.querySelector('header').offsetHeight;
-			let prevScrollpos = window.scrollY;
+			this.$nextTick(() => {
+				const $siteHeader = this.$root;
+				let hideHeaderPos = $siteHeader.querySelector('header').offsetHeight;
+				let prevScrollpos = window.scrollY;
 
-			if (document.body.getBoundingClientRect().top != 0) {
-				this.scrolling = true;
-				$siteHeader.style.top = -hideHeaderPos + 'px';
-			}
-
-			window.addEventListener('resize', () => {
-				this.open = false;
-				hideHeaderPos = $siteHeader.querySelector('header').clientHeight;
-			});
-
-			document.addEventListener('scroll', (e) => {
 				if (document.body.getBoundingClientRect().top != 0) {
 					this.scrolling = true;
-				} else {
-					this.scrolling = false;
+					$siteHeader.style.top = -hideHeaderPos + 'px';
 				}
-				this.open = false;
 
-				// Показ/скрытие шапки при скролинге
-				let currentScrollPos = window.scrollY;
-				if (currentScrollPos > hideHeaderPos) {
-					if (prevScrollpos > currentScrollPos) {
-						$siteHeader.style.top = 0;
+				window.addEventListener('resize', () => {
+					this.open = false;
+					hideHeaderPos = $siteHeader.querySelector('header').clientHeight;
+				});
+
+				document.addEventListener('scroll', (e) => {
+					if (document.body.getBoundingClientRect().top != 0) {
+						this.scrolling = true;
 					} else {
-						$siteHeader.style.top = -hideHeaderPos + 'px';
+						this.scrolling = false;
 					}
-					prevScrollpos = currentScrollPos;
-				} else {
-					$siteHeader.style.top = 0;
-				}
-				// // //
+					this.open = false;
+
+					// Показ/скрытие шапки при скролинге
+					let currentScrollPos = window.scrollY;
+					if (currentScrollPos > hideHeaderPos) {
+						if (prevScrollpos > currentScrollPos) {
+							$siteHeader.style.top = 0;
+						} else {
+							$siteHeader.style.top = -hideHeaderPos + 'px';
+						}
+						prevScrollpos = currentScrollPos;
+					} else {
+						$siteHeader.style.top = 0;
+					}
+				});
 			});
 		},
 	}));
@@ -76,13 +118,16 @@ document.addEventListener('alpine:init', () => {
 		carListWrapper: document.querySelector(".car-list"), //wrapper
 		cars: [],
 		options: [
-			{ id: "default", title: "По умолчанию" },
+			// { id: "default", title: "По умолчанию" },
 			{ id: "price_up", title: "По возрастанию цены" },
 			{ id: "price_down", title: "По убыванию цены" },
-			{ id: "asc", title: "По моделям" },
+			// { id: "asc", title: "По моделям" },
 		],
-		current: "default",
+		current: "price_up",
+		currentModel: "all",
 		value: "",
+		total: 0,
+		declOfNums,
 		setTitle() {
 			this.options.find((c) => {
 				if (c.id === this.current) {
@@ -94,37 +139,75 @@ document.addEventListener('alpine:init', () => {
 			this.current = id;
 			this.setTitle();
 			this.open = false;
-            if(id != 'default'){
-                this.cars.sort(function (a, b) {
-                    var priceA = parseFloat(a.getAttribute("data-price"));
-                    var priceB = parseFloat(b.getAttribute("data-price"));
-                    var modelA = a.getAttribute('data-model').toLowerCase();
-                    var modelB = b.getAttribute('data-model').toLowerCase();
-                    if(id === "price_up"){
-                        return priceA - priceB; //увелечение
-                    }else if(id == "price_down"){
-                        return priceB - priceA; //уменьшение
-                    }else if(id === 'asc'){
-                        if (modelA < modelB) {
-                            return -1;
-                        }
-                    }
-                })
-            }else{
-                this.cars = Array.from(this.carItems);
-            }
-
+			if(id != 'default'){
+				this.cars.sort(function (a, b) {
+					var priceA = parseFloat(a.getAttribute("data-price"));
+					var priceB = parseFloat(b.getAttribute("data-price"));
+					var modelA = a.getAttribute('data-model').toLowerCase();
+					var modelB = b.getAttribute('data-model').toLowerCase();
+					if(id === "price_up"){
+						return priceA - priceB; //увелечение
+					}else if(id == "price_down"){
+						return priceB - priceA; //уменьшение
+					}else if(id === 'asc'){
+						if (modelA < modelB) {
+							return -1;
+						}
+					}
+				})
+			}else{
+				this.cars = Array.from(this.carItems);
+			}
 			while (this.carListWrapper.firstChild) {
 				this.carListWrapper.removeChild(this.carListWrapper.firstChild);
 			}
 			this.cars.forEach(function (element) {
 				document.querySelector(".car-list").appendChild(element);
 			});
+			this.addQueryParam('sort_by', id);
+		},
+		addQueryParam(key, value) {
+			const url = new URL(window.location.href);
+			url.searchParams.set(key, value);
+			window.history.pushState({path:url.href}, '', url.href);
+		},
+		filteredCars(model){
+			this.total = 0;
+			const vm = this;
+			this.currentModel = model;
+			this.cars.forEach(function (element) {
+				element.style.display = 'none';
+				if(model){
+					if(element.dataset.model.toLowerCase() == model){
+						element.style.display = 'block';
+						vm.total = vm.total+Number(element.dataset.total)
+					}else if(!model || model == 'all'){
+						element.style.display = 'block';
+						vm.total = vm.total+Number(element.dataset.total)
+					}				
+				}
+			});
+			this.addQueryParam('model', model);
 		},
 		init() {
+			const vm = this;
 			this.cars = Array.from(this.carItems);
 			this.setTitle();
-            // this.sortBy(this.current)
+			const params = new URLSearchParams(document.location.search);
+			const modelParams = params.get('model');
+			const sort_by = params.get('sort_by');
+			if(sort_by){
+				this.sortBy(sort_by)
+			}else{
+				this.sortBy(this.current)
+			}
+			if(modelParams){
+				this.filteredCars(modelParams);
+			}else{
+				this.cars.reduce((acc, val) => {
+					return vm.total = acc+Number(val.dataset.total);
+				}, 0)
+			}
 		},
 	}));
 	Alpine.data("modelsData", () => ({

@@ -4,10 +4,9 @@ interface Props {
 }
 const {fetchURL = ''} = Astro.props;
 
-import BannerItem from './BannerItem.astro';
-// const banners = await fetch(fetchURL).then((response) => response.json());
-import banners from '@/data/banners.json'
-import './banner.scss';
+import BannerSlide from './BannerSlide.astro';
+const banners = await fetch(fetchURL).then((response) => response.json());
+// import banners from '@/data/banners.json'
 ---
 
 {
@@ -17,7 +16,7 @@ import './banner.scss';
 				<div class="swiper banner-slider h-full text-white">
 					<div class="swiper-wrapper">
 						{banners.map((banner: any) => (
-							<BannerItem banner={banner} />
+							banner.show && <BannerSlide banner={banner} />
 						))}
 					</div>
 
@@ -40,4 +39,5 @@ import './banner.scss';
 
 <script>
 	import './banner'
+	import './banner.scss';
 </script>
