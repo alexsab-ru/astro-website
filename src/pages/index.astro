@@ -15,7 +15,7 @@ const models = await fetch(`${BASE_URL}${SITE_URL}/data/models.json`).then((resp
 	<Banner fetchURL={`${BASE_URL}${SITE_URL}/data/banners.json`} />
 	<ModelList fetchURL={`${BASE_URL}${SITE_URL}/data/models.json`} />
 	{models && models.map((model: any) => model.show && <Model model={model}/>)}
-	<Callback bgUrl="https://geely-partner.ru/img/konkurenty.webp" />
+	<Callback bgUrl="https://baic-krasnodar.ru/img/x35/konkurenty.jpg" />
 	<Services fetchURL={`${BASE_URL}${SITE_URL}/data/services.json`} />
 	<Contacts
 		fetchURL={`${BASE_URL}${SITE_URL}/data/salons.json`}
