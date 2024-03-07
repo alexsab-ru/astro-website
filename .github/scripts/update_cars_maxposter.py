@@ -43,7 +43,6 @@ def process_description(desc_text):
 
 def create_file(car, filename, unique_id):
     vin = car.find('vin').text
-    permalink = unique_id
     vin_hidden = process_vin_hidden(vin)
     # Преобразование цвета
     color = car.find('color').text.strip().capitalize()
@@ -69,20 +68,18 @@ def create_file(car, filename, unique_id):
     content = "---\n"
     # content += "layout: car-page\n"
     content += "total: 1\n"
-    # content += f"permalink: {permalink}\n"
+    # content += f"permalink: {unique_id}\n"
     content += f"vin_hidden: {vin_hidden}\n"
 
     h1 = f"{car.find('folder_id').text} {car.find('modification_id').text}"
     content += f"h1: {h1}\n"
 
+    content += f"breadcrumb: {car.find('mark_id').text} {car.find('folder_id').text} {car.find('complectation_name').text}\n"
+
     title = f"{car.find('mark_id').text} {car.find('folder_id').text} {car.find('modification_id').text} купить у официального дилера в {dealer.get('where')}"
     content += f"title: {title}\n"
 
     description = ""
-
-    # Предполагаем, что у вас есть элементы с именами 'brand', 'engineType', 'driveType' и т.д.
-    elements_to_localize = ['engineType', 'driveType', 'gearboxType', 'ptsType', 'color', 'body_type', 'wheel']
-    # , 'bodyColor', 'bodyType', 'steeringWheel'
 
     for elem_name in elements_to_localize:
         elem = car.find(elem_name)
@@ -96,7 +93,7 @@ def create_file(car, filename, unique_id):
             continue
         if child.tag == 'photos':
             images = [img.text for img in child.findall('photo')]
-            thumbs_files = createThumbs(images)
+            thumbs_files = createThumbs(images, unique_id)
             content += f"images: {images}\n"
             content += f"thumbs: {thumbs_files}\n"
         elif child.tag == 'color':
@@ -111,7 +108,7 @@ def create_file(car, filename, unique_id):
         elif child.tag == 'description' and child.text:
             description = child.text
             flat_description = description.replace('\n', '<br>\n')
-            content += f"{child.tag}: |\n"
+            content += f"description: |\n"
             content += f"  Купить автомобиль {car.find('mark_id').text} {car.find('folder_id').text} {car.find('year').text} года выпуска, комплектация {car.find('complectation_name').text}, цвет - {car.find('color').text}, двигатель - {car.find('modification_id').text} у официального дилера в г. {dealer.get('city')}. Стоимость данного автомобиля {car.find('mark_id').text} {car.find('folder_id').text} – {car.find('price').text}\n"
             # for line in flat_description.split("\n"):
                 # content += f"  {line}\n"
@@ -128,7 +125,7 @@ def create_file(car, filename, unique_id):
     print(filename);
     existing_files.add(filename)
 
-def update_yaml(car, filename):
+def update_yaml(car, filename, unique_id):
     """Increment the 'total' value in the YAML block of an HTML file."""
 
     with open(filename, "r", encoding="utf-8") as f:
@@ -152,10 +149,31 @@ def update_yaml(car, filename):
     else:
         raise KeyError("'total' key not found in the YAML block.")
 
-    if 'run' in data:
-        data['run'] = min(data['run'], int(car.find('run').text))
+    run_element = car.find('run')
+    if 'run' in data and run_element is not None:
+        try:
+            car_run_value = int(run_element.text)
+            data_run_value = int(data['run'])
+            data['run'] = min(data_run_value, car_run_value)
+        except ValueError:
+            # В случае, если не удается преобразовать значения в int,
+            # можно оставить текущее значение data['run'] или установить его в 0,
+            # либо выполнить другое действие по вашему выбору
+            pass
     else:
-        raise KeyError("'run' key not found in the YAML block.")
+        # Если элемент 'run' отсутствует в одном из источников,
+        # можно установить значение по умолчанию для 'run' в data или обработать этот случай иначе
+        data.setdefault('run', 0)
+
+    images_container = car.find('photos')
+    if images_container is not None:
+        images = [img.text for img in images_container.findall('photo')]
+        if len(images) > 0:
+            data.setdefault('images', []).extend(images)
+            # Проверяем, нужно ли добавлять эскизы
+            if 'thumbs' not in data or (len(data['thumbs']) < 5):
+                thumbs_files = createThumbs(images, unique_id)  # Убедитесь, что эта функция реализована
+                data.setdefault('thumbs', []).extend(thumbs_files)
 
     # Convert the data back to a YAML string
     updated_yaml_block = yaml.safe_dump(data, default_flow_style=False, allow_unicode=True)
@@ -169,7 +187,7 @@ def update_yaml(car, filename):
 
     return filename
 
-def createThumbs(image_urls):
+def createThumbs(image_urls, unique_id):
     global current_thumbs
     global output_dir
 
@@ -184,11 +202,9 @@ def createThumbs(image_urls):
     new_or_existing_files = []
 
     # Обработка первых 5 изображений
-    for img_url in image_urls[:5]:
+    for index, img_url in enumerate(image_urls[:5]):
         try:
-            original_filename = os.path.basename(urllib.parse.urlparse(img_url).path)
-            filename_without_extension, _ = os.path.splitext(original_filename)
-            output_filename = f"thumb_{filename_without_extension}.webp"
+            output_filename = f"thumb_{unique_id}_{index}.webp"
             output_path = os.path.join(output_dir, output_filename)
             relative_output_path = os.path.join(relative_output_dir, output_filename)
 
@@ -305,6 +321,8 @@ translations = {
     # steeringWheel
     "left": "Левый",
     "right": "Правый",
+    "L": "Левый",
+    "R": "Правый",
 
     # bodyType
     "suv": "SUV",
@@ -342,6 +360,9 @@ existing_files = set()  # для сохранения имен созданны�
 with open('output.txt', 'w') as file:
     file.write("")
 
+# Предполагаем, что у вас есть элементы с именами 'brand', 'engineType', 'driveType' и т.д.
+elements_to_localize = ['engineType', 'driveType', 'gearboxType', 'ptsType', 'color', 'body_type', 'wheel']
+# , 'bodyColor', 'bodyType', 'steeringWheel'
 
 for car in root:
     rename_child_element(car, 'brand', 'mark_id')
@@ -356,13 +377,13 @@ for car in root:
     if(car.find('creditDiscount').text > car.find('tradeinDiscount').text):
         max_discount_tag = "creditDiscount"
     rename_child_element(car, max_discount_tag, 'max_discount')
-    unique_id = f"{car.find('mark_id').text} {car.find('folder_id').text} {car.find('modification_id').text} {car.find('complectation_name').text} {car.find('color').text} {car.find('price').text} {car.find('year').text}"
+    unique_id = f"{car.find('mark_id').text.strip()} {car.find('folder_id').text.strip()} {car.find('modification_id').text.strip()} {car.find('complectation_name').text.strip()} {car.find('color').text.strip()} {car.find('price').text.strip()} {car.find('year').text.strip()}"
     unique_id = f"{process_unique_id(unique_id)}"
     file_name = f"{unique_id}.mdx"
     file_path = os.path.join(directory, file_name)
 
     if os.path.exists(file_path):
-        update_yaml(car, file_path)
+        update_yaml(car, file_path, unique_id)
     else:
         create_file(car, file_path, unique_id)
 
