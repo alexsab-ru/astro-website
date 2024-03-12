@@ -29,7 +29,7 @@ import BackLink from '@/components/BackLink.astro';
 						<CarPageHeading data={data} />
 					</div>
 
-				{ data.images.length > 0 ? (
+				{ data.images && data.images.length > 0 ? (
 					<CarImageSlider data={data} />
 					) : (
 					<a 

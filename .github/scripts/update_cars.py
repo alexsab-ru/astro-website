@@ -54,7 +54,7 @@ def create_file(car, filename, unique_id):
     if model in model_mapping and color in model_mapping[model].get('color', {}):
         folder = model_mapping[model]['folder']
         color_image = model_mapping[model]['color'][color]
-        thumb = f"/img/models/{folder}/colors/{color_image}.webp"
+        thumb = f"/img/models/{folder}/colors/{color_image}"
     else:
         print(f"{model} {color}")
         with open('output.txt', 'a') as file:
@@ -71,12 +71,12 @@ def create_file(car, filename, unique_id):
     # content += f"permalink: {unique_id}\n"
     content += f"vin_hidden: {vin_hidden}\n"
 
-    h1 = f"{car.find('folder_id').text} {car.find('modification_id').text}"
+    h1 = build_unique_id(car, 'folder_id', 'modification_id')
     content += f"h1: {h1}\n"
 
-    content += f"breadcrumb: {car.find('mark_id').text} {car.find('folder_id').text} {car.find('complectation_name').text}\n"
+    content += f"breadcrumb: {build_unique_id(car, 'mark_id', 'folder_id', 'complectation_name')}\n"
 
-    title = f"{car.find('mark_id').text} {car.find('folder_id').text} {car.find('modification_id').text} купить у официального дилера в {dealer.get('where')}"
+    title = f"{build_unique_id(car, 'mark_id', 'folder_id', 'modification_id')} купить у официального дилера в {dealer.get('where')}"
     content += f"title: {title}\n"
 
     description = ""
@@ -109,7 +109,8 @@ def create_file(car, filename, unique_id):
             description = child.text
             flat_description = description.replace('\n', '<br>\n')
             content += f"description: |\n"
-            content += f"  Купить автомобиль {car.find('mark_id').text} {car.find('folder_id').text} {car.find('year').text} года выпуска, комплектация {car.find('complectation_name').text}, цвет - {car.find('color').text}, двигатель - {car.find('modification_id').text} у официального дилера в г. {dealer.get('city')}. Стоимость данного автомобиля {car.find('mark_id').text} {car.find('folder_id').text} – {car.find('price').text}\n"
+            content += f"""  Купить автомобиль {build_unique_id(car, 'mark_id', 'folder_id')}{f' {car.find("year").text} года выпуска' if car.find("year").text else ''}{f', комплектация {car.find("complectation_name").text}' if car.find("complectation_name").text != None else ''}{f', цвет - {car.find("color").text}' if car.find("color").text != None else ''}{f', двигатель - {car.find("modification_id").text}' if car.find("modification_id").text != None else ''} у официального дилера в г. {dealer.get('city')}. Стоимость данного автомобиля {build_unique_id(car, 'mark_id', 'folder_id')} – {car.find('price').text}\n"""
+
             # for line in flat_description.split("\n"):
                 # content += f"  {line}\n"
         else:
@@ -239,9 +240,51 @@ def cleanup_unused_thumbs():
         os.remove(thumb)
         print(f"Удалено неиспользуемое превью: {thumb}")
 
+import xml.etree.ElementTree as ET
+
+def rename_child_element(parent, old_element_name, new_element_name):
+    old_element = parent.find(old_element_name)
+    if old_element is not None:
+        # Создаем новый элемент с нужным именем и текстом старого элемента
+        new_element = ET.Element(new_element_name)
+        new_element.text = old_element.text
+
+        # Заменяем старый элемент новым
+        parent.insert(list(parent).index(old_element), new_element)
+        parent.remove(old_element)
+
+def update_element_text(parent, element_name, new_text):
+    element = parent.find(element_name)
+    if element is not None:
+        element.text = new_text
+    else:
+        # Ваш код для обработки случая, когда элемент не найден
+        print(f"Элемент '{element_name}' не найден.")
+
 def localize_element_text(element, translations):
     if element is not None and element.text in translations:
         element.text = translations[element.text]
+
+def build_unique_id(car, *elements):
+    """
+    Builds a unique ID string by extracting specified elements from the XML car data.
+
+    Args:
+        car (Element): The XML element representing a car.
+        *elements (str): Variable number of element names to extract.
+
+    Returns:
+        str: The unique ID string containing extracted elements (joined by spaces).
+    """
+    unique_id_parts = []
+
+    for element_name in elements:
+        element = car.find(element_name)
+        if element is not None and element.text is not None:
+            unique_id_parts.append(element.text.strip())
+
+    return " ".join(unique_id_parts)
+
 
 # Путь к папке для сохранения уменьшенных изображений
 output_dir = "public/img/thumbs/"
@@ -343,7 +386,9 @@ with open('output.txt', 'w') as file:
 elements_to_localize = []
 
 for car in root.find('cars'):
-    unique_id = f"{car.find('mark_id').text.strip()} {car.find('folder_id').text.strip()} {car.find('modification_id').text.strip()} {car.find('complectation_name').text.strip()} {car.find('color').text.strip()} {car.find('price').text.strip()} {car.find('year').text.strip()}"
+
+    unique_id = build_unique_id(car, 'mark_id', 'folder_id', 'modification_id', 'complectation_name', 'color', 'price', 'year')
+    print(f"Уникальный идентификатор: {unique_id}")
     unique_id = f"{process_unique_id(unique_id)}"
     file_name = f"{unique_id}.mdx"
     file_path = os.path.join(directory, file_name)
