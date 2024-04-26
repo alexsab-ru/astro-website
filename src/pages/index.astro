@@ -8,13 +8,18 @@ import Callback from '@/components/Callback.astro';
 import Services from '@/components/Services.astro';
 import Contacts from '@/components/Contacts.astro';
 import {BASE_URL, SITE_URL, TIMER_ENDTIME} from '@/const';
+
+const tomorrow = new Date();
+tomorrow.setHours(23, 59, 59);
+const DEADLINE = TIMER_ENDTIME ? TIMER_ENDTIME : tomorrow;
+
 const models = await fetch(`${BASE_URL}${SITE_URL}/data/models.json`).then((response) => response.json());
 // import models from '@/data/models.json'
 ---
 
 <Layout title="TITLE" description="DESCRIPTION">
 	<Banner fetchURL={`${BASE_URL}${SITE_URL}/data/banners.json`} />
-	{TIMER_ENDTIME && <Timer endtime={TIMER_ENDTIME} title="До конца акции осталось" subtitle="Подзаголовок" />}
+	{DEADLINE && <Timer endtime={DEADLINE} title="До конца акции осталось" subtitle="Подзаголовок" />}
 	<ModelList fetchURL={`${BASE_URL}${SITE_URL}/data/models.json`} />
 	{models && models.map((model: any) => model.show && <Model model={model}/>)}
 	<Callback bgUrl="https://baic-krasnodar.ru/img/x35/konkurenty.jpg" />
