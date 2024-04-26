@@ -56,9 +56,11 @@ def create_file(car, filename, unique_id):
         color_image = model_mapping[model]['color'][color]
         thumb = f"/img/models/{folder}/colors/{color_image}"
     else:
-        print(f"{model} {color}")
-        with open('output.txt', 'a') as file:
-            file.write(f"{model} {color}\n")
+        print("")
+        print(f"VIN: {vin}. Не хватает модели: {model} или цвета: {color}")
+        print("")
+        # with open('output.txt', 'a') as file:
+        #     file.write(f"{model} {color}\n")
         # Если 'model' или 'color' не найдены, используем путь к изображению ошибки 404
         thumb = "/img/404.jpg"
         global error_404_found
@@ -109,7 +111,7 @@ def create_file(car, filename, unique_id):
             description = child.text
             flat_description = description.replace('\n', '<br>\n')
             content += f"description: |\n"
-            content += f"""  Купить автомобиль {build_unique_id(car, 'mark_id', 'folder_id')}{f' {car.find("year").text} года выпуска' if car.find("year").text else ''}{f', комплектация {car.find("complectation_name").text}' if car.find("complectation_name").text != None else ''}{f', цвет - {car.find("color").text}' if car.find("color").text != None else ''}{f', двигатель - {car.find("modification_id").text}' if car.find("modification_id").text != None else ''} у официального дилера в г. {dealer.get('city')}. Стоимость данного автомобиля {build_unique_id(car, 'mark_id', 'folder_id')} – {car.find('price').text}\n"""
+            content += f"""  Купить автомобиль {build_unique_id(car, 'mark_id', 'folder_id')}{f' {car.find("year").text} года выпуска' if car.find("year").text else ''}{f', комплектация {car.find("complectation_name").text}' if car.find("complectation_name").text != None else ''}{f', цвет - {car.find("color").text}' if car.find("color").text != None else ''}{f', двигатель - {car.find("modification_id").text}' if car.find("modification_id").text != None else ''} у официального дилера в г. {dealer.get('city')}. Стоимость данного автомобиля {build_unique_id(car, 'mark_id', 'folder_id')} – {car.find('priceWithDiscount').text}\n"""
 
             # for line in flat_description.split("\n"):
                 # content += f"  {line}\n"
@@ -241,6 +243,19 @@ def cleanup_unused_thumbs():
         print(f"Удалено неиспользуемое превью: {thumb}")
 
 import xml.etree.ElementTree as ET
+
+def create_child_element(parent, new_element_name, text):
+    # Поиск существующего элемента
+    old_element = parent.find(new_element_name)
+    if old_element is not None:
+        parent.remove(old_element)
+
+    # Создаем новый элемент с нужным именем и текстом старого элемента
+    new_element = ET.Element(new_element_name)
+    new_element.text = str(text)
+
+    # Добавление нового элемента в конец списка дочерних элементов родителя
+    parent.append(new_element)
 
 def rename_child_element(parent, old_element_name, new_element_name):
     old_element = parent.find(old_element_name)
@@ -387,7 +402,10 @@ elements_to_localize = []
 
 for car in root.find('cars'):
 
-    unique_id = build_unique_id(car, 'mark_id', 'folder_id', 'modification_id', 'complectation_name', 'color', 'price', 'year')
+    price = int(car.find('price').text or 0)
+    max_discount = int(car.find('max_discount').text or 0)
+    create_child_element(car, 'priceWithDiscount', price + max_discount)
+    unique_id = build_unique_id(car, 'mark_id', 'folder_id', 'modification_id', 'complectation_name', 'color', 'priceWithDiscount', 'year')
     print(f"Уникальный идентификатор: {unique_id}")
     unique_id = f"{process_unique_id(unique_id)}"
     file_name = f"{unique_id}.mdx"
