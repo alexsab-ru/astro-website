@@ -23,7 +23,7 @@ export const PHONE = '+7 (999) 000-00-00';
 export const BRAND = 'Baic';
 // Конечное время для таймера
 //string 2024-04-26 or 2024-04-26 23:59:59 or December 31 2015 or December 31 2015 23:59:59 GMT+02:00
-export const TIMER_ENDTIME = '2024-04-29 23:59:59';
+export const TIMER_ENDTIME = '2024-05-31 23:59:59';
 // Ссылки под хедером
 export const LINKS_MENU = [
 	{url: 'cars/', name: 'Авто в наличии'},
