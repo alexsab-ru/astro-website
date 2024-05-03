@@ -23,7 +23,7 @@ export const TIMER_ENDTIME = '2024-05-31 23:59:59';
 // Ссылка яндекс-виджета
 export const LINK_WIDGET = 'https://yandex.ru/map-widget/v1/-/';
 // Ссылка организации для виджета
-export const LINK_WIDGET_ORGNIZATION = 'CDVxaNLC';
+export const LINK_WIDGET_ORGNIZATION = 'CDVxFJI6';
 // Ссылки под хедером
 export const LINKS_MENU = [
 	{url: 'cars/', name: 'Авто в наличии'},
