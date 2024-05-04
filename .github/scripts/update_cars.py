@@ -1,3 +1,4 @@
+# python3 .github/scripts/update_cars.py
 import os
 import re
 import yaml
@@ -167,6 +168,22 @@ def update_yaml(car, filename, unique_id):
         # Если элемент 'run' отсутствует в одном из источников,
         # можно установить значение по умолчанию для 'run' в data или обработать этот случай иначе
         data.setdefault('run', 0)
+
+    priceWithDiscount_element = car.find('priceWithDiscount')
+    if 'priceWithDiscount' in data and priceWithDiscount_element is not None:
+        try:
+            car_priceWithDiscount_value = int(priceWithDiscount_element.text)
+            data_priceWithDiscount_value = int(data['priceWithDiscount'])
+            data['priceWithDiscount'] = min(data_priceWithDiscount_value, car_priceWithDiscount_value)
+        except ValueError:
+            # В случае, если не удается преобразовать значения в int,
+            # можно оставить текущее значение data['priceWithDiscount'] или установить его в 0,
+            # либо выполнить другое действие по вашему выбору
+            pass
+    # else:
+        # Если элемент 'priceWithDiscount' отсутствует в одном из источников,
+        # можно установить значение по умолчанию для 'priceWithDiscount' в data или обработать этот случай иначе
+        # data.setdefault('priceWithDiscount', 0)
 
     images_container = car.find('images')
     if images_container is not None:
@@ -404,8 +421,8 @@ for car in root.find('cars'):
 
     price = int(car.find('price').text or 0)
     max_discount = int(car.find('max_discount').text or 0)
-    create_child_element(car, 'priceWithDiscount', price + max_discount)
-    unique_id = build_unique_id(car, 'mark_id', 'folder_id', 'modification_id', 'complectation_name', 'color', 'priceWithDiscount', 'year')
+    create_child_element(car, 'priceWithDiscount', price - max_discount)
+    unique_id = f"{build_unique_id(car, 'mark_id', 'folder_id', 'modification_id', 'complectation_name', 'color', 'year')}"
     print(f"Уникальный идентификатор: {unique_id}")
     unique_id = f"{process_unique_id(unique_id)}"
     file_name = f"{unique_id}.mdx"
