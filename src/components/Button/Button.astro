@@ -6,14 +6,18 @@ interface Props {
     title?: string,
     dataTitle?: string,
     dataFormName?: string,
+    dataImg?: string,
+    dataImgPosition?: string,
 }
-const { 
+const {
     view = 'link',
     classes,
     url,
     title = 'BUTTON',
     dataTitle,
     dataFormName,
+    dataImg,
+    dataImgPosition,
 } = Astro.props;
 import './buttons.scss'
 ---
@@ -25,23 +29,33 @@ import './buttons.scss'
         href={url ? url : '#'}
         data-title={dataTitle}
         data-form_name={dataFormName}
+        data-img={dataImg}
+        data-img_position={dataImgPosition}
     >
         {title}
     </a>
-    ) : 
+    ) :
     view === 'form-button' ? (
-    <input 
-        type="submit" 
-        class={`btn ${classes}`} 
+    <input
+        type="submit"
+        class={`btn ${classes}`}
         value={title}
     >
-    ) : 
+    ) :
     view === 'popup-link' ? (
-        <a 
+        <a
             class={`btn popup-link ${classes}`}
             href={url ? url : '#'}
             data-title={dataTitle}
             data-form_name={dataFormName}
+        >
+            {title}
+        </a>
+    ) :
+    view === 'scroll-link' ? (
+        <a 
+            class={`btn scroll-link ${classes}`}
+            href={url ? url : '#'}
         >
             {title}
         </a>

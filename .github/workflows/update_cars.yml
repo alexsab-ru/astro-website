@@ -1,0 +1,109 @@
+name: Generate Astro Files from XML
+
+on:
+  # schedule:
+    # - cron: '0 */4 * * *'  # Запускается каждые 4 часа
+  # push:
+    # paths:
+      # - '.github/workflows/update_cars.yml'
+      # - '.github/scripts/update_cars_carcopy.py'
+      # - '.github/scripts/update_cars_maxposter.py'
+      # - '.github/scripts/update_cars.py'
+      # - '.github/scripts/config.py'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Указываете окружение и его переменные
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Download XML
+      run: |
+        curl ${{ vars.ENV_XML_URL }} -o cars.xml
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.9
+        architecture: "x64"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+        pip install pyyaml
+        pip install Pillow
+
+    - name: Generate files
+      run: |
+        python .github/scripts/update_cars.py
+      env:
+        REPO_NAME: ${{ github.event.repository.name }}
+        XML_URL: ${{ vars.ENV_XML_URL }}
+
+    - name: Set output
+      id: set_output
+      run: |
+        if [ -f output.txt ]; then
+          echo "script_output=$(<output.txt)"
+          echo "script_output=$(<output.txt)" >> $GITHUB_ENV
+          echo "script_output=$(<output.txt)" >> $GITHUB_OUTPUT
+        fi
+
+    - name: ls files
+      run: |
+        ls -al src/content/cars
+
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if git diff --exit-code; then
+          echo 'check_changes true — git diff'
+          echo "changes=true" >> $GITHUB_ENV
+          echo "changes=true" >> $GITHUB_OUTPUT
+        elif git status -s; then
+          echo 'check_changes true — git status'
+          echo "changes=true" >> $GITHUB_ENV
+          echo "changes=true" >> $GITHUB_OUTPUT
+        else
+          echo 'check_changes else'
+          echo "false — changes=false" >> $GITHUB_ENV
+          echo "changes=false" >> $GITHUB_OUTPUT
+        fi
+      continue-on-error: true
+
+    - name: Commit files
+      if: env.changes == 'true'
+      run: |
+        git config --local user.email "support+actions@github.com"
+        git config --local user.name "github-actions-bot"
+        if [[ -d public/img/thumbs && $(find public/img/thumbs -type f -name "*.webp") ]]; then git add public/img/thumbs/*.webp; fi
+        if [[ -d src/content/cars && $(find src/content/cars -type f -name "*.mdx") ]]; then git add src/content/cars/*.mdx; fi
+        if [[ -f public/cars.xml ]]; then git add public/cars.xml; fi
+        git commit -m "Update cars from XML" -a || echo "No changes to commit"
+        git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+        git push origin $GITHUB_REF_NAME
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    outputs:
+      changes: ${{ steps.check_changes.outputs.changes }}
+      script_output: ${{ steps.set_output.outputs.script_output }}
+
+
+  notify_telegram:
+    needs: build
+    if: needs.build.outputs.script_output == 'error 404 found'
+    uses: ./.github/workflows/github-telegram.yml
+    with:
+      additional-text: 'No model or color found. Check please'
+    secrets:
+      TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
+      TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}

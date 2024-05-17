@@ -1,7 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 const title = 'Ошибка 404';
-const pageTitle = '404. Такая страница не найдена' 
+const pageTitle = '404. Такая страница не найдена';
 ---
 
 <Layout title={title} description={pageTitle}>
@@ -15,6 +15,12 @@ const pageTitle = '404. Такая страница не найдена'
         <img src="/img/404.jpg" class="not-found-image w-full mx-auto mt-10" alt="not found">
     </section>
 </Layout>
+
+<script>
+	if(window.location.pathname.includes('/cars/')){
+        window.location.href = `${window.location.origin}/cars/`;
+    }
+</script>
 
 <style>
     .not-found-image{

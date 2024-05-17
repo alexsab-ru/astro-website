@@ -42,43 +42,67 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Check for new commits
+      - name: Determine changes
         id: check_changes
         run: |
-          # Получите количество коммитов за последние 10 минут
-          COUNT=$(git log --since="10 minutes ago" --pretty=oneline | wc -l)
-          if [ "$COUNT" -eq "0" ]; then
-            echo "No new commits. Exiting workflow." && echo "changes=false" >> $GITHUB_ENV && echo "changes=false" >> $GITHUB_OUTPUT
-            exit 0
+          # Проверка запущен ли экшн вручную или есть ли коммиты за последние 10 минут
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "Run manually. Assuming changes." && echo "changes=true" >> $GITHUB_OUTPUT
           else
-            echo "Something found." && echo "changes=true" >> $GITHUB_ENV && echo "changes=true" >> $GITHUB_OUTPUT
+            COUNT=$(git rev-list --count HEAD --since="10 minutes ago")
+            if [ "$COUNT" -eq "0" ]; then
+              echo "No new commits. Exiting workflow." && echo "changes=false" >> $GITHUB_OUTPUT
+              exit 0
+            else
+              echo "New commits found." && echo "changes=true" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Setup Pages
         id: pages
-        if: env.changes == 'true'
-        uses: actions/configure-pages@v3
+        if: steps.check_changes.outputs.changes == 'true'
+        uses: actions/configure-pages@v4
 
       - name: Create env file
+        if: steps.check_changes.outputs.changes == 'true'
         run: |
           touch .env
           echo PUBLIC_YANDEX_SITE_VERIFICATION=${{ vars.PUBLIC_YANDEX_SITE_VERIFICATION }} >> .env
           echo PUBLIC_GOOGLE_SITE_VERIFICATION=${{ vars.PUBLIC_GOOGLE_SITE_VERIFICATION }} >> .env
           cat .env
 
+      - name: Download JSONs
+        run: |
+          mkdir src/data
+          curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/banners.json -o src/data/banners.json
+          curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/models.json -o src/data/models.json
+          curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/salons.json -o src/data/salons.json
+          curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/services.json -o src/data/services.json
+          curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/socials.json -o src/data/socials.json
+          if curl --output /dev/null --silent --fail -r 0-0 ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/special-services.json; then
+            curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/special-services.json -o src/data/special-services.json 
+          fi
+          if curl --output /dev/null --silent --fail -r 0-0 ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/faq.json; then
+            curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/faq.json -o src/data/faq.json 
+          fi
+          if curl --output /dev/null --silent --fail -r 0-0 ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/reviews.json; then
+            curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/reviews.json -o src/data/reviews.json 
+          fi
+          ls -al src/data
+
       - name: Build Astro
-        if: env.changes == 'true'
+        if: steps.check_changes.outputs.changes == 'true'
         run: |
           npm install -g pnpm
           pnpm install --no-frozen-lockfile
           pnpm build --outDir ./_site
 
       - name: Upload artifact
-        if: env.changes == 'true'
+        if: steps.check_changes.outputs.changes == 'true'
         # Automatically uploads an artifact from the './_site' directory by default
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
 
     outputs:
       changes: ${{ steps.check_changes.outputs.changes }}
@@ -94,7 +118,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
 
   notify_telegram:
     needs: deploy

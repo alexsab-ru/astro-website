@@ -4,7 +4,7 @@ interface Props {
 }
 const {model} = Astro.props;
 
-import Icon from 'astro-icon';
+import {Icon} from 'astro-icon/components';
 import './model.scss';
 import {BRAND} from '@/const';
 import { currencyFormat } from '@/js/utils/numbers.format';
@@ -29,14 +29,14 @@ const carImagePath = model.colors[0].carImage || `/img/${model.id}/${model.color
 		<div class="container h-full pt-8 sm:pt-[2.5%]">
 			<div class="flex justify-between items-start flex-col lg:flex-row">
 				<div>
-					<div
-						class="text-2xl sm:text-5xl text-accent-500 tracking-wider font-medium uppercase">
+					<h2
+						class="text-2xl sm:text-5xl text-accent-500 tracking-wider font-medium uppercase before:hidden">
 						{BRAND}
 						<b
 							class="font-bold tracking-tighter xs:text-4xl text-5xl sm:text-8xl uppercase text-white"
 							>{model?.name}</b
 						>
-					</div>
+					</h2>
 					{
 						model.slogan && (
 						<p class="uppercase text-lg sm:text-2xl opacity-80">
@@ -53,7 +53,7 @@ const carImagePath = model.colors[0].carImage || `/img/${model.id}/${model.color
 					Подобрать комплектацию
 					<Icon
 						name="mdi:chevron-right-circle"
-						class="w-6 text-yellow-500 translate-x-0 transition-transform duration-300 ease-in-out group-hover:translate-x-1"
+						class="text-xl text-accent-500 translate-x-0 transition-transform duration-300 ease-in-out group-hover:translate-x-1"
 					/>
 				</a>
 			</div>
@@ -68,10 +68,10 @@ const carImagePath = model.colors[0].carImage || `/img/${model.id}/${model.color
 						data-form_name={benefit?.data_form_name}
 					>
 						<span
-							class="w-10 h-10 rounded-full bg-yellow-500 text-white flex items-center justify-center">
+							class="w-10 h-10 rounded-full bg-accent-500 text-white flex items-center justify-center">
 							{
 								benefit.icon_name && (
-									<Icon name={benefit.icon_name} class="w-6" />
+									<Icon name={benefit.icon_name} class="text-2xl" />
 								)
 							}
 						</span>
@@ -90,13 +90,12 @@ const carImagePath = model.colors[0].carImage || `/img/${model.id}/${model.color
 		</div>
 	</div>
 
-	<div class="w-full lg:w-3/4 2xl:w-3/5 ml-auto relative z-10 top-0 lg:top-[150px] xl:top-[120px] lg:pb-[120px] xl:pb-[120px]">
+	<div class={`w-full lg:w-3/4 2xl:w-3/5 relative z-10 top-0 lg:top-[150px] xl:top-[120px] lg:pb-[120px] xl:pb-[120px] ${model?.centered ? 'mx-auto' : 'ml-auto'}`}>
 		<div class="flex flex-col justify-center">
 			<img
 				src={carImagePath}
 				class="w-full color-img-preview"
 				alt={`${BRAND} ${model?.name}`}
-				loading="lazy"
 			/>
 			<div class="flex flex-wrap justify-center gap-4 sm:gap-5 color-links">
 				{
@@ -153,34 +152,41 @@ const carImagePath = model.colors[0].carImage || `/img/${model.id}/${model.color
 			)
 		}
 
-		<div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-14">
+		<div class="flex justify-center flex-wrap xs:flex-col gap-4 mt-14">
 			<Button 
-				classes="popup-link btn black btn-o !px-4" 
+				classes="popup-link btn black btn-o !px-4 flex-1 whitespace-nowrap" 
 				url="#common-modal" 
 				title="Узнать цену"
 				dataTitle="Узнать цену"
 				dataFormName={`Узнать цену. ${BRAND} ${model.name}`}
 			/>
 			<Button 
-				classes="popup-link btn !px-4" 
+				classes="popup-link btn !px-4 flex-1 whitespace-nowrap" 
 				url="#common-modal" 
 				title="Рассчитать кредит"
 				dataTitle="Рассчитать кредит"
 				dataFormName={`Рассчитать кредит. ${BRAND} ${model.name}`}
 			/>
 			<Button 
-				classes="popup-link btn black !px-4" 
+				classes="popup-link btn black !px-4 flex-1 whitespace-nowrap" 
 				url="#common-modal" 
 				title="Записаться на тест-драйв"
 				dataTitle="Записаться на тест-драйв"
 				dataFormName={`Записаться на тест-драйв. ${BRAND} ${model.name}`}
 			/>
 			<Button 
-				classes="popup-link btn gray !px-4" 
+				classes="popup-link btn gray !px-4 flex-1 whitespace-nowrap" 
 				url="#common-modal" 
 				title="Узнать цену по акции"
 				dataTitle="Узнать цену по акции"
 				dataFormName={`Узнать цену по акции. ${BRAND} ${model.name}`}
+			/>
+			<Button 
+				classes="popup-link btn black btn-o !px-4 flex-1 whitespace-nowrap" 
+				url="#common-modal" 
+				title="Купить"
+				dataTitle={`Купить ${BRAND}`}
+				dataFormName={`Купить. ${BRAND} ${model.name}`}
 			/>
 		</div>
 	</div>

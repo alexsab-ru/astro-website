@@ -1,19 +1,33 @@
 ---
+import type {TBreadcrumb} from '@/components/Breadcrumbs/types'
 interface Props {
 	title?: string;
 	h1?: string;
 	description?: string;
 	image?: string;
+	breadcrumb?: TBreadcrumb[];
+	backLink? : boolean;
+	keywords?: string;
 }
-const {title, h1, description, image} = Astro.props;
+const {title, h1, description, image, breadcrumb, backLink = false, keywords} = Astro.props;
 import Layout from '@/layouts/Layout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.astro';
+import BackLink from '@/components/BackLink.astro';
 ---
 
-<Layout title={title || h1} description={description} image={image}>
+<Layout title={title || h1} description={description} image={image} keywords={keywords}>
 	<section class="content">
 		<div class="container">
-			{h1 && <h1>{h1}</h1> }
+			{breadcrumb && <Breadcrumbs breadcrumb={breadcrumb} />}
+			{h1 && <h1><Fragment set:html={h1} /></h1> }
 			<slot />
+
+			{backLink && (
+				<div class="mt-10">
+					<BackLink />
+				</div>
+			)}
+
 		</div>
 	</section>
 </Layout>

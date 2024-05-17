@@ -1,0 +1,57 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Map from '@/components/Map/Map.astro';
+import MapWidget from '@/components/Map/Widget.astro';
+import AutoShowModal from '@/components/AutoShowModal.astro';
+import InfoItem from '@/components/Contacts/InfoItem.astro';
+import {SITE_NAME, LEGAL_ENTITY, LEGAL_INN, LINK_WIDGET_ORGNIZATION} from '@/const';
+import salons from '@/data/salons.json';
+const salon = salons[0]; //временно, наверное
+
+---
+
+<Layout title={`Контакты автосалона ${SITE_NAME}`}>
+	<div class="h-full">
+		<div class="container">
+			<div class="flex flex-col md:flex-row pb-[400px] md:pb-0">
+
+				<div class="md:w-2/5 py-10">
+					<h1 class="text-3xl sm:text-4xl font-bold">Контакты</h1>
+					<div class="flex flex-wrap gap-y-5 sm:gap-y-8 mt-10">
+
+						{LEGAL_ENTITY && (<InfoItem class="w-full flex items-center gap-2.5" label="Юридическое лицо" value={LEGAL_ENTITY} iconName="mdi:bank" />)}
+						{LEGAL_INN && (<InfoItem class="w-full flex items-center gap-2.5" label="ИНН" value={LEGAL_INN} iconName="mdi:list-box-outline" />)}
+						{salon?.address && (<InfoItem class="w-full flex items-center gap-2.5" label="Адрес" value={salon?.address} iconName="mdi:map-marker-outline" />)}
+						{salon?.phone && (<InfoItem class="w-full flex items-center gap-2.5" label="Телефон" value={salon?.phone} iconName="mdi:cellphone" type="phone"/>)}
+						{salon?.work_hours && (<InfoItem class="w-full flex items-center gap-2.5" label="Режим работы" value={salon?.work_hours} iconName="mdi:clock-time-three-outline" />)}
+					</div>
+				</div>
+
+				<div class="h-[400px] md:h-auto w-full md:w-1/2 absolute md:top-0 right-0 bottom-0">
+					{LINK_WIDGET_ORGNIZATION ? (
+						<MapWidget class="h-full" />
+					) : (
+						<Map mapImg="/img/map-bg.webp" salons={salons} class="h-full" />
+					)}
+				</div>
+
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<!--
+	modalShow - Количество милесекунд до показа окна (по умолчанию 20000)
+	title - Заголовок
+	modalPosition - позиция окна left-top|right-top|right-bottom|left-bottom|center (по умолчанию center)
+	img - фото человека (по умолчанию /img/people/user.webp)
+	imgPosition - позиция фото right|left (по умолчанию right)
+-->
+
+<AutoShowModal
+	modalShow = 20000
+	title="Здравствуйте, оставьте телефон, я&nbsp;перезвоню и&nbsp;расскажу о&nbsp;преимуществах работы"
+	modalPosition="right-bottom"
+	img = '/img/people/user.webp'
+	imgPosition = 'right'
+/>

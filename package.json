@@ -4,28 +4,31 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev --open --host --config astro.local.config.mjs",
-    "start": "astro dev --open --host",
+    "start": "cp .env.example .env",
     "build_local": "astro build --config astro.local.config.mjs",
     "build": "astro build",
     "preview": "astro preview --open --host",
+    "download_json": "JSON_PATH=$(cat .env | grep JSON_PATH= | cut -d '=' -f 2) && folder_name=$(node -e \"console.log(require('path').basename(process.cwd()))\") && echo \"Using JSON_PATH: $JSON_PATH\" && echo \"Using folder_name: $folder_name\" && mkdir -p src/data && for file in banners models salons services socials special-services faq reviews; do if curl --output /dev/null --silent --fail -r 0-0 $JSON_PATH/$folder_name/data/$file.json; then curl $JSON_PATH/$folder_name/data/$file.json -o src/data/$file.json; fi; done",
+    "download_json_win": "powershell -Command \"$jsonPath = (Get-Content .env | Select-String 'JSON_PATH=').ToString().Split('=')[1]; $folderName = node -e \\\"console.log(require('path').basename(process.cwd()))\\\"; Write-Host \\\"Using JSON_PATH: $jsonPath\\\"; Write-Host \\\"Using folder_name: $folderName\\\"; $dir = 'src/data'; if (-Not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir }; $files = @('banners', 'models', 'salons', 'services', 'socials', 'special-services', 'faq', 'reviews'); foreach ($file in $files) { $url = \\\"$jsonPath/$folderName/data/$file.json\\\"; $output = \\\"src/data/$file.json\\\"; $response = Invoke-WebRequest -Uri $url -Method Head -ErrorAction SilentlyContinue; if ($response.StatusCode -eq 200) { Write-Host \\\"Downloading $url\\\"; Invoke-WebRequest -Uri $url -OutFile $output } else { Write-Host \\\"File $url does not exist on server. Skipping download.\\\" } }\"",
     "astro": "astro"
   },
   "dependencies": {
-    "@alexsab-ru/scripts": "^0.4.1",
-    "@astrojs/alpinejs": "^0.3.1",
-    "@astrojs/mdx": "^2.0.1",
-    "@astrojs/sitemap": "^3.0.3",
-    "@astrojs/tailwind": "^5.0.3",
-    "@types/alpinejs": "^3.13.5",
-    "alpinejs": "^3.13.3",
-    "astro": "^4.0.6",
-    "astro-icon": "^0.8.2",
+    "@alexsab-ru/scripts": "^0.5.5",
+    "@astrojs/alpinejs": "^0.4.0",
+    "@astrojs/mdx": "^2.1.1",
+    "@astrojs/sitemap": "^3.1.1",
+    "@astrojs/tailwind": "^5.1.0",
+    "@iconify-json/mdi": "^1.1.64",
+    "@types/alpinejs": "^3.13.6",
+    "alpinejs": "^3.13.5",
+    "astro": "^4.4.5",
+    "astro-icon": "^1.1.0",
     "astro-robots": "^2.0.0",
     "glightbox": "^3.2.0",
-    "swiper": "^11.0.5",
-    "tailwindcss": "^3.4.0"
+    "swiper": "^11.0.7",
+    "tailwindcss": "^3.4.1"
   },
   "devDependencies": {
-    "sass": "^1.69.5"
+    "sass": "^1.71.1"
   }
 }

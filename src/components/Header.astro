@@ -1,16 +1,9 @@
 ---
-interface Props {
-	fetchURL?: string
-}
-const {fetchURL = ''} = Astro.props;
-
-// const salons = await fetch(fetchURL).then((response) => response.json());
-
 import salons from '@/data/salons.json'
 
 import { LINKS_MENU as links, HEADER_TOP_LINE } from '@/const.js';
 
-import { Icon } from 'astro-icon';
+import { Icon } from 'astro-icon/components';
 
 import { phoneFormat, declOfNums } from '@/js/utils/numbers.format';
 
@@ -21,25 +14,29 @@ import HeaderTopLine from '@/components/HeaderTopLine.astro';
 const path = Astro.url.pathname;
 
 const classBottom = path != '/' ? ' border-b' : '';
+
+// SOCIALS
+import SocialList from '@/components/Social/List.astro';
+import socials from '@/data/socials.json';
 ---
 <div
-	x-data="header" 
+	x-data="header"
 	class="bg-white sticky top-0 transition-all duration-300 z-30"
 	:class="{'shadow-3xl': scrolling}"
 >
 	<header>
 		{
-			HEADER_TOP_LINE && <HeaderTopLine content={HEADER_TOP_LINE} />	
+			HEADER_TOP_LINE && <HeaderTopLine content={HEADER_TOP_LINE} />
 		}
 		<div class="container">
-			<div class="flex items-center justify-between h-[60px] md:h-[80px]">
+			<div class="flex items-center justify-between xs:py-2 xs:h-auto h-[60px] md:h-[80px]">
 				<Logo />
-				<div class="flex items-center xs:gap-3 gap-5 lg:gap-10">
+				<div class="flex items-center xs:gap-3 gap-4 xl:gap-10">
 					<div class="hidden md:flex flex-col">
 					{
 						salons.length && salons.map((salon: any, index) => {
 							return index < 2 && (
-						<a href={`tel:${phoneFormat(salon.phone)}`} class="font-extrabold text-black/80 text-base xl:text-lg flex items-center gap-1 flex-nowrap transition-colors hover:text-accent-500" title={salon.name}><Icon name="ic:outline-phone-android" class="w-6" /> {salon.phone}</a>
+						<a href={`tel:${phoneFormat(salon.phone)}`} class="whitespace-nowrap font-extrabold text-black/80 text-base xl:text-lg flex items-center gap-1 flex-nowrap transition-colors hover:text-accent-500" title={salon.name}><Icon name="mdi:cellphone" class="text-xl" /> {salon.phone}</a>
 							)
 						})
 					}
@@ -47,42 +44,45 @@ const classBottom = path != '/' ? ' border-b' : '';
 					{salons.length &&
 						salons.length > 1 ? (
 							<div class="hidden lg:block">
-								<a 
-									href="#" 
-									class="underline" 
+								<a
+									href="#"
+									class="underline"
 									@click.prevent="open = !open"
 									@keydown.escape="open = false"
 								>Адреса салонов</a>
 								<small class="block text-xs">{salons.length}&nbsp;{declOfNums(salons.length, ['салон', 'салона', 'салонов'])}</small>
 							</div>) : (
 							<div class="hidden lg:flex items-center gap-1 font-medium text-sm xl:text-base">
-								<Icon name="clarity:map-marker-line" class="w-6" />
+								<Icon name="mdi:map-marker-outline" class="text-2xl" />
 								<Fragment set:html={salons[0].address} />
 							</div>
 						)
 					}
-
-					<Button 
-						classes="popup-link hidden lg:block !px-4 xl:!px-8 !py-2 xl:!py-3" 
-						url="#common-modal" 
-						title="Заказать звонок"
-						dataTitle="Заказать звонок"
-						dataFormName="Заказ звонка. Шапка"
-					/>
-
-					<a 
-						href="#common-modal" 
-						class="lg:hidden popup-link shadow-md rounded flex items-center justify-center w-10 h-10 transition-shadow hover:shadow"
-						data-title="Заказать звонок"
-						data-form_name="Заказ звонка. Шапка"
-					>
-						<Icon name="ph:phone-incoming-thin" class="w-8" />
-					</a>
-					<button 
-						class="lg:hidden shadow-md rounded flex items-center justify-center w-10 h-10 transition-shadow hover:shadow"
+					<div class="flex items-center gap-4 flex-shrink-0">
+						<Button
+							classes="popup-link hidden lg:block !px-4 xl:!px-4 !py-2 xl:!py-3"
+							url="#common-modal"
+							title="Заказать звонок"
+							dataTitle="Заказать звонок"
+							dataFormName="Заказ звонка. Шапка"
+						/>
+						<a
+							href="#common-modal"
+							class="lg:hidden popup-link shadow-md rounded flex items-center justify-center w-8 sm:w-10 h-8 sm:h-10 transition-shadow hover:shadow"
+							data-title="Заказать звонок"
+							data-form_name="Заказ звонка. Шапка"
+						>
+							<Icon name="mdi:phone-incoming" class="text-3xl" />
+						</a>
+						{Object.keys(socials.footer).length ? (
+							<SocialList data={socials.footer} />
+					  	) : ('')}
+					</div>
+					<button
+						class="lg:hidden shadow-md rounded flex items-center justify-center w-8 sm:w-10 h-8 sm:h-10 transition-shadow hover:shadow"
 						@click.prevent="open = !open"
 					>
-						<Icon name="openmoji:hamburger-menu" class="w-8" />
+						<Icon name="mdi:hamburger-menu" class="text-2xl" />
 					</button>
 				</div>
 			</div>
@@ -93,15 +93,15 @@ const classBottom = path != '/' ? ' border-b' : '';
 {links && (
 	<div id="site_nav" class={'hidden lg:block border-t'+classBottom}>
 		<div class="container">
-			<div class="flex">
+			<div class="flex overflow-x-auto">
 			{
 				links.map(link => (
-				<a 
-					href={path === '/' ? link.url : '/'+link.url} 
+				<a
+					href={path === '/' ? link.url : '/'+link.url}
 					class:list={[
 						{
-							'scroll-link': link.url.includes('#'), 
-							'header-link': !link.url.includes('#'), 
+							'scroll-link': link.url.includes('#'),
+							'header-link': !link.url.includes('#'),
 							'active': path.replace(/\//g, '') === link.url.replace(/\//g, '')
 						}
 					]}
@@ -113,17 +113,17 @@ const classBottom = path != '/' ? ' border-b' : '';
 	</div>
 )}
 
-	<div 
+	<div
 		x-cloak
 		class="fixed inset-0 bg-black/40 z-[35] transition-opacity duration-500"
 		:class="open ? 'visible opacity-100' : 'invisible opacity-0'"
 		@click="open = false"
 	></div>
 
-	<div 
+	<div
 		x-cloak
 		class="fixed top-0 bottom-0 right-0 z-40 bg-white py-10 shadow-2xl transition-transform duration-500 max-w-[500px] w-full"
-		:class="open ? 'translate-x-0' : 'translate-x-full'"
+		:class="open ? 'translate-x-0' : 'translate-x-[110%]'"
 	>
 		<button class="w-10 h-10 absolute right-0 top-0 text-2xl font-mono transition-opacity opacity-60 hover:opacity-100" @click.prevent="open = false">&times;</button>
 
@@ -132,24 +132,24 @@ const classBottom = path != '/' ? ' border-b' : '';
 				{links.length &&
 				<div class="flex flex-col border-b lg:hidden">
 					{links.map(link => (
-					<a 
-						href={path === '/' ? link.url : '/'+link.url} 
+					<a
+						href={path === '/' ? link.url : '/'+link.url}
 						class:list={[
 							{
-								'scroll-link': link.url.includes('#'), 
-								'header-link': !link.url.includes('#'), 
-								'active': path.replace(/\//g, '') === link.url.replace(/\//g, '')
+								'scroll-link': link.url.includes('#'),
+								'header-link': !link.url.includes('#'),
+								'active': path.replace(/\//g, '') === link.url.replace(/\//g, ''),
 							}
 						]}
 					>{link.name}</a>
 					))}
-				</div>					
+				</div>
 				}
 				<div>
 				{salons.length && salons.map(salon => (
 					<div class="flex flex-col gap-3 py-5 px-5 border-t first:border-0">
-						<a href="#contacts" class="text-xl flex items-center gap-1 flex-nowrap"><Icon name="clarity:map-marker-line" class="w-8 flex-shrink-0" /><Fragment set:html={salon.address} /></a>
-						<a href={`tel:${phoneFormat(salon.phone)}`} class="text-2xl font-extrabold text-black/80 flex items-center gap-1 flex-nowrap transition-colors hover:text-accent-500" title={salon.name}><Icon name="ic:outline-phone-android" class="w-7" /> {salon.phone}</a>
+						<a href="#contacts" class="text-xl flex items-center gap-1 flex-nowrap"><Icon name="mdi:map-marker-outline" class="text-2xl flex-shrink-0" /><Fragment set:html={salon.address} /></a>
+						<a href={`tel:${phoneFormat(salon.phone)}`} class="text-2xl font-extrabold text-black/80 flex items-center gap-1 flex-nowrap transition-colors hover:text-accent-500" title={salon.name}><Icon name="mdi:cellphone" class="text-xl" /> {salon.phone}</a>
 					</div>
 				))}
 				</div>
@@ -162,7 +162,7 @@ const classBottom = path != '/' ? ' border-b' : '';
 
 <style lang="scss">
 	.scroll-link, .header-link{
-		@apply inline-block py-3 px-5 transition-colors duration-300 hover:bg-accent-400 hover:text-white;
+		@apply inline-block py-3 px-5 transition-colors duration-300 hover:bg-accent-400 hover:text-white whitespace-nowrap;
 		&.active{
 			@apply bg-accent-400 text-white;
 		}

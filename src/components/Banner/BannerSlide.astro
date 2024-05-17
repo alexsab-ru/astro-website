@@ -1,0 +1,86 @@
+---
+type TBadge = {
+	autoname: string
+	title: string
+	descr: string
+	image: string
+}
+type TBanner = {
+	id?: number
+	show?: boolean
+	type?: string
+	view?: string
+	videoUrl?: string
+	imageUrl: string
+	bannerUrl?: string
+	target?: string
+	title?: string
+	descr?: string
+	btn?: string
+	btnUrl?: string
+	dataTitle?: string
+	dataFormName?: string
+	badge?: TBadge
+	autoplay?: number
+}
+interface Props {
+	banner: TBanner;
+}
+const {banner} = Astro.props;
+import Button from '../Button/Button.astro';
+import Badge from './Badge.astro';
+import BannerTitle from './Title.astro';
+import BannerDescription from './Description.astro';
+import BannerVideo from './Video.astro';
+import BannerImage from './Image.astro';
+---
+
+<div class="swiper-slide banner-slide" data-swiper-autoplay={banner?.autoplay ? banner.autoplay : 5000}>
+	<div class="container h-full relative z-[2] py-10 lg:py-20">
+		<div class="h-full flex flex-col justify-between">
+			<div class="mb-10">
+				{ banner?.title && ( <BannerTitle title={banner.title} /> ) }
+				{ banner?.descr && ( <BannerDescription description={banner.descr} /> ) }
+				{
+					banner?.btn && (
+						<div data-swiper-parallax="-55%">
+							<Button
+								classes="white inline-block !py-2 sm:py-3 text-sm sm:text-base mt-8 sm:mt-10"
+								view={banner?.view}
+								url={banner?.btnUrl}
+								title={banner?.btn}
+								dataTitle={banner?.dataTitle}
+								dataFormName={banner?.dataFormName}
+							/>
+						</div>
+					)
+				}
+			</div>
+			{
+				banner?.badge && (
+					<Badge
+						autoName={banner.badge?.autoname}
+						title={banner.badge?.title}
+						descr={banner.badge?.descr}
+						image={banner.badge?.image}
+					/>
+				)
+			}
+		</div>
+	</div>
+	{
+		banner?.type === 'video' && banner?.bannerUrl ? (
+			<a href={banner.bannerUrl} class="absolute inset-0 h-full w-full z-10 block" {...banner?.target ? {target: banner.target} : {} }>
+				<BannerVideo poster={banner?.imageUrl} url={banner?.videoUrl} />
+			</a>			
+		) : banner?.type === 'video' && !banner?.bannerUrl ? (
+			<BannerVideo poster={banner?.imageUrl} url={banner?.videoUrl} />
+		) : !banner?.type && banner?.bannerUrl ? (
+			<a href={banner.bannerUrl} class="absolute inset-0 h-full w-full z-10 block" {...banner?.target ? {target: banner.target} : {} }>
+				<BannerImage url={banner.imageUrl} title={banner?.title} />
+			</a>
+		) : (
+			<BannerImage url={banner.imageUrl} title={banner?.title} />
+		)
+	}
+</div>

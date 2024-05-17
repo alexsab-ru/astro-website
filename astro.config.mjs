@@ -4,6 +4,7 @@ import alpinejs from '@astrojs/alpinejs';
 import sitemap from "@astrojs/sitemap";
 import robots from "astro-robots";
 import mdx from "@astrojs/mdx";
+import icon from "astro-icon";
 
 // https://astro.build/config
 export default defineConfig({
@@ -12,9 +13,18 @@ export default defineConfig({
 			configFile: './tailwind.config.js'
 		}),
 		sitemap(),
-		robots(),
+		robots({
+			policy: [
+				{
+					userAgent: ["*"],
+					allow: ["/"],
+					disallow: ["/?*"],
+				},
+			  ],
+		}),
 		alpinejs(),
-		mdx()
+		mdx(),
+		icon(),
 	],
 	site: 'https://site.com',
 	base: "/"

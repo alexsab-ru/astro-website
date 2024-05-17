@@ -1,5 +1,5 @@
 [x-cloak] {
-	display: none;
+	display: none !important;
 }
 
 body {
@@ -24,7 +24,7 @@ section {
 	p, b, ul, ol, a {
 		@apply text-sm sm:text-lg mb-4;
 	}
-	a {
+	a:not(.filter-model-link) {
 		@apply text-accent-500 underline hover:no-underline;
 	}
 	li {
@@ -47,13 +47,28 @@ section {
 		thead {
 			@apply bg-slate-50;
 			th {
-				@apply min-w-[160px] border border-slate-300 font-semibold p-4 text-left;
+				@apply border border-slate-300 font-semibold p-4;
 			}
 		}
 		tbody {
 			td {
-				@apply min-w-[160px] border border-slate-300 p-4;
+				@apply border border-slate-300 p-4;
 			}
 		}
+	}
+}
+.modal-img{
+	@apply h-[calc(calc(1vw+1vh)*40)] sm:absolute inset-0 w-full sm:h-full object-cover object-center;
+}
+
+.custom-scrollbar{
+	&::-webkit-scrollbar {
+		@apply w-1 appearance-none rounded-lg;
+	}
+	&::-webkit-scrollbar-track {
+		@apply bg-gray-100 rounded-lg;
+	}
+	&::-webkit-scrollbar-thumb {
+		@apply bg-accent-500/60 rounded-lg;
 	}
 }

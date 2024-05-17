@@ -1,36 +1,52 @@
 ---
+import type {TBreadcrumb} from '@/components/Breadcrumbs/types'
 interface Props {
-	car: any
+	car: any;
+	breadcrumb?: TBreadcrumb[];
+	backLink? : boolean;
+	keywords?: string;
 }
-const {car = {}} = Astro.props;
+const {car = {}, breadcrumb, backLink = false, keywords} = Astro.props;
 const data = car?.data || {};
+const thumb = data.thumbs && data.thumbs.length ? data.thumbs[0] : data.image;
+const price = data.priceWithDiscount ? data.priceWithDiscount : (data.max_discount ? data.price - data.max_discount : data.price);
 import { declOfNums, currencyFormat } from '@/js/utils/numbers.format';
 import Layout from '@/layouts/Layout.astro';
 import CarImageSlider from '@/components/Cars/ImageSlider.astro';
 import CarPageHeading from '@/components/Cars/PageHeading.astro';
 import CarCharItem from '@/components/Cars/CharItem.astro';
+import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.astro';
+import BackLink from '@/components/BackLink.astro';
 ---
 
-<Layout title={data?.h1} description={data?.description} image={data?.image}>
-	<section class="py-10 sm:py-14">
+<Layout title={data?.title || data?.h1} description={data?.description} image={thumb} keywords={keywords}>
+	<section>
 		<div class="container">
-	
+
+			{breadcrumb && <Breadcrumbs breadcrumb={breadcrumb} />}
+
 			<div class="grid grid-cols-12 gap-y-10 lg:gap-x-14">
-	
+
 				<div class="col-span-12 lg:col-span-6">
 					<div class="block lg:hidden mb-5">
 						<CarPageHeading data={data} />
 					</div>
 
-				{ data.images.length > 0 ? (
+				{ data.images && data.images.length > 0 ? (
 					<CarImageSlider data={data} />
 					) : (
-					<img src={data.image} class="w-full" alt={data.folder_id}>
+					<a
+						href={data.image}
+						class="block cursor-zoom-in w-full glightbox"
+						data-gallery={data.vin_hidden}
+					>
+						<img src={data.image} class="w-full h-auto" alt={data.folder_id} />
+					</a>
 					)
 				}
 
 				</div>
-	
+
 				<div class="col-span-12 lg:col-span-6 2xl:col-span-5 text-sm sm:text-base">
 					<div class="hidden lg:block">
 						<CarPageHeading data={data} />
@@ -39,7 +55,7 @@ import CarCharItem from '@/components/Cars/CharItem.astro';
 						{data.modification_id && (
 							<CarCharItem label="Двигатель" value={data.modification_id} />
 						)}
-						{data.run && (
+						{(data.run !== undefined && data.run !== null) && (
 							<CarCharItem label="Пробег" value={`${data.run.toLocaleString('ru-RU')}&nbsp;км`} />
 						)}
 						{data.body_type && (
@@ -54,23 +70,32 @@ import CarCharItem from '@/components/Cars/CharItem.astro';
 						{data.vin_hidden && (
 							<CarCharItem label="VIN" value={data.vin_hidden} />
 						)}
+						{data.max_discount && (
+							<CarCharItem label="Выгода" value={`до&nbsp;${currencyFormat(data.max_discount)}`} />
+						)}
 					</div>
 					<div class="my-8">
-						<div class="text-gray-400 font-light">Стоимость</div>
-						<div class="font-bold text-3xl">{currencyFormat(data.price)}</div>
+						<div class="text-gray-400 font-light mb-1">Стоимость</div>
+						<div class="font-bold text-4xl"><span class="text-sm text-gray-400 font-normal">от</span>&nbsp;{currencyFormat(price)}</div>
 					</div>
 					<div class="flex flex-col sm:flex-row gap-4 sm:gap-5">
 						<a href="#common-modal" class="popup-link btn flex-grow !p-2" data-title="Получить предложение" data-form_name={`Получить предложение. ${data?.color} ${data?.folder_id} ${data?.modification_id}, ${data?.vin}. ${currencyFormat(data.price)}`}>Получить предложение</a>
 						<a href="#common-modal" class="popup-link btn gray flex-grow !p-2" data-title="Рассчитать кредит" data-form_name={`Рассчитать кредит. ${data?.color} ${data?.folder_id} ${data?.modification_id}, ${data?.vin}. ${currencyFormat(data.price)}`}>Рассчитать кредит</a>
 					</div>
 				</div>
-	
+
 			</div>
-	
+
 			<div class="mt-14">
 				<slot />
 			</div>
-	
+
+			{backLink && (
+				<div class="mt-10">
+					<BackLink />
+				</div>
+			)}
+
 		</div>
 	</section>
 </Layout>

@@ -4,8 +4,9 @@ interface Props {
 	h1?: string;
 	description?: string;
 	image?: string;
+	keywords?: string;
 }
-const {title, h1, description, image} = Astro.props;
+const {title, h1, description, image, keywords} = Astro.props;
 
 import {SITE_NAME, SITE_DESCR} from '@/const.js';
 
@@ -14,7 +15,7 @@ import ScriptHead from '@/components/Scripts/Head.astro';
 import ScriptBodyBegin from '@/components/Scripts/BodyBegin.astro';
 import ScriptBodyEnd from '@/components/Scripts/BodyEnd.astro';
 import Header from '@/components/Header.astro';
-import Footer from '@/components/Footer.astro';
+import Footer from '@/components/ExtendedFooter.astro';
 import Modals from '@/components/Modals.astro';
 import UpBtn from '@/components/UpBtn.astro';
 import Cookie from '@/components/Cookie/Cookie.astro';
@@ -23,13 +24,13 @@ import Cookie from '@/components/Cookie/Cookie.astro';
 <!doctype html>
 <html lang="ru">
 	<head>
-		<Head title={title || h1 || SITE_NAME} description={description ?? SITE_DESCR} image={image} />
+		<Head title={title || h1 || SITE_NAME} description={description ?? SITE_DESCR} image={image} keywords={keywords} />
 		<ScriptHead />
 	</head>
 	<body class="min-h-screen flex flex-col">
 		<ScriptBodyBegin />
-		<Header fetchURL={`${Astro.url.origin}/src/data/salons.json`} />
-		<main class="flex-grow">
+		<Header />
+		<main class="flex-grow relative">
 			<slot />
 		</main>
 		<Footer />

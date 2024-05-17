@@ -1,30 +1,24 @@
 ---
-import { SITE_NAME, LEGAL_ENTITY } from '@/const.js';
-import { Icon } from 'astro-icon'
+import { SITE_NAME, LEGAL_ENTITY, LEGAL_INN, BRAND, FOOTER_INFO, LINKS_MENU as links } from '@/const';
+import { Icon } from 'astro-icon/components'
 import { phoneFormat } from '@/js/utils/numbers.format';
+const url = `https://alexsab.ru?utm_source=${BRAND}&utm_compaing=${SITE_NAME}`
 import salons from '@/data/salons.json';
-const links = [
-	{url: '/', name: 'Главная'},
-	{url: '#online-calc', name: 'Онлайн расчет'},
-	{url: '#advantages', name: 'Преимущества'},
-	{url: '#services', name: 'Услуги сервиса'},
-];
 const path = Astro.url.pathname;
+import logo from '@/components/Logo/logo.svg';
+// SOCIALS
+import SocialList from '@/components/Social/List.astro';
+import socials from '@/data/socials.json';
 ---
 
 <footer class="bg-black/90 text-white py-14 relative">
-	<div class="container">
-        <div class="grid md:grid-cols-3 lg:grid-cols-4 gap-10 md:gap-5">
+    <div class="container">
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-y-10 lg:gap-y-5">
 
             <div class="">
-                <a href="/" class="uppercase font-extrabold text-2xl inline-block mb-5 transition-opacity hover:opacity-70">{ SITE_NAME }</a>
+                <a href="/" class="uppercase text-2xl inline-block mb-5 transition-opacity hover:opacity-70">{ SITE_NAME }</a>
                 <div class="flex flex-wrap items-center gap-5">
-                    <img src="/img/logos/exeed.svg" class="h-3 md:h-4 w-auto filter brightness-0 invert opacity-70" title="Exeed" alt="exeed">
-                    <img src="/img/logos/geely.svg" class="h-7 w-auto filter brightness-0 invert opacity-70" title="Geely" alt="geely">
-                    <img src="/img/logos/omoda.svg" class="h-3 md:h-4 w-auto filter brightness-0 invert opacity-70" title="Omoda" alt="omoda">
-                    <img src="/img/logos/chery.svg" class="h-7 w-auto filter brightness-0 invert opacity-70" title="Chery" alt="chery">
-                    <img src="/img/logos/jaecoo.svg" class="h-3 md:h-4 w-auto filter brightness-0 invert opacity-70" title="Jaecoo" alt="jaecoo">
-                    <img src="/img/logos/gac.svg" class="h-7 w-auto filter brightness-0 invert opacity-70" title="Gac" alt="gac">
+                    <img src={logo.src} class="h-8 w-auto filter brightness-0 invert opacity-70" alt={SITE_NAME} />
                 </div>
             </div>
             <div class="">
@@ -37,41 +31,47 @@ const path = Astro.url.pathname;
                 }
                 </ul>
             </div>
-            <div class="lg:col-span-2">
+            <div class="">
                 <h3 class="text-xl mb-3 md:mb-5">Контакты</h3>
-                <div class="grid lg:grid-cols-2 gap-8 lg:gap-5">
                 {
                     salons.map(salon => (
                     <div class="flex flex-col gap-3">
                         <span class="flex items-center gap-1 flex-nowrap">
-                            <Icon name="clarity:map-marker-line" class="w-6" /> 
-                            {salon.address}
+                            <Icon name="mdi:map-marker-outline" class="text-2xl flex-shrink-0" />
+                            <Fragment set:html={salon.address} />
                         </span>
                         <a href={`tel:${phoneFormat(salon.phone)}`} class="flex items-center gap-1 flex-nowrap transition-colors hover:text-accent-500">
-                            <Icon name="ic:outline-phone-android" class="w-5" /> 
+                            <Icon name="mdi:cellphone" class="text-xl flex-shrink-0" />
                             {salon.phone}
                         </a>
                     </div>
                     ))
                 }
-                </div>
+            </div>
+
+            <div class="">
+                {Object.keys(socials.footer).length ? (
+                    <h3 class="text-xl mb-3 md:mb-5">Будь в курсе выгодных предложений</h3>
+                    <SocialList data={socials.footer} />
+                ) : ('')}
             </div>
 
         </div>
 
         <hr class="mt-8 mb-5 opacity-20">
 
-        <p class="text-xs opacity-60">Обращаем ваше внимание на то, что данный интернет-сайт носит исключительно информационный характер и ни при каких условиях не является публичной офертой, определяемой положениями ч. 2 ст. 437 Гражданского кодекса Российской Федерации. Для получения подробной информации о стоимости автомобилей, пожалуйста, обращайтесь к менеджерам автосалона.</p>
+        <p class="text-xs opacity-60"><Fragment set:html={FOOTER_INFO} /></p>
 
         <hr class="mt-5 mb-8 opacity-20">
 
         <div class="flex items-center justify-between gap-5 flex-wrap">
-			<div class="flex items-center flex-grow gap-5 flex-wrap">
-				<p class="text-sm m-0">© 2023 { LEGAL_ENTITY }</p>
-				<a href="/privacy-policy/" class="text-white/80 text-sm font-light leading-none hover:!text-white">Политика конфиденциальности</a>
-			</div>
-			<!-- <p class="made-by text-sm m-0">Разработка <a href="https://alexsab.ru?utm_source=china" class="hover:!text-white" target="_blank">alexsab.ru</a></p> -->
-		</div>
+            <div class="flex items-center flex-grow gap-5 flex-wrap">
+                <p class="text-sm m-0">© 2024 { LEGAL_ENTITY }</p>
+                {LEGAL_INN && (<p class="text-sm text-white/80">ИНН: <Fragment set:html={LEGAL_INN} /></p>)}
+                <a href="/privacy-policy/" class="text-white/80 text-sm font-light leading-none hover:!text-white">Политика конфиденциальности</a>
+            </div>
+            <p class="made-by text-sm m-0 text-white/80">Разработка <a href={url} class="hover:!text-white" target="_blank">alexsab.ru</a></p>
+        </div>
 
     </div>
 </footer>
