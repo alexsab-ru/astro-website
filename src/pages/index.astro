@@ -2,6 +2,7 @@
 import {SITE_NAME, BRAND, LEGAL_CITY_WHERE, TIMER_ENDTIME} from '@/const.js';
 import Layout from '@/layouts/Layout.astro';
 import Banner from '@/components/Banner/Banner.astro';
+import PageTitle from '@/components/PageTitle/Index.astro';
 import Timer from '@/components/Timer/Timer.astro';
 import ModelList from '@/components/Model/ModelList.astro';
 import Model from '@/components/Model/Model.astro';
@@ -15,14 +16,8 @@ const salonsPhone = salons.map((salon: any) => { return salons[0].phone }).join(
 
 <Layout title=`Купить ${BRAND} у официального дилера ${SITE_NAME}` description=`Забронируйте свой автомобиль прямо сейчас у официалоного дилера ${BRAND} в ${LEGAL_CITY_WHERE}! ☎️ ${salonsPhone}`>
 	<Banner />
-	{TIMER_ENDTIME && <Timer endtime={TIMER_ENDTIME} title="До конца акции осталось" subtitle="Подзаголовок" btnName="Получить предложение" />}
-
-	<section class="ptop-[2.7] pbottom-[2.5] bg-accent-500">
-		<div class="container">
-			<h1 class="text-center fz-[3] text-white font-medium leading-none">Автомобили {BRAND} в&nbsp;{LEGAL_CITY_WHERE}</h1>
-		</div>
-	</section>
-
+	<PageTitle />
+	{TIMER_ENDTIME && <Timer endtime={TIMER_ENDTIME} title="До конца акции осталось" subtitle="Подзаголовок" />}
 	<ModelList />
 	{models && models.map((model: any) => model.show && <Model model={model}/>)}
 	<Callback bgUrl="/img/konkurenty.webp" />
