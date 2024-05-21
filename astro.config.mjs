@@ -17,8 +17,7 @@ export default defineConfig({
 			policy: [
 				{
 					userAgent: ["*"],
-					allow: ["/"],
-					disallow: ["/?*"],
+					disallow: ["/"],
 				},
 			  ],
 		}),
