@@ -5,6 +5,8 @@ import sitemap from "@astrojs/sitemap";
 import robots from "astro-robots";
 import mdx from "@astrojs/mdx";
 import icon from "astro-icon";
+import yaml from '@rollup/plugin-yaml';
+import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
@@ -17,7 +19,11 @@ export default defineConfig({
 		alpinejs(),
 		mdx(),
 		icon(),
+		react(),
 	],
+	vite: {
+		plugins: [yaml()]
+	},
 	// site: 'https://alexsab-ru.github.io',
 	// base: 'astro-website'
 });
