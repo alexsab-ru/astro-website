@@ -15,7 +15,18 @@ on:
       - completed
   # Runs on pushes targeting the default branch
   push:
-    branches: ["*"]
+    branches: ["main"]
+    paths-ignore:
+      - '.github/workflows/update_cars.yml'
+      - '.github/scripts/getAirStorage.js'
+      - '.github/scripts/getOneXML.py'
+      - '.github/scripts/update_cars_avito_ads_ad.py'
+      - '.github/scripts/update_cars_avito.py'
+      - '.github/scripts/update_cars_carcopy.py'
+      - '.github/scripts/update_cars_maxposter.py'
+      - '.github/scripts/update_cars_vehicles.py'
+      - '.github/scripts/update_cars.py'
+      - '.github/scripts/config.py'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -50,7 +61,7 @@ jobs:
         id: check_changes
         run: |
           # Проверка запущен ли экшн вручную или есть ли коммиты за последние 10 минут
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] || [ "${{ github.event_name }}" == "schedule" ]; then
             echo "Run manually. Assuming changes." && echo "changes=true" >> $GITHUB_OUTPUT
           else
             COUNT=$(git rev-list --count HEAD --since="10 minutes ago")
@@ -81,6 +92,7 @@ jobs:
           curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/banners.json -o src/data/banners.json
           curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/models.json -o src/data/models.json
           curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/salons.json -o src/data/salons.json
+          curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/seo.json -o src/data/seo.json
           curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/services.json -o src/data/services.json
           curl ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/socials.json -o src/data/socials.json
           if curl --output /dev/null --silent --fail -r 0-0 ${{ secrets.JSON_PATH }}/${{ github.event.repository.name }}/data/cars.json; then

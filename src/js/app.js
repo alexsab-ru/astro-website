@@ -34,8 +34,12 @@ const lazys = document.querySelectorAll('.lazy');
 
 if(lazys.length){
 	lazys.forEach(lazy => {
-		if(lazy.querySelector('img')){
-			imageObserver.observe(lazy.querySelector('img'))
+		const images = lazy.querySelectorAll('img');
+		if(images){
+			images.forEach(img => {
+				imageObserver.observe(img);
+				img.onload = () => {img.classList.remove('opacity-0')}
+			});
 		}
 		lazy.classList.remove('lazy')
 	})
@@ -92,4 +96,19 @@ const path = window.location.pathname;
 const regex = /\/{2,}$/;
 if(regex.test(path)){
 	window.location.href = path.replace(regex, '/');
+}
+const seoShowMoreBtns = document.querySelectorAll('.seo-show-more');
+if(seoShowMoreBtns.length){
+	Array.from(seoShowMoreBtns).map(btn => {
+		btn.addEventListener('click', function(e){
+			e.preventDefault();
+			const contentBlock = btn.closest('section').querySelector('.seo-content');
+			btn.classList.toggle('active');
+			contentBlock.classList.toggle('open');
+			btn.querySelector('.seo-show-more-text').innerText = btn.classList.contains('active') ? 'скрыть' : 'читать полностью';
+			if(!btn.classList.contains('active')){
+				 contentBlock.scrollIntoView({ block: "start", behavior: "smooth" });
+			}
+		});
+	});
 }

@@ -4,7 +4,7 @@ import yaml
 import shutil
 from PIL import Image, ImageOps
 from io import BytesIO
-from config import dealer, model_mapping
+from config import *
 from utils import *
 import xml.etree.ElementTree as ET
 
@@ -15,13 +15,11 @@ def create_file(car, filename, unique_id):
     # Преобразование цвета
     color = car.find('color').text.strip().capitalize()
     model = car.find('folder_id').text.strip()
+    brand = car.find('mark_id').text.strip()
 
-    model_obj = model_mapping.get(model, '../404.jpg?')
-
-    # Проверяем, существует ли 'model' в 'model_mapping' и есть ли соответствующий 'color'
-    if model in model_mapping and color in model_mapping[model].get('color', {}):
-        folder = model_mapping[model]['folder']
-        color_image = model_mapping[model]['color'][color]
+    folder = get_folder(brand, model)
+    color_image = get_color_filename(brand, model, color)
+    if folder and color_image:
         thumb = f"/img/models/{folder}/colors/{color_image}"
     else:
         print("")
@@ -42,13 +40,14 @@ def create_file(car, filename, unique_id):
     # content += f"permalink: {unique_id}\n"
     content += f"vin_hidden: {vin_hidden}\n"
 
-    h1 = build_unique_id(car, 'folder_id', 'modification_id')
+    h1 = build_unique_id(car, 'mark_id', 'folder_id', 'modification_id')
     content += f"h1: {h1}\n"
 
     content += f"breadcrumb: {build_unique_id(car, 'mark_id', 'folder_id', 'complectation_name')}\n"
 
-    title = f"{build_unique_id(car, 'mark_id', 'folder_id', 'modification_id')} купить у официального дилера в {dealer.get('where')}"
-    content += f"title: {title}\n"
+    content += f"title: 'Купить {build_unique_id(car, 'mark_id', 'folder_id', 'modification_id')} у официального дилера в {dealer.get('where')}'\n"
+
+    content += f"""description: 'Купить автомобиль {build_unique_id(car, 'mark_id', 'folder_id')}{f' {car.find("year").text} года выпуска' if car.find("year").text else ''}{f', комплектация {car.find("complectation_name").text}' if car.find("complectation_name").text != None else ''}{f', цвет - {car.find("color").text}' if car.find("color").text != None else ''}{f', двигатель - {car.find("modification_id").text}' if car.find("modification_id").text != None else ''} у официального дилера в г. {dealer.get('city')}. Стоимость данного автомобиля {build_unique_id(car, 'mark_id', 'folder_id')} – {car.find('priceWithDiscount').text}'\n"""
 
     description = ""
 
@@ -82,9 +81,7 @@ def create_file(car, filename, unique_id):
         elif child.tag == 'comment' and child.text:
             description = child.text
             flat_description = description.replace('\n', '<br>\n')
-            content += f"description: |\n"
-            content += f"""  Купить автомобиль {build_unique_id(car, 'mark_id', 'folder_id')}{f' {car.find("year").text} года выпуска' if car.find("year").text else ''}{f', комплектация {car.find("complectation_name").text}' if car.find("complectation_name").text != None else ''}{f', цвет - {car.find("color").text}' if car.find("color").text != None else ''}{f', двигатель - {car.find("modification_id").text}' if car.find("modification_id").text != None else ''} у официального дилера в г. {dealer.get('city')}. Стоимость данного автомобиля {build_unique_id(car, 'mark_id', 'folder_id')} – {car.find('priceWithDiscount').text}\n"""
-
+            # content += f"content: |\n"
             # for line in flat_description.split("\n"):
                 # content += f"  {line}\n"
         elif child.tag == 'equipment' and child.text:
@@ -207,10 +204,36 @@ with open('output.txt', 'w') as file:
 # Предполагаем, что у вас есть элементы с именами 'brand', 'engineType', 'driveType' и т.д.
 elements_to_localize = ['engineType', 'drive_type', 'gearboxType', 'ptsType', 'color', 'body_type', 'wheel']
 # , 'bodyColor', 'bodyType', 'steeringWheel'
+# Создаем список машин для удаления
+cars_to_remove = []
+remove_mark_ids = [
+]
+remove_folder_ids = [
+]
+cars_element = root.find("vehicles")
 
-for car in root.find("vehicles"):
+for car in cars_element:
     rename_child_element(car, 'mark', 'mark_id')
     rename_child_element(car, 'model', 'folder_id')
+
+    should_remove = False
+    
+    # Проверяем mark_id только если список не пустой
+    if remove_mark_ids:
+        car_mark = car.find('mark_id').text
+        if car_mark in remove_mark_ids:
+            should_remove = True
+    
+    # Проверяем folder_id только если список не пустой
+    if remove_folder_ids:
+        car_folder = car.find('folder_id').text
+        if car_folder in remove_folder_ids:
+            should_remove = True
+    
+    if should_remove:
+        cars_to_remove.append(car)
+        continue  # Пропускаем остальные операции для этой машины
+
     rename_child_element(car, 'modification', 'modification_id')
     rename_child_element(car, 'сomplectation-name', 'complectation_name')
     rename_child_element(car, 'complectation-code', 'complectation_code')
@@ -242,6 +265,10 @@ for car in root.find("vehicles"):
         update_yaml(car, file_path, unique_id)
     else:
         create_file(car, file_path, unique_id)
+
+# Удаляем все не-BelGee машины
+for car in cars_to_remove:
+    cars_element.remove(car)
 
 output_path = './public/cars.xml'
 convert_to_string(root)
