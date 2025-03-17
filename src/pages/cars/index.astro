@@ -2,22 +2,13 @@
 import PageLayout from "@/layouts/PageLayout.astro";
 import { getCollection } from "astro:content";
 import { SITE_NAME, BRAND, LEGAL_CITY_WHERE } from "@/const";
-import CarItem from "@/components/Cars/Item.astro";
-import SortSelect from "@/components/Cars/SortSelect.astro";
+import CarsList from '@/components/Cars/List.astro';
 const rawCars = await getCollection("cars");
-let cars: any, image: string, models = [], years = [];
-import { getRandomInt, declOfNums } from "@/js/utils/numbers.format";
+let cars: any, image: string;
+import { getRandomInt } from "@/js/utils/numbers.format";
 if (rawCars && rawCars.length > 0) {
 	cars = rawCars;
 	image = cars[getRandomInt(0, cars.length)].data.image;
-	cars.map((car) => {
-		if(!models.includes(car.data.folder_id)){
-			models.push(car.data.folder_id)
-		}
-		if(!years.includes(car.data.year)){
-			years.push(car.data.year);
-		}
-	})
 } else {
 	image = "";
 }
@@ -33,42 +24,7 @@ export const breadcrumb = { name: "Авто в наличии", href: "/cars/" }
 >
 	{
 		cars ? (
-			<div x-data="sorting" x-cloak>
-				<p x-text="`${total} ${declOfNums(total)} в наличии`"></p>
-				<hr class="my-5">
-				<SortSelect />
-				<hr class="my-5">
-				{models.length && (
-					<div class="flex flex-wrap gap-2 sm:gap-4">
-						{models.map(model => (
-							<div class="relative">
-								<label class="peer w-full h-full absolute bottom-3 cursor-pointer z-50">
-									<input type="checkbox" value={model.toLocaleLowerCase()} id={model.id} class="asbsolute opacity-0" @change={`toggleFilter('Models', '${model.toLocaleLowerCase()}')`} />
-								</label>
-								<div class="filter-model-link bg-gray-200 peer-has-[:checked]:bg-accent-500 peer-has-[:checked]:text-white">{model}</div>
-							</div>
-						))}
-					</div>
-				)}
-				{years.length && (
-					<hr class="my-5" />
-					<div class="flex flex-wrap gap-2 sm:gap-4">
-						{years.map(year => (
-							<div class="relative">
-								<label class="peer w-full h-full absolute bottom-3 cursor-pointer z-50">
-									<input type="checkbox" value={year} id={year} class="asbsolute opacity-0" @change={`toggleFilter('Years', '${year}')`} />
-								</label>
-								<div class="filter-model-link bg-gray-200 peer-has-[:checked]:bg-accent-500 peer-has-[:checked]:text-white">{year}</div>
-							</div>
-						))}
-					</div>
-				)}
-				<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 mt-5 car-list">
-					{cars.map((car) => (
-						<CarItem car={car} />
-					))}
-				</div>
-			</div>
+			<CarsList cars={rawCars} />
 		) : (
 			<p>Скоро здесь появится список новых автомобилей.</p>
 		)
