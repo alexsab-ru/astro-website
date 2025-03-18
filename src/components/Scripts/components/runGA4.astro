@@ -1,4 +1,13 @@
+---
+import scripts_json from '@/data/scripts.json';
+const isModeProd = import.meta.env.MODE === 'production';
+const isProd = import.meta.env.PROD;
+---
+{ isProd && scripts_json.ga4 && scripts_json.ga4.length > 0 && scripts_json.ga4[0].id && String(scripts_json.ga4[0].id) !== "" && (
+<script>
+console.log("runGA4 load");
 function runGA4(scripts_json_ga4) {
+    console.log("runGA4", scripts_json_ga4);
     scripts_json_ga4.forEach(ga => {
         var script = document.createElement('script');
         script.src = `https://www.googletagmanager.com/gtag/js?id=${ga.id}`;
@@ -10,3 +19,6 @@ function runGA4(scripts_json_ga4) {
         gtag('config', ga.id);
     });
 }
+window.runGA4 = runGA4;
+</script>
+)}

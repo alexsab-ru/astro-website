@@ -1,4 +1,13 @@
+---
+import scripts_json from '@/data/scripts.json';
+const isModeProd = import.meta.env.MODE === 'production';
+const isProd = import.meta.env.PROD;
+---
+{ isProd && scripts_json['top.mail.ru'] && scripts_json['top.mail.ru'].length > 0 && scripts_json['top.mail.ru'][0].id != "" && (
+<script>
+console.log("runTOP_MAIL_RU load");
 function runTOP_MAIL_RU(top_mail_ru) {
+    console.log("runTOP_MAIL_RU", top_mail_ru);
     top_mail_ru.forEach(mail => {
         if (mail.id && mail.id.trim() !== "") {
             var script = document.createElement('script');
@@ -6,4 +15,7 @@ function runTOP_MAIL_RU(top_mail_ru) {
             document.head.appendChild(script);
         }
     });
-} 
+}
+window.runTOP_MAIL_RU = runTOP_MAIL_RU;
+</script>
+)}
