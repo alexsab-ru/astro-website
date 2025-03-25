@@ -1,0 +1,30 @@
+## [#Marquee](#marquee)
+
+## Бегущая строка
+
+```js
+import Marquee from '@/components/Marquee/Index.astro';
+```
+
+### Входные параметры
+
+```js
+interface Props {
+	marquee: TMarquee
+}
+
+type TMarquee = {
+	title: string
+	dateTo?: string
+	count?: number[]
+	show: boolean
+}
+```
+
+```js
+import { LAST_DAY, MONTH, YEAR } from '@/js/utils/date';
+
+<Marquee marquee={ {title: 'Тотальная распродажа до', dateTo: `${LAST_DAY}.${MONTH}.${YEAR}`, count: [1,2,3,4,5,6,7,8], show: true} } />
+```
+
+[Демо](/guide/demo/marquee/)
