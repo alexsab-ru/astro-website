@@ -15,8 +15,10 @@ if (hashURL) {
 }
 
 document.querySelectorAll('a[href^="#"]:not(.popup-link)').forEach((link) => {
-	link.addEventListener('click', function (e) {
-		e.preventDefault();
+	link.addEventListener('click', function (e) {		
+		if(link.classList.contains('scroll-link')){
+			e.preventDefault();
+		}
 		let hash = this.getAttribute('href').substring(1);
 		scroll(hash);
 	});
