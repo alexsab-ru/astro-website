@@ -1,0 +1,92 @@
+## [#Banner](#banner)
+
+Входные параметры - `banners` (опционально), по умолчанию берутся данные из `src/data/banners.json`
+
+```js
+import Banner from '@/components/Banner/Banner.astro';
+```
+
+```astro
+<Banner banners?={Array} />
+```
+
+```js
+interface Props {
+	banners?: TBanner[]
+}
+
+type TBanner = {
+	id?: number 
+	show?: boolean
+	type?: string
+	view?: string
+	videoUrl?: string
+	imageUrl: string
+	tabletImageUrl?: string
+	mobileImageUrl?: string
+	imagePosition?: string 
+	bannerUrl?: string
+	target?: string
+	gradient?: boolean
+	title?: string
+	descr?: string
+	btn?: string
+	btnUrl?: string
+	btnColor?: string
+	dataTitle?: string
+	dataFormName?: string
+	badge?: TBadge
+	autoplay?: number
+}
+
+type TBadge = {
+	autoname?: string
+	title?: string
+	descr?: string
+	image?: string
+	position?: string
+	colorText?: string
+	bg?: boolean
+}
+```
+
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |imageUrl|*|**Обязательный параметр**. Изображение для десктоп или для постера видео|
+    |id|-|необязательный параметр|
+    |show|`true`|параметр показа слайда, `true` or `false`. Необязательный параметр|
+    |type|`image`|тип слайда - `video or image`. Необязательный параметр|
+    |view|`link`|тип кнопки - `link`, `popup-link`, `scroll-link`. Необязательный параметр|
+    |videoUrl|-|**Обязательный**, если `type === video`|
+    |tabletImageUrl|-|Изображение для планшетов. Необязательный параметр|
+    |mobileImageUrl|-|Изображение для мобильных. Необязательный параметр|
+    |imagePosition|`center`|необязательный параметр, `bottom`, `top`, `center`|
+    |bannerUrl|-|если `btn` пустой, а этот параметр заполнен, то слайд будет ссылкой|
+    |target|-|если `bannerUrl` заполнен, можно указать где открывать вкладку, например `_blank`. Необязательный параметр|
+    |gradient|`true`|верхнее затемнение под текстом. Необязательный параметр|
+    |title|-|если например изображение уже с текстом. Необязательный параметр|
+    |descr||так же как и `title`. Необязательный параметр|
+    |btn|-|если кнопка не нужна, например, `bannerUrl` заполнен. Необязательный параметр|
+    |btnUrl|-|ссылка для кнопки. Необязательный параметр|
+    |btnColor|`white`|цвет кнопки, все доступные стили из `src/components/Button/buttons.scss`. Необязательный параметр|
+    |dataTitle|-|параметр для модального окна - заголовок окна. **Обязательный**, если `view === popup-link`|
+    |dataFormName|-|параметр для модального окна - имя формы. **Обязательный**, если `view === popup-link`|
+    |badge|-|`type TBadge`, см. ниже. Необязательный параметр|
+    |autoplay|5000|заддержка слайда в милесекундах. Необязательный параметр|
+</div>
+
+### TBadge
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |autoname|-|Название автомобиля, возможность передавать HTML теги, отобразится, если заполнен|
+	|title|-|Заголовок, возможность передавать HTML теги, отобразится, если заполнен|
+	|descr|-|Описание, возможность передавать HTML теги, отобразится, если заполнен|
+	|image|-|Изображение, отобразится, если заполнен|
+	|position|`center`|Позиция бейджа, `left`, `right`, `center`. Необязательный параметр|
+	|colorText|`white`|Цвет текста, `black`, `white`. Необязательный параметр|
+	|bg|`false`|Полупрозрачный белый фон. Необязательный параметр|
+</div>
+
+[Демо](/guide/demo/banner/)
