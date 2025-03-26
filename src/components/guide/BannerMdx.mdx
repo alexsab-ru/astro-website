@@ -8,14 +8,10 @@ interface Props {
 ``` 
 **По умолчанию:** данные из `src/data/banners.json`
 
-Импорт 
+Использование
 ```js
 ---
 import Banner from '@/components/Banner/Banner.astro';
----
-```
-Использование
-```js
 const arrayBanners = [
 	{ 
 		"imageUrl": "https://site.com/img/image.webp" // required
@@ -24,6 +20,7 @@ const arrayBanners = [
 		"imageUrl": "https://site.com/img/image2.webp" // required
 	},
 ];
+---
 
 <Banner banners={arrayBanners} />
 ```
