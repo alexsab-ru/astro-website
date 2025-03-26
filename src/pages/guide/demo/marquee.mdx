@@ -3,12 +3,18 @@ layout: "@/layouts/Layout.astro"
 title: "Демо бегущей строки"
 ---
 import Marquee from '@/components/Marquee/Index.astro';
-import Banner from '@/components/Banner/Banner.astro';
 import BackLink from '@/components/BackLink.astro';
 import { LAST_DAY, MONTH, YEAR } from '@/js/utils/date';
 
-<Marquee marquee={ {title: 'Тотальная распродажа до', dateTo: `${LAST_DAY}.${MONTH}.${YEAR}`, count: [1,2,3,4,5,6,7,8], show: true} } />
-<Banner />
+<Marquee 
+    marquee={{
+        title: `Тотальная распродажа до ${LAST_DAY}.${MONTH}.${YEAR}`, 
+        count: 8,
+        speed: 20, 
+        show: true
+    }}
+    classes="relative my-10"
+/>
 
 <div class="my-10 px-10">
     <BackLink />
