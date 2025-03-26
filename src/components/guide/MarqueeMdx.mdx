@@ -1,30 +1,50 @@
 ## [#Marquee](#marquee)
 
-```js
----
-import Marquee from '@/components/Marquee/Index.astro';
----
-```
-
 ### Входные параметры
 
 ```js
 interface Props {
-	marquee: TMarquee
+	marquee: TMarquee;
+	classes?: string;
 }
 
 type TMarquee = {
-	title: string
-	dateTo?: string
-	count?: number[]
-	show: boolean
+	title: string;
+	count?: number;
+	speed?: number;
+	show: boolean;
 }
 ```
-
+### Использование
 ```js
+---
+import Marquee from '@/components/Marquee/Index.astro';
 import { LAST_DAY, MONTH, YEAR } from '@/js/utils/date';
+---
 
-<Marquee marquee={ {title: 'Тотальная распродажа до', dateTo: `${LAST_DAY}.${MONTH}.${YEAR}`, count: [1,2,3,4,5,6,7,8], show: true} } />
+<Marquee 
+    marquee={{
+        title: `Тотальная распродажа до ${LAST_DAY}.${MONTH}.${YEAR}`, 
+        count: 8,
+        speed: 20, 
+        show: true
+    }}
+    classes="relative my-10"
+/>
 ```
+### TMarquee
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|title|-|**Обязательный параметр**. Возможность передать HTML теги.|
+	|count|8|`number` Количество элементов|
+	|speed|20|`number` Скорость анимации в секундах|
+	|show|`false`|`true` or `false` Показ|
+</div>
 
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|classes|`absolute w-full left-0 z-10 top-[50vh] md:top-[70vh]`|Классы бегущей строки|
+</div>
 [Демо](/guide/demo/marquee/)
