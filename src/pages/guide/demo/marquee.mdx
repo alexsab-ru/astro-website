@@ -4,6 +4,7 @@ title: "Демо бегущей строки"
 ---
 import Marquee from '@/components/Marquee/Index.astro';
 import BackLink from '@/components/BackLink.astro';
+import MarqueeMdx from '@/components/guide/MarqueeMdx.mdx';
 import { LAST_DAY, MONTH, YEAR } from '@/js/utils/date';
 
 <Marquee 
@@ -15,6 +16,10 @@ import { LAST_DAY, MONTH, YEAR } from '@/js/utils/date';
     }}
     classes="relative my-10"
 />
+
+<div class="container content mt-10">
+    <MarqueeMdx />
+</div>
 
 <div class="my-10 px-10">
     <BackLink />
