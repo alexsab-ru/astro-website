@@ -1,0 +1,48 @@
+# Timer
+
+### Входные параметры
+
+```js
+interface Props {
+	title?: string;
+	subtitle?: string;
+	endtime?: Date;
+	btnName?: string;
+	class?: string;
+}
+
+const { 
+	title, 
+	subtitle, 
+	endtime = '2025-12-31T23:59:59+04:00', 
+	btnName, 
+	class: className,
+	...rest 
+} = Astro.props;
+```
+### Использование
+```js
+---
+import Marquee from '@/components/Marquee/Index.astro';
+import { LAST_DAY, MONTH, YEAR } from '@/js/utils/date';
+---
+
+<Timer 
+    title='До конца акции осталось'
+    subtitle='' 
+    endtime=`${YEAR}-${MONTH}-${LAST_DAY}T23:59:59+04:00` 
+    btnName='Зафиксировать цену'
+    show={false}
+/>
+
+```
+
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|title|-|Необязательный параметр. Возможность передать HTML теги.|
+	|subtitle|-|Необязательный параметр. Возможность передать HTML теги.|
+	|endtime|31 декабря текущего года|`Date` в формате `2025-12-31T23:59:59+04:00`|
+	|btnName|BUTTON|Необязательный параметр. Текст кнопки|
+	|class|-|Необязательный параметр. Классы для секции|
+</div>
