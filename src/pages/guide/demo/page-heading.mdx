@@ -1,0 +1,18 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо Заголовок страницы"
+---
+import BackLink from '@/components/BackLink.astro';
+import PageTitle from '@/components/PageTitle/Index.astro';
+import PageTitleMdx from '@/components/guide/PageTitleMdx.mdx';
+import { LAST_DAY, MONTH, YEAR } from '@/js/utils/date';
+
+<PageTitle  />
+
+<div class="container content mt-10">
+    <PageTitleMdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>

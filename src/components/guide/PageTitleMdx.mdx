@@ -1,0 +1,26 @@
+# PageTitle
+
+### Входные параметры
+
+```js
+interface Props {
+	title?: string;
+}
+
+const { title } = Astro.props;
+```
+### Использование
+```js
+---
+import PageTitle from '@/components/PageTitle/Index.astro';
+---
+
+<PageTitle title={`Автомобили ${BRAND} в наличии в ${LEGAL_CITY_WHERE}`} />
+
+```
+
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|title|Автомобили `${BRAND}` в наличии в `${LEGAL_CITY_WHERE}`|Необязательный параметр. Возможность передать HTML теги.|
+</div>
