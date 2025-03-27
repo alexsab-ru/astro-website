@@ -1,0 +1,45 @@
+# Services
+
+{/* ### Входные параметры
+
+```js
+type TReviewItem = {
+	name: string;
+	text: string;
+	date: string;
+	show: boolean;
+}
+
+interface Props {
+	items: TReviewItem[];
+	title?: string;
+	class?: string;
+}
+``` */}
+### Использование
+```js
+---
+import Services from '@/components/Services/Index.astro';
+---
+
+<Services />
+
+```
+
+{/* ### TReviewItem
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|name *|-|Имя|
+    |text *|-|Текст отзыва|
+    |date *|-|Дата, например 15 марта 2025г.|
+    |show *|-|`true` or `false`|
+</div>
+
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|items|`TReviewItem[]`|Массив отзывов. Обязательный параметр|
+	|title|-|Заголовок секции. Отобразится, если не пуст. Необязательный параметр|
+	|class|-|Классы для секции. Необязательный параметр|
+</div> */}
