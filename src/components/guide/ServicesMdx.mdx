@@ -1,45 +1,44 @@
 # Services
 
-{/* ### Входные параметры
+### Входные параметры
 
 ```js
-type TReviewItem = {
-	name: string;
-	text: string;
-	date: string;
-	show: boolean;
+type TService = {
+	title: string;
+	icon?: string;
+	url?: string;
+	target?: string;
 }
-
 interface Props {
-	items: TReviewItem[];
 	title?: string;
-	class?: string;
+	services?: TService[]
 }
-``` */}
+```
+**По умолчанию:** данные `services` из `src/data/sevices.json`
+
 ### Использование
 ```js
 ---
 import Services from '@/components/Services/Index.astro';
+import services from '@/data/services.json';
 ---
 
-<Services />
+<Services services={services} title="Услуги дилерского центра" />
 
 ```
 
-{/* ### TReviewItem
-<div class="*:!text-left mb-10">
+<div class="*:!text-left my-10">
+### TService
     |**Имя параметра**|**По умолчанию**|**Описание**|
     |--|--|--|
-	|name *|-|Имя|
-    |text *|-|Текст отзыва|
-    |date *|-|Дата, например 15 марта 2025г.|
-    |show *|-|`true` or `false`|
+	|title *|-|Заголовок. **Обязательный параметр**|
+    |icon|-|Иконка. Задается имя [Material Design Icons](https://pictogrammers.com/library/mdi/), например, `mdi:car-key`, либо имя svg иконки, расположенной в `src/icons/` |
+    |url|-|Ссылка, если нужен переход на другую страницу. Необязательный параметер.|
+    |target|-|Цель ссылки, например, `_blank`. Необязательный параметер.|
 </div>
 
 <div class="*:!text-left mb-10">
     |**Имя параметра**|**По умолчанию**|**Описание**|
     |--|--|--|
-	|items|`TReviewItem[]`|Массив отзывов. Обязательный параметр|
-	|title|-|Заголовок секции. Отобразится, если не пуст. Необязательный параметр|
-	|class|-|Классы для секции. Необязательный параметр|
-</div> */}
+	|title|Услуги дилерского центра|Заголовок секции. Необязательный параметр|
+</div>
