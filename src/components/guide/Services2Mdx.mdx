@@ -1,0 +1,58 @@
+# NewServices
+
+### Входные параметры
+
+```js
+interface Props {
+	items: TNewService[];
+	title?: string;
+	class?: string;
+	id?: string
+	show?: boolean
+}
+type TNewService = {
+	title: string;
+	icon?: string;
+	img?: string;
+	url?: string;
+}
+```
+
+### Использование
+```js
+---
+import NewServices from '@/components/Services/New.astro';
+const services = [ 
+    {url: "#common-modal", icon: 'calendar', title: 'Услуга 1'},
+    {url: "#common-modal", icon: 'pin', title: 'Услуга 2'},
+    {url: "#common-modal", icon: 'choice', title: 'Услуга 3'},
+    {url: "#common-modal", icon: 'engine', title: 'Услуга 4'},
+    {url: "#common-modal", icon: 'stinger_teaser2', title: 'Услуга 5'},
+    {url: "#common-modal", icon: 'road-help', title: 'Услуга 6'},
+];
+---
+```
+
+```astro
+<NewServices title="Услуги сервиса" items={services} /> 
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|items|-|Массив элементов `TNewService`|
+    |title|-|Заголовок секции|
+    |class|-|CSS классы для секции|
+    |id|-|ID секции|
+    |show|`true`|`boolean`|
+</div>
+
+<div class="*:!text-left mb-10">
+    ### **TNewService**
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |title|*|Заголовок элемента. **Обязательный**|
+    |icon|-|Иконка. Задается имя [Material Design Icons](https://pictogrammers.com/library/mdi/), например, `mdi:car-key`, либо имя svg иконки, расположенной в `src/icons/`. Преимущество перед `img`|
+    |img|-|Изображение для элемента, если не задана иконка|
+    |url|-|URL для элемента.|
+</div>

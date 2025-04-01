@@ -1,0 +1,25 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо Секции Услуги 2"
+---
+import BackLink from '@/components/BackLink.astro';
+import NewServices from '@/components/Services/New.astro';
+import Services2Mdx from '@/components/guide/Services2Mdx.mdx';
+export const services = [ 
+    {url: "#common-modal", icon: 'calendar', title: 'Услуга 1'},
+    {url: "#common-modal", icon: 'pin', title: 'Услуга 2'},
+    {url: "#common-modal", icon: 'choice', title: 'Услуга 3'},
+    {url: "#common-modal", icon: 'engine', title: 'Услуга 4'},
+    {url: "#common-modal", icon: 'stinger_teaser2', title: 'Услуга 5'},
+    {url: "#common-modal", icon: 'road-help', title: 'Услуга 6'},
+];
+
+<NewServices title="Услуги сервиса" items={services} class="bg-gray-200" /> 
+
+<div class="container content mt-10">
+    <Services2Mdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>
