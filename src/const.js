@@ -44,6 +44,7 @@ export const LINKS_MENU = [
 	{url: 'service-request/', name: 'Запись на сервис'},
 	{url: '#services', name: 'Услуги'},
 	{url: 'contacts/', name: 'Контакты'},
+	{url: 'guide/', name: 'Руководство'},
 ];
 // Коллекции
 export const COLLECTIONS = [
