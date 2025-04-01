@@ -1,0 +1,48 @@
+# SpecialServices
+
+### Входные параметры
+
+```js
+interface Props {
+	items: TSpecialService[];
+	title?: string;
+}
+export type TSpecialService = {
+	title: string;
+	subtitle?: string;
+	img: string;
+}
+```
+
+### Использование
+```js
+---
+import SpecialServices from '@/components/SpecialServices/Index.astro';
+const services = [ 
+    {img: 'https://placehold.co/142x142/444/FFF?text=IMAGE', title: 'Шиномонтаж', subtitle: '1&nbsp;000&nbsp;₽'},
+    {img: 'https://placehold.co/142x142/444/FFF?text=IMAGE', title: 'Мойка авто', subtitle: '900&nbsp;₽'},
+    {img: 'https://placehold.co/142x142/444/FFF?text=IMAGE', title: 'ТО', subtitle: '500&nbsp;₽'},
+    {img: 'https://placehold.co/142x142/444/FFF?text=IMAGE', title: 'Замена масла', subtitle: '2&nbsp;000&nbsp;₽'}
+];
+---
+```
+
+```astro
+<SpecialServices title="Услуги сервиса" items={services} /> 
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|items|-|Массив элементов `TSpecialService`|
+    |title|-|Заголовок секции|
+</div>
+
+<div class="*:!text-left mb-10">
+    ### **TSpecialService**
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |title|*|Заголовок элемента. **Обязательный**|
+    |subtitle|-|Описание для элемента, например цена услуги|
+    |img|*|Изображение для элемента. **Обязательный**|
+</div>

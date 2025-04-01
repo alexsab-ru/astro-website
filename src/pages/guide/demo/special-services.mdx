@@ -1,0 +1,23 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо Секции Услуги сервиса"
+---
+import BackLink from '@/components/BackLink.astro';
+import SpecialServices from '@/components/SpecialServices/Index.astro';
+import SpecialServicesMdx from '@/components/guide/SpecialServicesMdx.mdx';
+export const services = [ 
+    {img: 'https://placehold.co/142x142/444/FFF?text=Шиномонтаж', title: 'Шиномонтаж', subtitle: '1&nbsp;000&nbsp;₽'},
+    {img: 'https://placehold.co/142x142/444/FFF?text=Мойка+авто', title: 'Мойка авто', subtitle: '900&nbsp;₽'},
+    {img: 'https://placehold.co/142x142/444/FFF?text=Тех.+осмотр', title: 'ТО', subtitle: '500&nbsp;₽'},
+    {img: 'https://placehold.co/142x142/444/FFF?text=Замена+масла', title: 'Замена масла', subtitle: '2&nbsp;000&nbsp;₽'}
+];
+
+<SpecialServices title="Услуги сервиса" items={services} /> 
+
+<div class="container content mt-10">
+    <SpecialServicesMdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>
