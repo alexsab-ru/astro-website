@@ -6,6 +6,8 @@
 interface Props {
 	mapImg?: string;
 	title?: string;
+    height?: number;
+	yOffset?: number;
 }
 ```
 
@@ -15,22 +17,17 @@ interface Props {
 import Contacts from '@/components/Contacts.astro';
 ---
 
-<Contacts title="Наши контакты" mapImg="https://cdn.alexsab.ru/maps/map-bg.webp" />
+<Contacts title="Наши контакты" mapImg="https://cdn.alexsab.ru/maps/map-bg.webp" height="500" yOffset="20" />
 
 ```
 
-{/* <div class="*:!text-left my-10">
-### TService
+<div class="*:!text-left my-10">
     |**Имя параметра**|**По умолчанию**|**Описание**|
     |--|--|--|
-	|title *|-|Заголовок. **Обязательный параметр**|
-    |icon|-|Иконка. Задается имя [Material Design Icons](https://pictogrammers.com/library/mdi/), например, `mdi:car-key`, либо имя svg иконки, расположенной в `src/icons/` |
-    |url|-|Ссылка, если нужен переход на другую страницу. Необязательный параметер.|
-    |target|-|Цель ссылки, например, `_blank`. Необязательный параметер.|
+	|mapImg|`https://cdn.alexsab.ru/maps/map-bg.webp`|Фоновое изображение, показывается до полной загрузки карты|
+    |title|`Наши контакты`|Заголовок секции. Если заголовок не нужен, можно передать пустое значение `title=""`|
+    |height|`500`|Высота карты (суммируется с параметром `yOffset * 2`)|
+    |yOffset|`20`|Паддинги по горизонтали|
 </div>
 
-<div class="*:!text-left mb-10">
-    |**Имя параметра**|**По умолчанию**|**Описание**|
-    |--|--|--|
-	|title|Услуги дилерского центра|Заголовок секции. Необязательный параметр|
-</div> */}
+Внутри компонента `Contacts` используются 2 компонента - `MapInfo` и `Map`. Оба компонента принимают массив `salons`, который берется из `src/data/salons.json`, и строку `classes`.
