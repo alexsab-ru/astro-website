@@ -1,0 +1,59 @@
+# FAQ
+
+### Входные параметры
+
+```js
+interface Props {
+	items: TFaqItem[];
+	title?: string;
+	class?: string;
+}
+
+type TFaqItem = {
+	id: string | number;
+	question: string;
+	answer: string;
+	open: boolean;
+}
+```
+
+### Использование
+```js
+---
+import Faq from '@/components/Faq/Index.astro';
+import faqItems from '@/data/faq.json';
+---
+
+<Faq items={faqItems} title="FAQ" class="bg-gray-50" />
+```
+
+### Пример `faq.json`
+
+```json
+[
+    {
+        "id": 1,
+        "question": "How to use the app?",
+        "answer": "To use the app, simply download it from the app store, create an account, and start exploring the features.",
+        "open": true
+    }
+]
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|items|-|Массив элементов `TFaqItem`|
+    |title|-|Заголовок секции|
+    |class|-|CSS классы для секции|
+</div>
+
+<div class="*:!text-left mb-10">
+    ### **TFaqItem**
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|id|-|`string` or `number`|
+    |question|-|`string` - вопрос|
+    |answer|-|`string` - ответ|
+    |open|-|открыть аккордион? `true` or `false`|
+</div>
