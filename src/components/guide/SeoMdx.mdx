@@ -1,0 +1,46 @@
+# SEO
+
+### Входные параметры
+
+```js
+interface Props {
+  mdx: string;
+  noPadding?: boolean;
+}
+```
+
+### Использование
+```js
+---
+import SeoText from '@/components/Seo/Index.astro';
+---
+```
+
+```astro
+<SeoText mdx="demo-seo" noPadding={false} /> 
+```
+
+### Пример файла `MDX`
+```md
+## Demo Seo
+
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi reiciendis eos beatae? Iure sunt explicabo perspiciatis totam, veniam dolor doloribus, esse natus dolorem quisquam, possimus fugit eligendi ipsam delectus. At?
+
+lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi reiciendis eos beatae? Iure sunt explicabo perspiciatis totam, veniam dolor doloribus, esse natus dolorem quisquam, possimus fugit eligendi ipsam delectus. At?
+
+### Title H3
+
+- Lorem ipsum dolor sit amet. 
+- Lorem ipsum dolor sit amet. 
+- Lorem ipsum dolor sit amet. 
+- Lorem ipsum dolor sit amet. 
+- Lorem ipsum dolor sit amet. 
+- Lorem ipsum dolor sit amet. 
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|mdx|*|Название файла без расширения `.mdx`, который должен находиться в `src/content/seo/demo-seo.mdx` <br/><br/>**Обязательный параметр**|
+    |noPadding|`false`|Отключает `x-padding` контейнера|
+</div>
