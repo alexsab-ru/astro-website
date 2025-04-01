@@ -1,0 +1,29 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо Секции Преимуществ"
+---
+import BackLink from '@/components/BackLink.astro';
+import AdvantagesList from '@/components/Advantages/List.astro';
+import AdvantagesMdx from '@/components/guide/AdvantagesMdx.mdx';
+export const advantages = [ 
+    {iconName: 'icon-map', iconClass: 'text-accent-500', title: 'Бесплатная доставка', text: 'Автомобиля в официальный сервис*'},
+    {iconName: 'safe', iconClass: 'text-accent-500', title: 'Дистанционное согласование', text: 'Дополнительных работ'},
+    {iconName: 'chat', iconClass: 'text-accent-500', title: 'Онлайн-подписание', text: 'Документов по итогам проведённого ремонта'}
+];
+
+<section>
+    <div class="container">
+        <h2 class="text-xl sm:text-4xl font-medium mb-14">Преимущества</h2>
+
+        <AdvantagesList items={advantages} />   
+
+    </div>
+</section>
+
+<div class="container content mt-10">
+    <AdvantagesMdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>
