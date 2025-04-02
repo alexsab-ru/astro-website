@@ -1,10 +1,11 @@
 import Button from '@/components/Button/Button.astro';
+import Input from '@/components/Input.astro';
 
 # Elements
 
 ### **Buttons**
 
-<div class="flex gap-5 flex-wrap mb-10 bg-neutral-500 py-10 px-4">
+<div class="flex gap-5 flex-wrap mb-10 bg-gray-700 py-10 px-4">
   <Button title="Link" url="/guide/" classes="!m-0" />
   <Button title="Scroll link" view="scroll-link" classes="btn btn-o !m-0" url="#входные-параметры" />
   <Button title="Popup link" view="popup-link" classes="btn black !m-0" url="#common-modal" dataTitle="Popup link" dataFormName="Popup link" />
@@ -53,7 +54,7 @@ import Button from '@/components/Button/Button.astro';
 />
 ```
 
-<div class="*:!text-left my-10">
+<div class="*:!text-left mb-10">
     |**Имя параметра**|**По умолчанию**|**Описание**|
     |--|--|--|
     |view|`link`|Тип (вид) кнопки `link`, `form-button`, `popup-link`, `scroll-link`|
@@ -65,4 +66,63 @@ import Button from '@/components/Button/Button.astro';
     |icon|-|Иконка. Задается имя [Material Design Icons](https://pictogrammers.com/library/mdi/), например, `mdi:car-key`, либо имя svg иконки, расположенной в `src/icons/`|
     |iconClasses|-|классы для иконки|
     |...rest|-|любые атрибуты, например `disabled`|
+</div>
+
+### **Input Field**
+
+<div class="max-w-xl mb-10">
+  <Input
+    type="tel"
+    name="phone"
+    classes="border-gray-100"
+    placeholder="+7 (999) 999-99-99*"
+    required
+    errorText="Введите корректный номер телефона"
+    errorClasses="text-red-500 !block"
+  />
+</div>
+
+#### Входные параметры
+
+```js
+interface Props {
+    type?: string,
+    name?: string,
+    classes?: string,
+    placeholder?: string,
+    required?: boolean,
+    errorText?: string,
+    errorClasses?: string,
+}
+```
+
+#### Использование
+```js
+---
+import Input from '@/components/Input.astro';
+---
+```
+
+```astro
+<Input
+  type="tel"
+  name="phone"
+  classes="border-gray-100"
+  placeholder="+7 (999) 999-99-99*"
+  required
+  errorText="Введите корректный номер телефона"
+  errorClasses="text-red-500"
+/>
+```
+
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |type|`text`|стандартный атрибут `type`|
+    |name|-|стандартный атрибут `name`|
+    |classes|-|CSS классы для поля ввода|
+    |placeholder|`Введите значение`|стандартный атрибут `placeholder`|
+    |required|`false`|обязательное поле?|
+    |errorText|-|Текст ошибки обязательного поля|
+    |errorClasses|-|CSS классы ошибки, например `text-red-500`|
 </div>
