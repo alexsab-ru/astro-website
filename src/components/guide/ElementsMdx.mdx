@@ -1,6 +1,7 @@
 import Button from '@/components/Button/Button.astro';
 import Input from '@/components/Input.astro';
 import FormSelect from '@/components/FormSelect.astro';
+import Checkbox from '@/components/Checkbox/Checkbox.astro';
 
 # Elements
 
@@ -199,4 +200,111 @@ import FormSelect from '@/components/FormSelect.astro';
     |required|`false`|обязательное поле?|
     |errorMessage|-|Текст ошибки обязательного поля|
     |options|`[]`|массив объектов `{id: 1, name: "Value"}`|
+</div>
+
+### **Checkbox & Radio**
+
+<div class="max-w-xl mb-10 grid gap-5">
+  <Checkbox
+    name="agree"
+    label='<span class="pt-0.5">Я согласен на</span><a href="/privacy-policy" class="!m-0 underline transition-all hover:no-underline" target="_blank">обработку персональных данных</a>'
+    color="black"
+    required
+    errorClasses="text-red-500 w-full"
+    errorText="Чтобы продолжить, установите флажок"
+  />
+  <fieldset class="flex flex-col gap-5 border px-3 pb-2">
+    <legend class="px-3">Пол:</legend>
+    <Checkbox
+      type="radio"
+      name="genre"
+      value="male"
+      label={'Мужской'}
+      color="black"
+      required
+      errorClasses="text-red-500 w-full"
+      errorText="Чтобы продолжить, установите флажок"
+    />
+    <Checkbox
+      type="radio"
+      name="genre"
+      value="famale"
+      label={'Женский'}
+      color="black"
+      required
+      errorClasses="text-red-500 w-full"
+      errorText="Чтобы продолжить, установите флажок"
+    />
+  </fieldset>
+  <fieldset class="flex flex-col gap-5 border-white text-white px-3 pb-2 bg-gray-800">
+    <legend class="px-3 bg-gray-800">Размер:</legend>
+    <Checkbox
+      type="radio"
+      name="size"
+      value="xs"
+      label="XS"
+      color="white"
+      required
+      errorClasses="text-red-500 w-full"
+      errorText="Чтобы продолжить, установите флажок"
+    />
+    <Checkbox
+      type="radio"
+      name="size"
+      value="xl"
+      label="XL"
+      color="white"
+      required
+      errorClasses="text-red-500 w-full"
+      errorText="Чтобы продолжить, установите флажок"
+    />
+  </fieldset>
+</div>
+
+#### Входные параметры
+
+```js
+interface Props {
+	type?: any;
+	name?: string;
+	value?: string;
+	label?: string;
+	color?: string;
+	required?: boolean;
+	errorText?: string;
+	errorClasses?: string;
+	classes?: string;
+}
+```
+
+#### Использование
+```js
+---
+import Checkbox from '@/components/Checkbox/Checkbox.astro';
+---
+```
+
+```astro
+<Checkbox
+  name="agree"
+  label="Я согласен на обработку персональных данных"
+  color="black"
+  required
+  errorClasses="text-red-500 w-full"
+  errorText="Чтобы продолжить, установите флажок"
+/>
+```
+
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |type|-|стандартный атрибут `type`. `checkbox` or `radio`|
+    |name|-|стандартный атрибут `name`|
+    |value|-|стандартный атрибут `value`|
+    |label|`<span>LABEL</span>`|Текст `label`. Может принимать HTML теги|
+    |color|`white`|`white` or `black`|
+    |required|`false`|обязательное поле?|
+    |errorText|-|Текст ошибки обязательного поля|
+    |errorClasses|-|CSS классы ошибки обязательного поля|
+    |classes|-|CSS классы компонента|
 </div>
