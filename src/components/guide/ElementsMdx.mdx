@@ -1,0 +1,68 @@
+import Button from '@/components/Button/Button.astro';
+
+# Elements
+
+### **Buttons**
+
+<div class="flex gap-5 flex-wrap mb-10 bg-neutral-500 py-10 px-4">
+  <Button title="Link" url="/guide/" classes="!m-0" />
+  <Button title="Scroll link" view="scroll-link" classes="btn btn-o !m-0" url="#входные-параметры" />
+  <Button title="Popup link" view="popup-link" classes="btn black !m-0" url="#common-modal" dataTitle="Popup link" dataFormName="Popup link" />
+  <Button title="Form button" view="form-button" classes="btn black btn-o !m-0" />
+  <Button title="Button with icon" icon="mdi:account" iconClasses="text-2xl" view="scroll-link" classes="btn white !m-0 flex items-center gap-3" url="#входные-параметры" />
+  <Button title="Button with icon" icon="mdi:alert-circle-outline" iconClasses="text-2xl" view="scroll-link" classes="btn white btn-o !m-0 flex flex-row-reverse items-center gap-3" url="#входные-параметры" />
+  <Button title="Danger button" view="scroll-link" classes="btn danger !m-0" url="#входные-параметры" />
+  <Button title="Danger button" view="scroll-link" classes="btn danger btn-o !m-0" url="#входные-параметры" />
+  <Button title="Disabled button" view="form-button" classes="btn black !m-0" disabled />
+</div>
+
+#### Входные параметры
+
+```js
+type TButtonData = {
+	view?: string,
+	classes?: string,
+	url?: string,
+	title?: string,
+	dataTitle?: string,
+	dataFormName?: string,
+	icon?: string,
+	iconClasses?: string,
+  ...rest?: Attr
+}
+```
+
+#### Использование
+```js
+---
+import Button from '@/components/Button/Button.astro';
+---
+```
+
+```astro
+<Button 
+  view="popup-link" 
+  classes="btn flex flex-row-reverse items-center gap-3" 
+  url="#входные-параметры" 
+  title="Button with icon" 
+  dataTitle="Title for modal"
+  dataFormName="Form name"
+  icon="mdi:alert-circle-outline" 
+  iconClasses="text-2xl" 
+  disabled
+/>
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |view|`link`|Тип (вид) кнопки `link`, `form-button`, `popup-link`, `scroll-link`|
+    |classes|-|классы кнопки|
+    |url|-|ссылка, если тип - `link`, `popup-link` or `scroll-link`|
+    |title|`BUTTON`|имя кнопки|
+    |dataTitle|-|Заголовок модального окна, если тип - `popup-link`|
+    |dataFormName|-|Имя формы, если тип - `popup-link`|
+    |icon|-|Иконка. Задается имя [Material Design Icons](https://pictogrammers.com/library/mdi/), например, `mdi:car-key`, либо имя svg иконки, расположенной в `src/icons/`|
+    |iconClasses|-|классы для иконки|
+    |...rest|-|любые атрибуты, например `disabled`|
+</div>
