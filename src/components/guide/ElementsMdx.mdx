@@ -1,5 +1,6 @@
 import Button from '@/components/Button/Button.astro';
 import Input from '@/components/Input.astro';
+import FormSelect from '@/components/FormSelect.astro';
 
 # Elements
 
@@ -125,4 +126,77 @@ import Input from '@/components/Input.astro';
     |required|`false`|обязательное поле?|
     |errorText|-|Текст ошибки обязательного поля|
     |errorClasses|-|CSS классы ошибки, например `text-red-500`|
+</div>
+
+### **Select**
+
+<div class="max-w-xl mb-10">
+  <FormSelect 
+    name="dealer" 
+    placeholder="Выберите дилерский центр" 
+    required={true} 
+    errorMessage="Чтобы продолжить, выберите дилерский центр" 
+    options={[
+      {id: 1, name: 'Дилерский центр 1'},
+      {id: 2, name: 'Дилерский центр 2'},
+      {id: 3, name: 'Дилерский центр 3'},
+      {id: 4, name: 'Дилерский центр 4'},
+      {id: 5, name: 'Дилерский центр 5'},
+      {id: 6, name: 'Дилерский центр 6'},
+      {id: 7, name: 'Дилерский центр 7'},
+      {id: 8, name: 'Дилерский центр 8'},
+      {id: 9, name: 'Дилерский центр 9'},
+      {id: 10, name: 'Дилерский центр 10'}
+    ]} 
+  />
+</div>
+
+#### Входные параметры
+
+```js
+interface Props {
+	name: string;
+	placeholder?: string;
+	required?: boolean;
+	errorMessage?: string;
+	options?: {id: string | number; name: string;}[];
+}
+```
+
+#### Использование
+```js
+---
+import FormSelect from '@/components/FormSelect.astro';
+---
+```
+
+```astro
+<FormSelect 
+  name="dealer" 
+  placeholder="Выберите дилерский центр" 
+  required={true} 
+  errorMessage="Чтобы продолжить, выберите дилерский центр" 
+  options={[
+    {id: 1, name: 'Дилерский центр 1'},
+    {id: 2, name: 'Дилерский центр 2'},
+    {id: 3, name: 'Дилерский центр 3'},
+    {id: 4, name: 'Дилерский центр 4'},
+    {id: 5, name: 'Дилерский центр 5'},
+    {id: 6, name: 'Дилерский центр 6'},
+    {id: 7, name: 'Дилерский центр 7'},
+    {id: 8, name: 'Дилерский центр 8'},
+    {id: 9, name: 'Дилерский центр 9'},
+    {id: 10, name: 'Дилерский центр 10'}
+  ]} 
+/>
+```
+
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |name|-|стандартный атрибут `name`|
+    |placeholder|`Выберите значение`|стандартный атрибут `placeholder`|
+    |required|`false`|обязательное поле?|
+    |errorMessage|-|Текст ошибки обязательного поля|
+    |options|`[]`|массив объектов `{id: 1, name: "Value"}`|
 </div>
