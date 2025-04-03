@@ -200,8 +200,12 @@ jobs:
     steps:
       - id: encode
         run: |
-          echo "text=$(echo -n '<blockquote>After deploy: https://${{ vars.DOMAIN }}</blockquote>' | base64)" >> $GITHUB_OUTPUT
+          echo text="<blockquote>After deploy: https://${{ vars.DOMAIN }}</blockquote>" >> $GITHUB_OUTPUT
+      - name: Debug
+        run: |
+          echo "Encoded text: ${{ steps.encode.outputs.text }}"
       - name: Call Telegram Workflow
         uses: ./.github/workflows/github-telegram.yml
         with:
-          additional-text: ${{ steps.encode.outputs.text }}
+          additional-text: |
+            $(echo -n '${{ steps.encode.outputs.text }}' | base64)
