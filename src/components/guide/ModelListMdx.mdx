@@ -1,0 +1,34 @@
+# Model
+
+#### Входные параметры
+
+```js
+interface Props {
+	models?: any[];
+	title?: string;
+	classes?: string;
+}
+```
+
+`models` - необязательный параметр, по умолчанию данные из `src/data/models.json`
+
+#### Использование
+```js
+---
+import ModelList from '@/components/Model/ModelList.astro';
+---
+```
+
+```astro
+<ModelList classes="bg-gray-100" />
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	  |**models**|`src/data/models.json`|Массив объектов моделей.|
+    |title|`Модельный ряд`|Заголовок секции|
+    |classes|-|CSS классы секции|
+</div>
+
+[Пример объекта модели](/guide/demo/model/#пример-объекта-модели)
