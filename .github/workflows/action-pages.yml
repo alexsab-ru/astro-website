@@ -190,14 +190,18 @@ jobs:
         uses: actions/deploy-pages@v4
 
   notify_telegram:
-    needs: [deploy, determine_env]
+    needs: [build, deploy, determine_env]
     if: needs.build.outputs.changes == 'true'
+    runs-on: ubuntu-latest
+
     environment:
       name: ${{ needs.determine_env.outputs.env_name }}
-    uses: ./.github/workflows/github-telegram.yml
-    with:
-      additional-text: |
-        $(echo -n '<blockquote>After deploy: https://${{ vars.DOMAIN }}</blockquote>' | base64)
-    secrets:
-      TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
-      TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+
+    steps:
+      - id: encode
+        run: |
+          echo "text=$(echo -n '<blockquote>After deploy: https://${{ vars.DOMAIN }}</blockquote>' | base64)" >> $GITHUB_OUTPUT
+      - name: Call Telegram Workflow
+        uses: ./.github/workflows/github-telegram.yml
+        with:
+          additional-text: ${{ steps.encode.outputs.text }}
