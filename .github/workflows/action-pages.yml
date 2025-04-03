@@ -190,9 +190,13 @@ jobs:
         uses: actions/deploy-pages@v4
 
   notify_telegram:
-    needs: deploy
+    needs: [deploy, determine_env]
     if: needs.build.outputs.changes == 'true'
     runs-on: ubuntu-latest
+
+    environment:
+      name: ${{ needs.determine_env.outputs.env_name }}
+
     steps:
       - id: encode
         run: |
