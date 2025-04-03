@@ -204,6 +204,3 @@ jobs:
         uses: ./.github/workflows/github-telegram.yml
         with:
           additional-text: ${{ steps.encode.outputs.text }}
-        secrets:
-          TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
