@@ -1,0 +1,140 @@
+# Model
+
+#### Входные параметры
+
+```js
+interface Props {
+	model: any;
+	breadcrumb?: TBreadcrumb[];
+}
+```
+
+#### Использование
+```js
+---
+import Model from '@/components/Model/Model.astro';
+import modelsData from '@/data/models.json';
+const model = modelsData.filter(model => model.show)[1];
+const breadcrumb = { name: `Модели`, href: "/models/" };
+---
+```
+
+```astro
+<Model 
+  model={model} 
+  breadcrumb={[breadcrumb, {name: model.name, href: model.id}]} 
+/>
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	  |**model**|*|Объект модели. **Обязательный параметр**|
+    |breadcrumb|-|`TBreadcrumb[]` массив объектов хлебных крошек|
+</div>
+
+#### Пример объекта модели
+
+```json
+{
+  "mark_id": "Geely",
+  "id": "atlas-2024",
+  "show": true,
+  "homeImg": "https://tank.alexsab.ru/img/model-bg.webp",
+  "slogan": "",
+  "name": "Новый Atlas",
+  "price": 2844990,
+  "benefit": "",
+  "benefits": [
+      {
+          "url": "#common-modal",
+          "label": "Выгодный трейд-ин",
+          "icon_name": "mdi:credit-card-check-outline",
+          "data_title": "Выгодный трейд-ин",
+          "data_form_name": "Выгодный трейд-ин. Новый Atlas",
+          "view": "popup-link"
+      },
+      {
+          "url": "#common-modal",
+          "label": "Выгодный кредит",
+          "icon_name": "mdi:gift-outline",
+          "data_title": "Выгодный кредит",
+          "data_form_name": "Выгодный кредит. Новый Atlas",
+          "view": "popup-link"
+      }
+  ],
+  "thumb": "https://tank.alexsab.ru/img/models/300/thumb.webp",
+  "colors": [
+      {
+          "id": "gray",
+          "name": "Серо-голубой металлик",
+          "carImage": "https://tank.alexsab.ru/img/models/300/thumb.webp",
+          "style": "background-color: #4c5698;"
+      },
+      {
+          "id": "black",
+          "name": "Черный металлик",
+          "carImage": "https://tank.alexsab.ru/img/models/300/thumb.webp",
+          "style": ""
+      },
+      {
+          "id": "silver",
+          "name": "Серебристый металлик",
+          "carImage": "https://tank.alexsab.ru/img/models/300/thumb.webp",
+          "style": "background-color: #828793;"
+      },
+      {
+          "id": "white",
+          "name": "Белый",
+          "carImage": "https://tank.alexsab.ru/img/models/300/thumb.webp",
+          "style": ""
+      }
+  ],
+  "feed_names": [
+  ],
+  "photos": "",
+  "chars": {
+      "seats": "5 мест",
+      "fuel": "Бензин",
+      "gearbox": "7DCT"
+  },
+  "globalChars": [
+      {
+          "id": "wheelbase",
+          "title": "Колёсная база",
+          "value": "2777",
+          "measure": "мм"
+      },
+      {
+          "id": "length",
+          "title": "Длина",
+          "value": "4670",
+          "measure": "мм"
+      },
+      {
+          "id": "width",
+          "title": "Ширина",
+          "value": "1900",
+          "measure": "мм"
+      },
+      {
+          "id": "engine",
+          "title": "Объем двигателя",
+          "value": "2.0",
+          "measure": "л."
+      },
+      {
+          "id": "torque",
+          "title": "Крутящий момент",
+          "value": "325",
+          "measure": "н.м."
+      },
+      {
+          "id": "transmission",
+          "title": "Привод",
+          "value": "2WD",
+          "measure": ""
+      }
+  ]
+}
+```

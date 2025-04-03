@@ -1,0 +1,23 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо Секции Модели"
+---
+import BackLink from '@/components/BackLink.astro';
+import Model from '@/components/Model/Model.astro';
+import ModelMdx from '@/components/guide/ModelMdx.mdx';
+import modelsData from '@/data/models.json';
+export const model = modelsData.filter(model => model.show)[1];
+export const breadcrumb = { name: `Модели`, href: "/models/" };
+
+
+<div class="content">
+    <Model model={model} breadcrumb={[breadcrumb, {name: model.name, href: model.id}]} />
+</div>
+
+<div class="container content mt-10">
+    <ModelMdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>
