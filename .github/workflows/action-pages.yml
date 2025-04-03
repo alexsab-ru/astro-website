@@ -194,8 +194,12 @@ jobs:
     if: needs.build.outputs.changes == 'true'
     uses: ./.github/workflows/github-telegram.yml
     with:
-      additional-text: |
-        $(echo -n '<blockquote>After deploy: https://${{vars.DOMAIN}}</blockquote>' | base64)
+      additional-text: ${{ steps.encode.outputs.text }}
     secrets:
       TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+    steps:
+      - id: encode
+        run: echo "text=$(echo -n '<blockquote>After deploy: https://${{ vars.DOMAIN }}</blockquote>' | base64)" >> $GITHUB_OUTPUT
+      - name: Debug
+        run: echo "Domain: ${{ vars.DOMAIN }}"
