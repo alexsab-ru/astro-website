@@ -39,12 +39,12 @@ export const LINKS_MENU = [
 	},
 	// {url: 'trade-in/', name: 'Оценка автомобиля'},
 	{url: 'special-offers/', name: 'Спецпредложения'},
-	{url: 'news/', name: 'Новости'},
+	// {url: 'news/', name: 'Новости'},
 	{url: 'test-drive/', name: 'Запись на тест-драйв'},
 	{url: 'service-request/', name: 'Запись на сервис'},
 	{url: '#services', name: 'Услуги'},
 	{url: 'contacts/', name: 'Контакты'},
-	{url: 'guide/', name: 'Руководство'},
+	{url: 'guide/', name: 'Guide'},
 ];
 // Коллекции
 export const COLLECTIONS = [
