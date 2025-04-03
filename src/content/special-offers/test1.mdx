@@ -1,0 +1,69 @@
+---
+h1: "Заголовок акции"
+title: "Тайтл акции"
+caption: "Заголовок в плитке 1"
+breadcrumb: "Акция"
+pubDate: "2025-02-27" # необязательно - дата публикации в формате YYYY-MM-DD, возможность планирования публикации
+toDate: true # необязательно - дата окончания акции в формате YYYY-MM-DD или true для показа последнего дня месяца
+image: "https://cdn.alexsab.ru/models/default-model-bg.webp"
+description: "Описание акции"
+---
+import Button from '@/components/Button/Button.astro';
+import SpecialSalonsInfo from '@/components/SpecialSalonsInfo.astro';
+import { SITE_NAME, PHONE } from '@/const';
+import { phoneFormat } from '@/js/utils/numbers.format';
+import { LAST_DAY, MONTH, MONTH_NOMINATIVE, MONTH_GENITIVE, MONTH_PREPOSITIONAL, YEAR } from '@/js/utils/date';
+
+export const dateFrom = '01.07.2024';
+export const dateTo = `${LAST_DAY}.${MONTH}.${YEAR}`;
+export const dateToGenitive = `${LAST_DAY} ${MONTH_GENITIVE} ${YEAR}`;
+export const dateToPrepositional = `${MONTH_PREPOSITIONAL} ${YEAR}`;
+
+<picture>
+	<source media="(min-width: 942px)" srcset="https://cdn.alexsab.ru/models/default-model-bg.webp" />
+	<source media="(min-width: 320px)" srcset="https://cdn.alexsab.ru/models/default-model-bg.webp" />
+	<img src="https://cdn.alexsab.ru/models/default-model-bg.webp" class="w-full mb-10" alt="Фестиваль продаж Jetour" />
+</picture>
+
+Текст акции
+
+- ☑ Пункт 1
+- ☑ Пункт 2
+- ☑ Пункт 3
+
+<div class="overflow-auto min-w-full my-14">
+	<table border="1">
+		<thead>
+			<tr>
+				<th>Модель нового автомобиля</th>
+				<th>Комплектация нового автомобиля</th>
+				<th>Выгода по программе Трейд-ин<sup>1</sup>, руб.</th>
+				<th>Выгода по программе Finance<sup>2</sup>, руб.</th>
+				<th>Выгода по программе Лояльный / Специальный Трейд-ин, руб.<sup>3</sup></th>
+				<th>Максимальная выгода до, руб.</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Модель 1</td>
+				<td>Все комплектации</td>
+				<td>135 000</td>
+				<td>135 000</td>
+				<td>185 000</td>
+				<td>320 000<sup>*</sup></td>
+			</tr>
+			<tr>
+				<td>Модель 2</td>
+				<td>Все комплектации</td>
+				<td>200 000</td>
+				<td>200 000</td>
+				<td>250 000</td>
+				<td>450 000<sup>*</sup></td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+<SpecialSalonsInfo dataFormName="Узнать подробнее. Фестиваль продаж" />
+
+> <sup>1</sup> Предложение действительно с {dateFrom} до {dateTo} года
