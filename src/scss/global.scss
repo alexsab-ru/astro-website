@@ -27,10 +27,7 @@ section:not(.model-section) {
 		@apply text-2xl sm:text-4xl font-extrabold mb-7;
 	}
 	h2{
-		@apply mb-10 mt-20 text-left p-0 mx-0 before:hidden #{!important};
-		a{
-			@apply text-black no-underline bg-gray-200 p-1 rounded text-3xl sm:text-4xl #{!important};
-		}
+		@apply mb-10;
 	}
 	h3{
 		@apply text-xl mb-6;
@@ -199,6 +196,7 @@ section:not(.model-section) {
 		width: auto;
 	}
 }
+
 
 pre{
 	padding: 20px 15px;
