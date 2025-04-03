@@ -198,7 +198,8 @@ jobs:
         run: |
           echo "text=$(printf '<blockquote>After deploy: https://%s</blockquote>' '${{ vars.DOMAIN }}' | base64)" >> $GITHUB_OUTPUT
       - name: Debug
-        run: echo "Domain: ${{ vars.DOMAIN }}"
+        run: |
+          echo "Domain: ${{ vars.DOMAIN }}"
       - name: Call Telegram Workflow
         uses: ./.github/workflows/github-telegram.yml
         with:
