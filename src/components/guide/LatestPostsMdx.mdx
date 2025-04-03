@@ -1,0 +1,54 @@
+# Latest Posts
+
+### Входные параметры
+
+```js
+interface Props {
+	collectionName: string;
+	id?: string;
+	class?: string;
+	title?: string;
+	loop?: boolean;
+	navigation?: boolean;
+	pagination?: boolean;
+	offset?: number;
+	limit?: number;
+}
+```
+
+### Использование
+```js
+---
+import LatestPosts from '@/components/LatestPosts/Index.astro';
+---
+```
+
+```astro
+<LatestPosts 
+  collectionName="special-offers" 
+  id="specials" 
+  class="bg-gray-100" 
+  title="Специальные предложения" 
+  loop={false}
+  navigation={true}
+  pagination={true}
+  offset={0}  
+  limit={4} 
+/>
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	  |**collectionName**|*|Имя коллекции. **Обязательный параметр**|
+    |id|-|`ID` секции|
+    |class|-|CSS классы секции|
+    |title|-|Заголовок секции|
+    |loop|`false`|`boolean` зацикленность слайдера|
+    |navigation|`true`|`boolean` навигация слайдера|
+    |pagination|`false`|`boolean` пагинация слайдера|
+    |offset|`0`|`number` смещение массива коллекции|
+    |limit|`10`|`number` лимит элементов коллекции|
+</div>
+
+Кнопка **"Смотреть все"** будет отображаться только в том случае, если количество результирующих элементов меньше количества элементов коллекции, с учетом `limit` и `offset`.

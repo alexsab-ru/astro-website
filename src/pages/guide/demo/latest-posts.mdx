@@ -1,0 +1,29 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо Секции СЕО"
+---
+import BackLink from '@/components/BackLink.astro';
+import LatestPosts from '@/components/LatestPosts/Index.astro';
+import LatestPostsMdx from '@/components/guide/LatestPostsMdx.mdx';
+
+<div class="content">
+    <LatestPosts 
+        collectionName="special-offers" 
+        id="specials" 
+        class="bg-gray-100" 
+        title="Специальные предложения" 
+        loop={false}
+        navigation={true}
+        pagination={true}
+        offset={0}  
+        limit={4} 
+    />
+</div>
+
+<div class="container content mt-10">
+    <LatestPostsMdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>
