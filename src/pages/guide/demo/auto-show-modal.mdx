@@ -1,0 +1,24 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо AutoShowModal"
+---
+import BackLink from '@/components/BackLink.astro';
+import AutoShowModal from '@/components/AutoShowModal.astro';
+import AutoShowModalMdx from '@/components/guide/AutoShowModalMdx.mdx'
+
+<AutoShowModal
+	modalShow={2000} 
+	title="Здравствуйте, оставьте телефон, я&nbsp;перезвоню и&nbsp;расскажу о&nbsp;преимуществах работы"
+	modalPosition="center"
+	img="https://cdn.alexsab.ru/people/user.webp"
+	imgPosition="right"
+	formName="Форма со страницы - Контакты"
+/>
+
+<div class="container content pt-10">
+    <AutoShowModalMdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>

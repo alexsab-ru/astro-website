@@ -1,0 +1,42 @@
+# AutoShowModal
+
+### Входные параметры
+
+```js
+interface Props {
+	modalShow: number
+	title: string
+	modalPosition: string
+	img: string
+	imgPosition: string
+	formName: string
+}
+```
+
+### Использование
+```js
+---
+import AutoShowModal from '@/components/AutoShowModal.astro';
+---
+
+<AutoShowModal
+	modalShow={2000} 
+	title="Здравствуйте, оставьте телефон, я&nbsp;перезвоню и&nbsp;расскажу о&nbsp;преимуществах работы"
+	modalPosition="center"
+	img="https://cdn.alexsab.ru/people/user.webp"
+	imgPosition="right"
+	formName="Форма со страницы - Контакты"
+/>
+
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|modalShow|`20000`|Количество милесекунд до показа окна `number`|
+	|title|-|Заголовок|
+	|modalPosition|`center`|позиция окна `left-top`, `right-top`, `right-bottom`, `left-bottom`, `center`|
+	|img|`https://cdn.alexsab.ru/people/user.webp`|фото человека|
+	|imgPosition|`right`|позиция фото `right`, `left`|
+	|formName|-|имя формы (скрытое поле)|
+</div>
