@@ -130,6 +130,7 @@ jobs:
           touch .env
           echo PUBLIC_YANDEX_SITE_VERIFICATION=${{ vars.PUBLIC_YANDEX_SITE_VERIFICATION }} >> .env
           echo PUBLIC_GOOGLE_SITE_VERIFICATION=${{ vars.PUBLIC_GOOGLE_SITE_VERIFICATION }} >> .env
+          echo DOMAIN=${{ vars.DOMAIN }} >> .env
           cat .env
 
       - name: PNPM install
