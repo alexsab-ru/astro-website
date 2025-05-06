@@ -132,12 +132,6 @@ jobs:
           echo PUBLIC_GOOGLE_SITE_VERIFICATION=${{ vars.PUBLIC_GOOGLE_SITE_VERIFICATION }} >> .env
           cat .env
 
-      - name: Create After_deploy text
-        if: steps.check_changes.outputs.changes == 'true'
-        id: after_deploy
-        run: |
-          echo text="<blockquote>After deploy: https://${{ vars.DOMAIN }}</blockquote>" >> $GITHUB_OUTPUT
-
       - name: PNPM install
         if: steps.check_changes.outputs.changes == 'true'
         run: |
@@ -145,6 +139,8 @@ jobs:
           pnpm install --no-frozen-lockfile
 
       - name: Download JSONs
+        env:
+          DOMAIN: ${{ vars.DOMAIN }}
         run: |
           pnpm download_json
 
@@ -160,6 +156,12 @@ jobs:
         if: steps.check_changes.outputs.changes == 'true'
         # Automatically uploads an artifact from the './_site' directory by default
         uses: actions/upload-pages-artifact@v3
+
+      - name: Create After_deploy text
+        if: steps.check_changes.outputs.changes == 'true'
+        id: after_deploy
+        run: |
+          echo text="<blockquote>After deploy: https://${{ vars.DOMAIN }}</blockquote>" >> $GITHUB_OUTPUT
 
     outputs:
       changes: ${{ steps.check_changes.outputs.changes }}
