@@ -130,6 +130,8 @@ jobs:
           touch .env
           echo PUBLIC_YANDEX_SITE_VERIFICATION=${{ vars.PUBLIC_YANDEX_SITE_VERIFICATION }} >> .env
           echo PUBLIC_GOOGLE_SITE_VERIFICATION=${{ vars.PUBLIC_GOOGLE_SITE_VERIFICATION }} >> .env
+          echo JSON_PATH=https://alexsab-ru.github.io/astro-json >> .env
+          echo DOMAIN=${{ vars.DOMAIN }} >> .env
           cat .env
 
       - name: PNPM install
@@ -141,8 +143,6 @@ jobs:
       - name: Download JSONs
         run: |
           pnpm download_json
-        env:
-          DOMAIN: ${{ vars.DOMAIN }}
 
       - name: Replace Placeholders in JSON
         run: |
