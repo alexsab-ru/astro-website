@@ -139,10 +139,10 @@ jobs:
           pnpm install --no-frozen-lockfile
 
       - name: Download JSONs
-        env:
-          DOMAIN: ${{ vars.DOMAIN }}
         run: |
           pnpm download_json
+        env:
+          DOMAIN: ${{ vars.DOMAIN }}
 
       - name: Replace Placeholders in JSON
         run: |
