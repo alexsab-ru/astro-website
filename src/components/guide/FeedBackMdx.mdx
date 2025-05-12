@@ -1,0 +1,41 @@
+# Feedback Form
+
+### Props
+
+```js 
+interface Props{
+	title?: string;
+	subtitle?: string;
+	imageUrl?: string;
+	dataFormName?: string;
+}
+```
+<br/>
+### Использование
+
+```js
+---
+import FeedbackForm from '@/components/FeedbackForm/FeedbackForm.astro';
+---
+```
+
+```html
+<section class="bg-gray-50">
+    <div class="container">
+        <FeedbackForm 
+			title="Узнать подробнее" 
+			subtitle="Подзаголовок" 
+			imageUrl="site.com/image.jpg" 
+			dataFormName="Форма обратной связи на странице" 
+		/>
+    </div>
+</section>
+```
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|title|Узнать подробнее|Заголовок секции|
+	|subtitle|-|Подзаголовок секции|
+	|imageUrl|-|Изображение, если нужно|
+	|dataFormName|Форма обратной связи на странице|Имя скрытого поля формы|
+</div>

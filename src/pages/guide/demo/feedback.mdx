@@ -1,0 +1,22 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо ФОС"
+---
+import BackLink from '@/components/BackLink.astro';
+import FeedBackMdx from '@/components/guide/FeedBackMdx.mdx';
+import FeedbackForm from '@/components/FeedbackForm/FeedbackForm.astro';
+export const content = `Спецпредложение!!! Только сегодня - <a href="/guide/demo/top-line/" class="text-accent-500 underline">подробнее</a>`;
+
+<section class="bg-gray-50">
+    <div class="container">
+        <FeedbackForm title="Узнать подробнее" subtitle="" imageUrl="https:/cdn.alexsab.ru/specials/jetour/alpha/jetour-vigoda/thumb.webp" dataFormName="Форма обратной связи на странице" />
+    </div>
+</section>
+
+<div class="container content mt-10">
+    <FeedBackMdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>
