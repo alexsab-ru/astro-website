@@ -1,0 +1,21 @@
+# TopLine
+
+### Использование
+
+```js
+---
+import HeaderTopLine from '@/components/Header/HeaderTopLine.astro';
+const content = `Спецпредложение!!! Только сегодня - <a href="/guide/demo/top-line/" class="text-accent-500 underline">подробнее</a>`;
+---
+
+<HeaderTopLine content={content} />
+```
+
+<br/>
+По умолчанию данные берутся из ```settings.json (const.js)``` и автоматически экспортируются в компонент ```Header```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|content|-|Обязательный параметр. Возможность передать HTML теги.|
+</div>
