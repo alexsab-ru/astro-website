@@ -1,0 +1,46 @@
+# UniversalSection
+
+### Props
+
+```js 
+type TImage = {
+	url: string
+	title?: string
+	description?: string
+}
+interface Props {
+	section: {
+		id?: string;
+		items?: [
+			{
+				icon: string
+				text: string
+			}
+		];
+		suptitle?: string;
+		title?: string;
+		sectionClass?: string;
+		text?: string;
+		images?: TImage[];
+		button?: string;
+	};
+	class?: string
+}
+```
+<br/>
+### Использование
+
+```js
+---
+import UniversalSection from '@/components/Model/sections/universal.astro';
+---
+
+<UniversalSection section={[]} />
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|content|-|Обязательный параметр. Возможность передать HTML теги.|
+	|classes|```bg-[#05141f] px-8 py-2 xs:text-xs text-sm md:text-base text-center text-white/80 relative```|CSS стили. Используйте, чтобы переопредилить|
+</div>

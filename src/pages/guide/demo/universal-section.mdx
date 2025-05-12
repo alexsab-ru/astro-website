@@ -1,0 +1,18 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо Universal Section"
+---
+import BackLink from '@/components/BackLink.astro';
+import UniversalSectionMdx from '@/components/guide/UniversalSectionMdx.mdx';
+import UniversalSection from '@/components/Model/sections/universal.astro';
+export const content = `Спецпредложение!!! Только сегодня - <a href="/guide/demo/top-line/" class="underline !text-white">подробнее</a>`;
+
+<UniversalSection />
+
+<div class="container content mt-10">
+    <UniversalSectionMdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>
