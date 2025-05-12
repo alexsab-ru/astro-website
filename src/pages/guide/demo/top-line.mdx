@@ -5,10 +5,10 @@ title: "Демо Top Line"
 import BackLink from '@/components/BackLink.astro';
 import TopLineMdx from '@/components/guide/TopLineMdx.mdx';
 import HeaderTopLine from '@/components/Header/HeaderTopLine.astro';
-export const content = `Спецпредложение!!! Только сегодня - <a href="/guide/demo/top-line/" class="text-accent-500 underline">подробнее</a>`;
+export const content = `Спецпредложение!!! Только сегодня - <a href="/guide/demo/top-line/" class="text-accent-500 underline !text-white">подробнее</a>`;
 
 <div x-data="header">
-    <HeaderTopLine content={content} />
+    <HeaderTopLine content={content} classes="bg-accent-500 px-8 py-2 xs:text-xs text-sm md:text-base text-center text-white relative" />
 </div>
 
 <div class="container content mt-10">
