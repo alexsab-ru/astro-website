@@ -1,0 +1,32 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо История бренда"
+---
+import BackLink from '@/components/BackLink.astro';
+import BrandHistoryMdx from '@/components/guide/BrandHistoryMdx.mdx';
+import BrandHistoryElements from '@/components/BrandHistory/BrandHistoryElements.astro';
+export const history = [
+	{year: 2000, html: 'Основание бренда Shanghai Maple Automobiles.'},
+	{year: 2002, html: 'Компания <b>Geely</b> приобрела стратегический холдинг Shanghai Maple.'},
+	{year: 2003, html: 'Выпущен первый авто на базе Citroën ZX.'},
+	{year: 2008, html: 'Shanghai Maple была <b>полностью объединена с Geely</b> в качестве народного бренда.'},
+	{year: 2010, html: 'Shanghai Maple Сокращен в пользу более доступного бренда Englon.'},
+	{year: 2013, html: 'Geely и Kandi Technologies создали совместное предприятие Zhejiang Kandi Electric Vehicles Investment, занимающиеся производством, маркетингом и продажей электромобилей на материковой части Китая.'},
+	{year: 2020, html: 'В результате партнерства бренд Maple был возрожден. Возрожденный бренд <b>Maple</b> начал производить серию доступных электромобилей на базе существующих бензиновых автомобилей Geely, начиная с Maple 30X, созданного на базе Geely Vision X3.'},
+	{year: 2021, html: 'Kandi Technologies вышла из своей доли, передав 22% акций компании Geely.'},
+	{year: 2022, html: 'Основание бреда <b>LIVAN</b> в результате слияния с <b>Geely</b> компаний <b>Maple</b> и <b>Lifan Technology</b>.<br />Представлена ​​совершенно новая модель, электрический кроссовер-фастбэк LIVAN RL7 <iframe width="" height="" class="w-full aspect-video my-6" src="https://www.youtube.com/embed/abBxgTpm0k8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>	и электрический среднеразмерный кроссовер RL9 <iframe width="" height="" class="w-full aspect-video my-6" src="https://www.youtube.com/embed/mxEzCJ71Bf8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe> <b>Так же разработана уникальная технология быстрой смены аккумуляторной батареи за 10 минут.</b>'},
+	{year: 2023, html: 'Выход моделей LIVAN X3PRO, X6PRO, S6PRO на рынок РФ.'},
+	{year: 2024, html: 'Запланирован выход 2х новых моделей на рынок РФ в том числе и электрокар.'},
+];
+
+<div class="container content mt-10">
+    <BrandHistoryElements items={history} />
+</div>
+
+<div class="container content mt-10">
+    <BrandHistoryMdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>
