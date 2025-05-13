@@ -1,0 +1,88 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо Секции с изображением"
+---
+import BackLink from '@/components/BackLink.astro';
+import InfoSectionWithImage from '@/components/InfoSectionWithImage/InfoSectionWithImage.astro';
+
+<div class="container content mt-10">
+# InfoSectionWithImage
+
+### Props
+
+```js
+interface Props {
+	image?: {
+		desktop: string;
+		mobile: string;
+	},
+	direction?: string;
+}
+```
+<br/>
+### Использование
+
+```js
+---
+import InfoSectionWithImage from '@/components/InfoSectionWithImage/InfoSectionWithImage.astro';
+---
+
+<InfoSectionWithImage image={{
+	desktop: 'https://cdn.alexsab.ru/main-sliders/geely/podgotov-svoy-avtomobil-k-vesne/768x575.webp',
+	mobile: 'https://cdn.alexsab.ru/main-sliders/geely/podgotov-svoy-avtomobil-k-vesne/640x640.webp',
+}}>
+		<h3 class="font-bold">Любая HTML разметка</h3>
+</InfoSectionWithImage>
+```
+</div>
+
+
+<div class="container content mt-10">
+
+	<p>Если элементов несколько, то они автоматически будут чередоваться слева направо и справа налево.</p>
+
+    <div>
+		<InfoSectionWithImage image={{
+			desktop: 'https://cdn.alexsab.ru/main-sliders/geely/podgotov-svoy-avtomobil-k-vesne/768x575.webp',
+			mobile: 'https://cdn.alexsab.ru/main-sliders/geely/podgotov-svoy-avtomobil-k-vesne/640x640.webp',
+		}}>
+			<h3 class="font-bold">Любая HTML разметка</h3>
+			<p>Далеко-далеко за словесными горами в стране, гласных и согласных живут рыбные тексты. По всей вопроса предложения власти, они деревни оксмокс путь переписывается дороге предупредила, даль заголовок снова встретил журчит раз речью он ручеек.</p>
+			<p>Далеко-далеко за словесными горами в стране, гласных и согласных живут рыбные тексты. По всей вопроса предложения власти, они деревни оксмокс путь переписывается дороге предупредила, даль заголовок снова встретил журчит раз речью он ручеек.</p>
+		</InfoSectionWithImage>
+		<InfoSectionWithImage image={{
+			desktop: 'https://cdn.alexsab.ru/main-sliders/geely/podgotov-svoy-avtomobil-k-vesne/768x575.webp',
+			mobile: 'https://cdn.alexsab.ru/main-sliders/geely/podgotov-svoy-avtomobil-k-vesne/640x640.webp',
+		}}>
+			<ol class="list-decimal">
+				<li>Гарантия Geely 5 лет или 150 000 км предоставляется на все металлические детали кузова, имеющие лакокрасочное или окрашенное покрытие, если повреждения, включая коррозию, вызваны нарушениями технологии производства или дефектом материала.</li>
+				<li>В том случае, если повреждения, включая коррозию, являются последствиями механического повреждения, гарантия не предоставляется.</li>
+				<li>Условием сохранения гарантии является прохождение инспекционных осмотров во время визитов к официальному дилеру для прохождения планового технического обслуживания, не реже одного раза в год. Мастер-консультант дилера вносит информацию о наличии недостатков, вызванных внешним воздействием, которые в будущем могут стать причиной возникновения очагов коррозии в сервисную книжку. Получив таким образом уведомление, владелец должен в течении двух месяцев обратиться в кузовное подразделение дилера для восстановления поврежденного вследствие механического воздействия лакокрасочного покрытия.</li>
+				<li>В дальнейшем, при обращении владельца за гарантийным ремонтом кузова, потребуется предъявить сервисную книжку.</li>
+			</ol>
+		</InfoSectionWithImage>
+	</div>
+</div>
+
+<div class="container content *:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|image|-|Объект, принимает два параметра ```desktop``` (обязательно) и ```mobile```|
+	|direction|```right```|Направление. По умолчанию слева текст, справа изображение. Если, например, элемент один и нужно поменять направление, указываем ```left``` |
+
+	<div>
+		<InfoSectionWithImage image={{
+			desktop: 'https://cdn.alexsab.ru/main-sliders/geely/podgotov-svoy-avtomobil-k-vesne/768x575.webp',
+			mobile: 'https://cdn.alexsab.ru/main-sliders/geely/podgotov-svoy-avtomobil-k-vesne/640x640.webp',
+		}} direction='left'>
+			<h3 class="font-bold">Любая HTML разметка</h3>
+			<p>Далеко-далеко за словесными горами в стране, гласных и согласных живут рыбные тексты. По всей вопроса предложения власти, они деревни оксмокс путь переписывается дороге предупредила, даль заголовок снова встретил журчит раз речью он ручеек.</p>
+			<p>Далеко-далеко за словесными горами в стране, гласных и согласных живут рыбные тексты. По всей вопроса предложения власти, они деревни оксмокс путь переписывается дороге предупредила, даль заголовок снова встретил журчит раз речью он ручеек.</p>
+		</InfoSectionWithImage>
+	</div>
+
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>
