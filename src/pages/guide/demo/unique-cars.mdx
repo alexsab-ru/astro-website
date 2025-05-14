@@ -1,0 +1,33 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо АВН с включенными фильтрами"
+---
+import BackLink from '@/components/BackLink.astro';
+import CarList from '@/components/Cars/List.astro';
+import UniqueCarsMdx from '@/components/guide/UniqueCarsMdx.mdx';
+
+import { getCollection } from "astro:content";
+export const allCars = await getCollection("cars");
+
+export const vins = [
+	"LMGHT1L52R3088837",
+	"LMGHT1L58R3085554",
+	"LMGHT1L57R3085223",
+];
+
+export const cars = allCars.filter(car => {
+	const carVins = car.data.vin.split(',').map(vin => vin.trim());
+	return carVins.some(vin => vins.includes(vin));
+});
+
+<div class="container content mt-10">
+    <UniqueCarsMdx />
+</div>
+
+<div class="container pt-10">
+    <CarList cars={cars} />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>

@@ -1,0 +1,32 @@
+# Cars
+
+Список уникальной (отфильтрованной) коллекции `cars`
+
+### **Использование**
+
+В примере показано как можно показать только нужные авто, в данном случае фильтруем по VIN.
+
+```js
+---
+import CarList from '@/components/Cars/List.astro';
+
+import { getCollection } from "astro:content";
+export const allCars = await getCollection("cars");
+
+// список уникальных VIN
+const vins = [
+	"LMGHT....8837",
+	"LMGHT....5554",
+	"LMGHT....5223",
+];
+
+const cars = allCars.filter(car => {
+	const carVins = car.data.vin.split(',').map(vin => vin.trim());
+	return carVins.some(vin => vins.includes(vin));
+});
+---
+```
+
+```astro
+<CarList cars={cars} />
+```
