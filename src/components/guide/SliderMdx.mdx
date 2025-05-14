@@ -1,0 +1,64 @@
+import Slider from '@/components/Slider/Slider.astro';
+
+export const sliderData = [ 
+    {image: 'https://cdn.alexsab.ru/b/jetour/img/special-offers/dashing-promo/slider-1-1.webp', title: 'Экономьте в городе', description: 'Передний привод обеспечивает меньший расход топлива, что особенно выгодно для городских поездок и дальних путешествий.' }, 
+    { image: 'https://cdn.alexsab.ru/b/jetour/img/special-offers/dashing-promo/slider-1-2.webp', title: 'Доступная цена без компромиссов', description: 'Автомобиль с передним приводом имеет привлекательную стартовую стоимость, позволяя получить стильный кроссовер за разумные деньги.' }, 
+    { image: 'https://cdn.alexsab.ru/b/jetour/img/special-offers/dashing-promo/slider-1-3.webp', title: 'Проверенные технологии', description: 'Конструкция переднего привода проще, что снижает затраты на обслуживание и повышает общую надежность автомобиля.' },
+    { image: 'https://cdn.alexsab.ru/b/jetour/img/special-offers/dashing-promo/slider-1-4.webp', title: 'Меньший износ – дольше ресурс', description: 'Крутящий момент передается только на передние колеса, благодаря чему задние шины изнашиваются медленнее (при одинаковых условиях эксплуатации).' } 
+];
+
+# Slider
+
+### Props
+
+```js 
+interface Props {
+  data: [],
+  image?: string, //пока не используется
+  title?: string, //пока не используется
+  description?: string //пока не используется
+};
+```
+<br/>
+### Использование
+
+```js
+---
+import Slider from '@/components/Slider/Slider.astro';
+---
+
+const sliderData = [ 
+    {
+        image: 'https://cdn.alexsab.ru/b/jetour/img/special-offers/dashing-promo/slider-1-1.webp', 
+        title: 'Экономьте в городе', 
+        description: 'Передний привод обеспечивает меньший расход топлива, что особенно выгодно для городских поездок и дальних путешествий.' 
+    }, 
+    { 
+        image: 'https://cdn.alexsab.ru/b/jetour/img/special-offers/dashing-promo/slider-1-2.webp', 
+        title: 'Доступная цена без компромиссов', 
+        description: 'Автомобиль с передним приводом имеет привлекательную стартовую стоимость, позволяя получить стильный кроссовер за разумные деньги.' 
+    }, 
+    { 
+        image: 'https://cdn.alexsab.ru/b/jetour/img/special-offers/dashing-promo/slider-1-3.webp', 
+        title: 'Проверенные технологии', 
+        description: 'Конструкция переднего привода проще, что снижает затраты на обслуживание и повышает общую надежность автомобиля.' 
+    },
+];
+
+<Slider data={sliderData} />
+```
+<div class="mt-20 mb-10">
+    <Slider data={sliderData} />
+</div>
+
+**data**
+
+Массив объектов
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |image|-|url изображения слайда|
+    |title|-|Заголовок слайда|
+    |description|-|Описание слайда|
+</div>
