@@ -1,0 +1,117 @@
+import MapWidget from '@/components/Map/Widget.astro';
+
+import WorkerItem from '@/components/Contacts/WorkerItem.astro';
+export const worker = {
+    "name": "Имя Фамилия",
+    "position": "Менеджер отдела продаж",
+    "photo": "https://cdn.alexsab.ru/people/user.webp",
+    "email": "email@mail.ru",
+    "phone": "+7 999 1 23456 7"
+}
+
+### Входные параметры
+
+Все данные для страницы берутся из файла ```salons.json```
+
+### Пример файла
+
+```json
+[
+    {
+        "name": "Дилерский центр 4",
+        "legal_entity": "ООО «Юридическое название 4»",
+        "legal_inn": 1234567890,
+        "address": "г. Город, ул. Улица, д.&nbsp;123",
+        "phone":  "8 (987) 654-32-10",
+        "work_hours": "пн — вс: 8:00 — 20:00",
+        "map": {
+            "zoom": 5,
+            "balloon": "/img/empty-locator.png",
+            "coords": [56.745843, 37.647400],
+            "ya_link": "https://yandex.ru/maps/geo/rossiya/53000001/?ll=75.960645%2C50.725674&z=3.29"
+        }
+    }
+]
+```
+
+Если салон один, то параметры ```legal_entity``` и ```legal_inn``` можно хранить в файле ```settings.json```
+
+### Пример файла
+
+```json
+{
+    "brand": "BRAND",
+    "site_name": "Название сайта",
+    "site_description": "Официальный дилерский центр",
+    "legal_entity": "ООО «Юридическое название 4»",
+    "legal_inn": "1234567890",
+    "legal_city": "Город",
+    "legal_city_where": "Городе",
+    "phone_common": "+7 (999) 000-00-00",
+    "yandex_widget_orgnization": "",
+    "header_top_line": "",
+    "connectforms_link": "https://alexsab.ru/lead/test/",
+    "grecaptcha_open": "6Lepfy4pAAAAAAGHFP655qNe6Bb_BcskklcxajC6"
+}
+```
+
+Если в ```settings.json``` заполнен параметр ```yandex_widget_orgnization```, то включится виджет Яндекс карт, который находится в компонентах. 
+
+Также виджет принимает **необязательный** параметр ```widgetId```, если виджет нужно где-то использовать отдельно, как сейчас на этой странице.
+
+### Использование виджета
+
+```js
+import MapWidget from '@/components/Map/Widget.astro';
+
+<MapWidget class="h-[400px]" widgetId="CDVxFJI6" />
+```
+
+<MapWidget class="h-[400px] mb-10" widgetId="CDVxFJI6" />
+
+На странице возможен показ работников салона(ов). Данные также хранятся в массиве ```workers``` в файле ```salons.json```.
+
+### Пример
+
+```json
+{
+        "name": "Дилерский центр 2",
+        "legal_entity": "ООО «Юридическое название 2»",
+        "address": "г. Город, ул. Улица, д.&nbsp;123",
+        "phone":  "8 (987) 654-32-10",
+        "work_hours": "пн — вс: 8:00 — 20:00",
+        "map": {
+            "zoom": 5,
+            "balloon": "/img/empty-locator.png",
+            "coords": [55.725863, 30.627600],
+            "ya_link": "https://yandex.ru/maps/geo/rossiya/53000001/?ll=75.960645%2C50.725674&z=3.29"
+        },
+        "workers": [
+            {
+                "name": "Имя Фамилия",
+                "position": "Менеджер отдела продаж",
+                "photo": "https://cdn.alexsab.ru/people/user.webp",
+                "email": "email@mail.ru",
+                "phone": "+7 999 1 23456 7"
+            }
+        ]
+    },
+```
+
+### Использование компонента
+
+```js
+import WorkerItem from '@/components/Contacts/WorkerItem.astro';
+const worker = {
+    "name": "Имя Фамилия",
+    "position": "Менеджер отдела продаж",
+    "photo": "https://cdn.alexsab.ru/people/user.webp",
+    "email": "email@mail.ru",
+    "phone": "+7 999 1 23456 7"
+}
+
+<WorkerItem worker={worker} />
+```
+<div class="flex justify-center">
+    <WorkerItem worker={worker} />
+</div>
