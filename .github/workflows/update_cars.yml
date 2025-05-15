@@ -7,6 +7,7 @@ on:
     # paths:
       # - '.github/scripts/sh/getAirStorage.sh'
       # - '.github/scripts/sh/getDealerData.sh'
+      # - '.github/scripts/sh/getDealerPrices.sh'
       # - '.github/scripts/sh/getDealerStorage.sh'
       # - '.github/scripts/sh/getSortStorage.sh'
       # - '.github/scripts/CarFeedProcessorCSV.py'
@@ -15,6 +16,7 @@ on:
       # - '.github/scripts/config.py'
       # - '.github/scripts/getOneXML.py'
       # - '.github/scripts/GSheetFetcher.js'
+      # - '.github/scripts/mergeCarPrices.js'
       # - '.github/scripts/model_mapping.json'
       # - '.github/scripts/update_cars_air_storage.py'
       # - '.github/scripts/update_cars.py'
@@ -107,12 +109,12 @@ jobs:
         CSV_URL: ${{ vars.SORT_STORAGE_CSV_URL }}
 
     - name: Get Dealer JSON cars price
-      if: ${{ vars.DEALER_PRICE_CSV_URL }}
+      if: ${{ vars.DEALER_CARS_PRICE_CSV_URL }}
       run: |
-        pnpm run getDealerPrice
+        pnpm run getDealerCarsPrice
       continue-on-error: true
       env:
-        CSV_URL: ${{ vars.DEALER_PRICE_CSV_URL }}
+        CSV_URL: ${{ vars.DEALER_CARS_PRICE_CSV_URL }}
 
     - name: Get Dealer cars Storage
       if: ${{ vars.DEALER_STORAGE_CSV_URL }}

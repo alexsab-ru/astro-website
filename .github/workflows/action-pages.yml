@@ -19,6 +19,7 @@ on:
     paths-ignore:
       - '.github/scripts/sh/getAirStorage.sh'
       - '.github/scripts/sh/getDealerData.sh'
+      - '.github/scripts/sh/getDealerPrices.sh'
       - '.github/scripts/sh/getDealerStorage.sh'
       - '.github/scripts/sh/getSortStorage.sh'
       - '.github/scripts/CarFeedProcessorCSV.py'
@@ -27,6 +28,7 @@ on:
       - '.github/scripts/config.py'
       - '.github/scripts/getOneXML.py'
       - '.github/scripts/GSheetFetcher.js'
+      - '.github/scripts/mergeCarPrices.js'
       - '.github/scripts/model_mapping.json'
       - '.github/scripts/update_cars_air_storage.py'
       - '.github/scripts/update_cars.py'
@@ -147,6 +149,20 @@ jobs:
         env:
           JSON_PATH: ${{ secrets.JSON_PATH }}
           DOMAIN: ${{ vars.DOMAIN }}
+
+      - name: Get dealer prices
+        if: ${{ steps.check_changes.outputs.changes == 'true' && vars.DEALER_PRICE_CSV_URL && vars.DEALER_PRICE_CSV_COLUMN }}
+        run: |
+          pnpm getDealerPrices
+        env:
+          CSV_URL: ${{ vars.DEALER_PRICE_CSV_URL }}
+          QUERY_STRING: ${{ vars.DEALER_PRICE_CSV_COLUMN }}
+          KEY_MAPPING: ${{ vars.DEALER_PRICE_KEY_MAPPING }}
+
+      - name: Merge car prices
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          pnpm mergeCarPrices
 
       - name: Replace Placeholders in JSON
         if: steps.check_changes.outputs.changes == 'true'
