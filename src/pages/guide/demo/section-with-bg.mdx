@@ -1,0 +1,54 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо Секции с бэкграундом"
+---
+import BackLink from '@/components/BackLink.astro';
+import SectionWithBgMdx from '@/components/guide/SectionWithBgMdx.mdx';
+import SectionWithBg from '@/components/SectionWithBg/SectionWithBg.astro';
+
+<div class="container content mt-10">
+    <SectionWithBgMdx />
+</div>
+
+<SectionWithBg image={{desktop: 'https://cdn.alexsab.ru/b/gac/img/main-sliders/service-main.webp', mobile: 'https://cdn.alexsab.ru/b/gac/img/main-sliders/service-mob.webp'}} classes="!py-32" id="special-credit">
+    <div class="container flex flex-col items-center text-center">
+        <h1 class="text-6xl mb-10">HTML Content</h1>
+        <p>Далеко-далеко за словесными горами в стране гласных и согласных живут рыбные тексты. Вопрос повстречался грамматики лучше осталось своих обеспечивает всемогущая по всей, необходимыми речью вскоре первую текстами его свое lorem журчит! Взобравшись, одна!</p>
+    </div>
+</SectionWithBg>
+
+<div class="container content my-10">
+    Добавляем параметр ```fixed```, он добавляет CSS свойство ```background-attachment: fixed;```.
+</div>
+
+<SectionWithBg image={{desktop: 'https://cdn.alexsab.ru/b/gac/img/main-sliders/gac-models.webp', mobile: 'https://cdn.alexsab.ru/b/gac/img/main-sliders/gac-models-mobile.webp'}} imagePosition={{desktop: 'bottom'}} classes="!py-32" id="special-credit" fixed>
+    <div class="container flex flex-col items-center text-center">
+        <h1 class="text-6xl mb-10">HTML Content</h1>
+        <p>Далеко-далеко за словесными горами в стране гласных и согласных живут рыбные тексты. Вопрос повстречался грамматики лучше осталось своих обеспечивает всемогущая по всей, необходимыми речью вскоре первую текстами его свое lorem журчит! Взобравшись, одна!</p>
+    </div>
+</SectionWithBg>
+
+<div class="container content my-10">
+    ### TMediaKeys
+    <div class="*:!text-left mb-10">
+        |**Имя параметра**|**По умолчанию**|**Описание**|
+        |--|--|--|
+        |desktop|-|```string```|
+        |tablet|-|```string```|
+        |mobile|-|```string```|
+    </div>
+
+    <div class="*:!text-left mb-10">
+        |**Имя параметра**|**По умолчанию**|**Описание**|
+        |--|--|--|
+        |image|-|Объект ```TMediaKeys```|
+        |imagePosition|```center``` для всех значений|Объект ```TMediaKeys```|
+        |classes|-|Доп. классы секции|
+        |fixed|```false```|```boolean``` Фиксация бэкграунда, добавляется CSS свойство ```background-attachment: fixed;```|
+        |id|-|```id``` секции|
+    </div>
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>

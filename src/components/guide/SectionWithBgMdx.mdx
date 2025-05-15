@@ -1,0 +1,42 @@
+### Props
+```ts
+type TMediaKeys = {
+    desktop?: string;
+    tablet?: string;
+    mobile?: string;
+}
+interface Props {
+    image: TMediaKeys;
+    imagePosition?: TMediaKeys;
+    classes?: string;
+    fixed?: boolean;
+    id?: string;
+}
+```
+
+### Использование
+```js
+---
+import SectionWithBg from '@/components/SectionWithBg/SectionWithBg.astro';
+---
+```
+
+```astro
+<SectionWithBg 
+    image={
+        {
+            desktop: 'https://cdn.alexsab.ru/b/gac/img/main-sliders/service-main.webp', 
+            mobile: 'https://cdn.alexsab.ru/b/gac/img/main-sliders/service-mob.webp'
+        }
+    }
+    imagePosition={
+        {desktop: 'center', tablet: 'center', mobile: 'center'}
+    }
+    classes="!py-32" 
+    id="special-credit">
+    <div class="container flex flex-col items-center text-center">
+        <h1 class="text-6xl mb-7">HTML Content</h1>
+        <p>Далеко-далеко за словесными горами в стране гласных и согласных живут рыбные тексты.</p>
+    </div>
+</SectionWithBg>
+```
