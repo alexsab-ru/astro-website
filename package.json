@@ -5,7 +5,7 @@
   "scripts": {
     "start": "cp .env.example .env",
     "start_win": "copy .env.example .env",
-    "python": "python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt",
+    "python": "echo \"Copy and run:\" && echo \"\\033[30;43mpython3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt\\033[0m\n\"",
     "get_report": "git log --since='2024-04-01' --until='2024-10-31' --pretty=format:'%h\t%ad\t%an\t%s' --first-parent --date=format:'%Y-%m-%d %H:%M:%S' > commit_report.csv",
     "pull_without_merge": "COUNT=$(git rev-list --count origin/main..main) && git checkout -b new-branch-for-pull-without-merge && git checkout main && git reset --hard HEAD~$COUNT && git pull origin main && git checkout new-branch-for-pull-without-merge && git rebase main && git checkout main && git merge new-branch-for-pull-without-merge && git branch -D new-branch-for-pull-without-merge",
     
@@ -17,6 +17,7 @@
     "getSortStorage": "sh ./.github/scripts/sh/getSortStorage.sh",
     "cars": "sh ./.github/scripts/sh/process_xml.sh",
 
+    "getOne_DEALER_PHOTOS_FOR_CARS_AVITO_URL": "pnpm run cars getone DEALER_PHOTOS_FOR_CARS_AVITO_URL \"dealer_photos_for_cars_avito.xml\"",
     "getOne_AVITO_XML_URL": "pnpm run cars getone AVITO_XML_URL",
     "getOne_AVITO_XML_URL_DATA_CARS_CAR": "pnpm run cars getone AVITO_XML_URL_DATA_CARS_CAR",
     "getOne_AVITO_FRIEND_XML_URL": "pnpm run cars getone AVITO_FRIEND_XML_URL cars_friend.xml",
@@ -63,7 +64,7 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@alexsab-ru/scripts": "^0.13.0",
+    "@alexsab-ru/scripts": "^0.14.0",
     "@astrojs/alpinejs": "^0.4.1",
     "@astrojs/mdx": "^4.0.3",
     "@astrojs/react": "^4.1.2",

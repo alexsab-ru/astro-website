@@ -5,9 +5,8 @@ const isProd = import.meta.env.PROD;
 ---
 { isProd && scripts_json['vk-rtrg'] && scripts_json['vk-rtrg'].length > 0 && scripts_json['vk-rtrg'][0].id != "" && (
 <script>
-console.log("runVK_RTRG load");
 function runVK_RTRG(vk_rtrg) {
-    console.log("runVK_RTRG", vk_rtrg);
+    // console.log("runVK_RTRG", vk_rtrg);
     vk_rtrg.forEach(vk => {
         if (vk.id && vk.id.trim() !== "") {
             var script = document.createElement('script');
@@ -16,6 +15,6 @@ function runVK_RTRG(vk_rtrg) {
         }
     });
 }
-window.runVK_RTRG = runVK_RTRG;
+window._vk = runVK_RTRG;
 </script>
 )}
