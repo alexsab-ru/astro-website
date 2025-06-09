@@ -53,6 +53,6 @@ export default defineConfig({
 			},
 		},
 	},
-	site: 'https://dev.diywebdev.ru/',
+	site: 'https://dev.alexsab.ru',
 	base: "/"
 });
