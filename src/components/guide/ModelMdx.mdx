@@ -14,7 +14,7 @@ interface Props {
 ---
 import Model from '@/components/Model/Model.astro';
 import modelsData from '@/data/models.json';
-const model = modelsData.filter(model => model.show)[1];
+const model = modelsData.models.filter(model => model.show)[1];
 const breadcrumb = { name: `Модели`, href: "/models/" };
 ---
 ```
