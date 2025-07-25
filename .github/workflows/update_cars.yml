@@ -1,27 +1,27 @@
 name: Generate Astro Files from XML
 
 on:
-  # schedule:
-    # - cron: '0 3-17 * * *'  # Запускается каждый час с 3 до 17 (UTC)
-  # push:
-    # paths:
-      # - '.github/scripts/sh/getAirStorage.sh'
-      # - '.github/scripts/sh/getDealerData.sh'
-      # - '.github/scripts/sh/getDealerPrices.sh'
-      # - '.github/scripts/sh/getDealerStorage.sh'
-      # - '.github/scripts/sh/getSortStorage.sh'
-      # - '.github/scripts/CarFeedProcessorCSV.py'
-      # - '.github/scripts/config_air_storage-friend.json'
-      # - '.github/scripts/config_air_storage.json'
-      # - '.github/scripts/config.py'
-      # - '.github/scripts/getOneXML.py'
-      # - '.github/scripts/GSheetFetcher.js'
-      # - '.github/scripts/mergeCarPrices.js'
-      # - '.github/scripts/model_mapping.json'
-      # - '.github/scripts/update_cars_air_storage.py'
-      # - '.github/scripts/update_cars.py'
-      # - '.github/scripts/utils.py'
-      # - '.github/workflows/update_cars.yml'
+  schedule:
+    - cron: '0 3-17 * * *'  # Запускается каждый час с 3 до 17 (UTC)
+  push:
+    paths:
+      - '.github/scripts/sh/getAirStorage.sh'
+      - '.github/scripts/sh/getDealerData.sh'
+      - '.github/scripts/sh/getDealerPrices.sh'
+      - '.github/scripts/sh/getDealerStorage.sh'
+      - '.github/scripts/sh/getSortStorage.sh'
+      - '.github/scripts/CarFeedProcessorCSV.py'
+      - '.github/scripts/config_air_storage-friend.json'
+      - '.github/scripts/config_air_storage.json'
+      - '.github/scripts/config.py'
+      - '.github/scripts/create_cars.py'
+      - '.github/scripts/getOneXML.py'
+      - '.github/scripts/GSheetFetcher.js'
+      - '.github/scripts/mergeCarPrices.js'
+      - '.github/scripts/update_cars_air_storage.py'
+      - '.github/scripts/update_cars.py'
+      - '.github/scripts/utils.py'
+      - '.github/workflows/update_cars.yml'
   workflow_dispatch:
 
 permissions:
@@ -33,6 +33,9 @@ concurrency:
 
 jobs:
   determine_env:
+
+    if: ${{ vars.UPDATE_CARS && vars.UPDATE_CARS == 'true' }}
+
     runs-on: ubuntu-latest
     outputs:
       env_name: ${{ steps.set_env.outputs.env_name }}
@@ -180,6 +183,15 @@ jobs:
         DOMAIN: ${{ vars.DOMAIN }}
         XML_URL: ${{ vars.USED_CARS_DATA_CARS_CAR }}
 
+    - name: Get cars from XML_URL and generate cars file (new method)
+      if: ${{ vars.XML_URL }}
+      run: |
+        python .github/scripts/getOneXML.py
+        python .github/scripts/create_cars.py
+      env:
+        DOMAIN: ${{ vars.DOMAIN }}
+        XML_URL: ${{ vars.XML_URL }}
+
     - name: Get cars data_cars_car XML and generate cars file
       if: ${{ vars.XML_URL_DATA_CARS_CAR }}
       run: |
@@ -206,6 +218,15 @@ jobs:
       env:
         DOMAIN: ${{ vars.DOMAIN }}
         XML_URL: ${{ vars.XML_URL_VEHICLES_VEHICLE }}
+
+    - name: Get cars ads_ad XML and generate cars file
+      if: ${{ vars.XML_URL_ADS_AD }}
+      run: |
+        python .github/scripts/getOneXML.py
+        python .github/scripts/update_cars.py --source_type ads_ad --image_tag="Image"
+      env:
+        DOMAIN: ${{ vars.DOMAIN }}
+        XML_URL: ${{ vars.XML_URL_ADS_AD }}
 
     - name: Get cars carcopy XML and generate cars file
       if: ${{ vars.XML_URL_CARCOPY }}
@@ -313,6 +334,7 @@ jobs:
         if [[ -d src/content/special-offers ]]; then ls -al src/content/special-offers; fi
         if [[ -d src/content/news ]]; then ls -al src/content/news; fi
         if [[ -d src/content/seo ]]; then ls -al src/content/seo; fi
+        if [[ -d src/data ]]; then ls -al src/data; fi
 
     - name: Check for changes
       id: check_changes
@@ -341,6 +363,9 @@ jobs:
         if [[ -d public/img/thumbs_used && $(find public/img/thumbs_used -type f -name "*.webp") ]]; then git add public/img/thumbs_used/*.webp; fi
         if [[ -d src/content/cars && $(find src/content/cars -type f -name "*.mdx") ]]; then git add src/content/cars/*.mdx; fi
         if [[ -d src/content/used_cars && $(find src/content/used_cars -type f -name "*.mdx") ]]; then git add src/content/used_cars/*.mdx; fi
+        if [[ "$GITHUB_REF_NAME" != "master" ]]; then
+          if [[ -f src/data/dealer-models_cars_price.json ]]; then git add src/data/dealer-models_cars_price.json --force; fi
+        fi
         if [[ -f public/cars.xml ]]; then git add public/cars.xml; fi
         if [[ -f public/used_cars.xml ]]; then git add public/used_cars.xml; fi
         if [[ -f public/autoru.xml ]]; then git add public/autoru.xml; fi

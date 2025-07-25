@@ -4,17 +4,33 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const domain = process.env.DOMAIN;
+/**
+ * Determines the correct protocol for a domain
+ * @param {string} domain - The domain to check
+ * @returns {string} The domain with the correct protocol
+ */
+function getDomainWithProtocol(domain) {
+  // If domain already has protocol, return as is
+  if (domain.startsWith('http://') || domain.startsWith('https://')) {
+    return domain;
+  }
+  
+  // Add protocol based on domain
+  const protocol = domain.includes('localhost') ? 'http' : 'https';
+  return `${protocol}://${domain}`;
+}
+
+const domain = getDomainWithProtocol(process.env.DOMAIN);
 const outputPath = './broken_links.txt';
 
 async function checkLinks() {
-  console.log('🔍 Начинаю проверку ссылок...');
+  console.log(`🔍 Начинаю проверку ссылок на ${domain}...`);
   const checker = new LinkChecker();
 
   const result = await checker.check({
-    path: `https://${domain}`,
+    path: domain,
     recurse: true,
-    // linksToSkip: []
+    linksToSkip: [/javascript:void\(0\)/]
   });
 
   const brokenLinks = result.links.filter(x => x.state === 'BROKEN').map((item) => {
