@@ -18,7 +18,7 @@ on:
     branches: ["main","brand","dealer"]
     paths-ignore:
       - '.github/scripts/sh/getAirStorage.sh'
-      - '.github/scripts/sh/getDealerData.sh'
+      - '.github/scripts/sh/getDealerCarsPrice.sh'
       - '.github/scripts/sh/getDealerPrices.sh'
       - '.github/scripts/sh/getDealerStorage.sh'
       - '.github/scripts/sh/getSortStorage.sh'
@@ -163,7 +163,7 @@ jobs:
       - name: Download JSONs
         if: steps.check_changes.outputs.changes == 'true'
         run: |
-          pnpm download_json
+          pnpm downloadJSON
         env:
           JSON_PATH: ${{ secrets.JSON_PATH }}
           DOMAIN: ${{ vars.DOMAIN }}

@@ -29,9 +29,11 @@ def detect_xpath(xml_content):
     # Список известных XPath шаблонов
     xpath_patterns = [
         "//data/cars/car",
+        "//catalog/vehicles/vehicle",
         "//vehicles/vehicle",
         "//Ads/Ad",
-        "//carcopy/offers/offer"
+        "//carcopy/offers/offer",
+        "//yml_catalog/shop/offers/offer"
     ]
     
     try:
@@ -171,9 +173,13 @@ def main():
     deduplicated_root = remove_duplicates(merged_root, xpath)
 
     merged_tree = etree.ElementTree(deduplicated_root)
+    # Создаём директории для output_path, если их нет
+    output_dir = os.path.dirname(args.output_path)
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
     merged_tree.write(args.output_path, encoding="UTF-8", xml_declaration=True, pretty_print=True)
 
-    print(f"XML files successfully downloaded and merged into {args.output_path}")
+    print(f"\033[30;42mXML files successfully downloaded and merged into {args.output_path}\033[0m")
 
 if __name__ == "__main__":
     main()
