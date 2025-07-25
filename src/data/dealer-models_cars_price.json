@@ -1,0 +1,32 @@
+[
+  {
+    "brand": "GAC",
+    "model": "EMPOW",
+    "price": 3019000,
+    "benefit": 200000
+  },
+  {
+    "brand": "GAC",
+    "model": "GS3",
+    "price": 2119000,
+    "benefit": 500000
+  },
+  {
+    "brand": "GAC",
+    "model": "GS4",
+    "price": 2599000,
+    "benefit": 400000
+  },
+  {
+    "brand": "GAC",
+    "model": "GS8",
+    "price": 3899000,
+    "benefit": 600000
+  },
+  {
+    "brand": "GAC",
+    "model": "M8",
+    "price": 6299999,
+    "benefit": 0
+  }
+]
