@@ -10,9 +10,9 @@ import { getCollection } from "astro:content";
 export const allCars = await getCollection("cars");
 
 export const vins = [
-	"LMGHT1L52R3088837",
-	"LMGHT1L58R3085554",
-	"LMGHT1L57R3085223",
+	"L6TVX1S63RY045879",
+	"L6TFS1S83RD112369",
+	"Y4K8622Z2SB923654",
 ];
 
 export const cars = allCars.filter(car => {
@@ -25,7 +25,7 @@ export const cars = allCars.filter(car => {
 </div>
 
 <div class="container pt-10">
-    <CarList cars={cars} />
+    <CarList cars={cars.length > 0 ? cars : allCars} />
 </div>
 
 <div class="my-10 px-10">
