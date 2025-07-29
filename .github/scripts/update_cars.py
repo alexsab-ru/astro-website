@@ -63,190 +63,244 @@ class CarProcessor:
                 'root_element': 'cars',
                 'car_element': 'car',
                 'field_mapping': {
-                    'vin': 'vin',
-                    'mark_id': 'mark_id',
-                    'folder_id': 'folder_id',
-                    'modification_id': 'modification_id',
-                    'complectation_name': 'complectation_name',
-                    'year': 'year',
-                    'color': 'color',
-                    'price': 'price',
-                    'max_discount': 'max_discount',
-                    'tradein_discount': 'tradein_discount',
-                    'credit_discount': 'credit_discount',
-                    'insurance_discount': 'insurance_discount',
-                    'description': 'description',
-                    'body_type': 'body_type',
-                    'drive_type': 'drive',
-                    'gearboxType': 'gearbox',
-                    'wheel': 'wheel',
-                    'engineType': 'engine_type',
-                    'run': 'run',
                     'availability': 'availability',
-                    'images': 'images',
+                    'body_type': 'body_type',
+                    'color': 'color',
+                    'complectation_name': 'complectation_name',
+                    'credit_discount': 'credit_discount',
+                    'description': 'description',
+                    'drive_type': 'drive',
+                    'engineType': 'engine_type',
+                    'folder_id': 'folder_id',
+                    'gearboxType': 'gearbox',
                     'image_tag': 'image',
-                    'image_url_attr': None
+                    'image_url_attr': None,
+                    'images': 'images',
+                    'insurance_discount': 'insurance_discount',
+                    'mark_id': 'mark_id',
+                    'max_discount': 'max_discount',
+                    'modification_id': 'modification_id',
+                    'optional_discount': 'optional_discount',
+                    'price': 'price',
+                    'priceWithDiscount': 'priceWithDiscount',
+                    'run': 'run',
+                    'sale_price': 'sale_price',
+                    'tradein_discount': 'tradein_discount',
+                    'vin': 'vin',
+                    'wheel': 'wheel',
+                    'year': 'year'
                 },
                 'elements_to_localize': [
-                    'engineType', 'drive_type', 'gearboxType', 'ptsType', 'color', 'body_type', 'wheel'
+                    'body_type',
+                    'color',
+                    'drive_type',
+                    'engineType',
+                    'gearboxType',
+                    'ptsType',
+                    'wheel'
                 ]
             },
             'ads_ad': {
                 'root_element': None,
                 'car_element': 'Ad',
                 'field_mapping': {
-                    'vin': 'VIN',
-                    'mark_id': 'Make',
-                    'folder_id': 'Model',
-                    'modification_id': 'Modification',
-                    'complectation_name': 'Complectation',
-                    'body_type': 'BodyType',
-                    'drive_type': 'DriveType',
-                    'gearboxType': 'Transmission',
-                    'wheel': 'WheelType',
-                    'engineType': 'FuelType',
-                    'color': 'Color',
-                    'price': 'Price',
-                    'max_discount': 'MaxDiscount',
-                    'tradeinDiscount': 'TradeinDiscount',
-                    'year': 'Year',
                     'availability': 'Availability',
+                    'body_type': 'BodyType',
+                    'color': 'Color',
+                    'complectation_name': 'Complectation',
+                    'credit_discount': 'credit_discount',
                     'description': 'Description',
-                    'images': 'Images',
+                    'drive_type': 'DriveType',
+                    'engineType': 'FuelType',
+                    'folder_id': 'Model',
+                    'gearboxType': 'Transmission',
                     'image_tag': 'Image',
-                    'image_url_attr': 'url'
+                    'image_url_attr': 'url',
+                    'images': 'Images',
+                    'insurance_discount': 'insurance_discount',
+                    'mark_id': 'Make',
+                    'max_discount': 'MaxDiscount',
+                    'modification_id': 'Modification',
+                    'optional_discount': 'optional_discount',
+                    'price': 'Price',
+                    'priceWithDiscount': 'priceWithDiscount',
+                    'run': 'run',
+                    'sale_price': 'sale_price',
+                    'tradein_discount': 'tradein_discount',
+                    'tradeinDiscount': 'TradeinDiscount',
+                    'vin': 'VIN',
+                    'wheel': 'WheelType',
+                    'year': 'Year'
                 },
                 'elements_to_localize': [
-                    'engineType', 'drive_type', 'gearboxType', 'color', 'body_type', 'wheel'
+                    'body_type',
+                    'color',
+                    'drive_type',
+                    'engineType',
+                    'gearboxType',
+                    'wheel'
                 ]
             },
             'vehicles_vehicle': {
                 'root_element': None,
                 'car_element': 'offer',
                 'field_mapping': {
-                    'vin': 'vin',
-                    'mark_id': 'brand',
-                    'folder_id': 'model',
-                    'modification_id': 'modification',
-                    'complectation_name': 'complectation',
-                    'year': 'year',
-                    'color': 'bodyColor',
-                    'price': 'price',
-                    # 'max_discount': 'MaxDiscount',
-                    'tradein_discount': 'tradeinDiscount',
-                    'credit_discount': 'creditDiscount',
-                    'insurance_discount': 'insuranceDiscount',
-                    'description': 'description',
-                    'body_type': 'bodyType',
-                    'drive_type': 'driveType',
-                    'gearboxType': 'gearboxType',
-                    'wheel': 'steeringWheel',
-                    'engineType': 'engineType',
-                    'run': 'mileage',
                     'availability': 'availability',
-                    'images': 'photos',
+                    'body_type': 'bodyType',
+                    'color': 'bodyColor',
+                    'complectation_name': 'complectation',
+                    'credit_discount': 'creditDiscount',
+                    'description': 'description',
+                    'drive_type': 'driveType',
+                    'engineType': 'engineType',
+                    'folder_id': 'model',
+                    'gearboxType': 'gearboxType',
                     'image_tag': 'photo',
-                    'image_url_attr': None
+                    'image_url_attr': None,
+                    'images': 'photos',
+                    'insurance_discount': 'insuranceDiscount',
+                    'mark_id': 'brand',
+                    'max_discount': 'MaxDiscount',
+                    'modification_id': 'modification',
+                    'optional_discount': 'optional_discount',
+                    'price': 'price',
+                    'priceWithDiscount': 'priceWithDiscount',
+                    'run': 'mileage',
+                    'sale_price': 'sale_price',
+                    'tradein_discount': 'tradeinDiscount',
+                    'vin': 'vin',
+                    'wheel': 'steeringWheel',
+                    'year': 'year'
                 },
                 'elements_to_localize': [
-                    'engineType', 'driveType', 'gearboxType', 'ptsType', 'color', 'body_type', 'wheel'
+                    'body_type',
+                    'color',
+                    'driveType',
+                    'engineType',
+                    'gearboxType',
+                    'ptsType',
+                    'wheel'
                 ]
             },
             'carcopy_offers_offer': {
                 'root_element': 'offers',
                 'car_element': 'offer',
                 'field_mapping': {
-                    'vin': 'vin',
-                    'mark_id': 'make',
-                    'folder_id': 'model',
-                    'modification_id': 'version',
-                    'complectation_name': 'complectation',
-                    'year': 'year',
-                    'color': 'color',
-                    'price': 'price',
-                    'max_discount': 'max-discount',
-                    'tradein_discount': 'tradein-discount',
-                    'credit_discount': 'credit-discount',
-                    'insurance_discount': 'insurance-discount',
-                    'description': 'comment',
-                    'body_type': 'body-type',
-                    'drive_type': 'drive',
-                    'gearboxType': 'transmission',
-                    'wheel': 'steering-wheel',
-                    'engineType': 'engine-type',
-                    'run': 'run',
                     'availability': 'availability',
-                    'images': 'photos',
+                    'body_type': 'body-type',
+                    'color': 'color',
+                    'complectation_name': 'complectation',
+                    'credit_discount': 'credit-discount',
+                    'description': 'comment',
+                    'drive_type': 'drive',
+                    'engineType': 'engine-type',
+                    'folder_id': 'model',
+                    'gearboxType': 'transmission',
                     'image_tag': 'photo',
-                    'image_url_attr': None
+                    'image_url_attr': None,
+                    'images': 'photos',
+                    'insurance_discount': 'insurance-discount',
+                    'mark_id': 'make',
+                    'max_discount': 'max-discount',
+                    'modification_id': 'version',
+                    'optional_discount': 'optional_discount',
+                    'price': 'price',
+                    'priceWithDiscount': 'priceWithDiscount',
+                    'run': 'run',
+                    'sale_price': 'sale_price',
+                    'tradein_discount': 'tradein-discount',
+                    'vin': 'vin',
+                    'wheel': 'steering-wheel',
+                    'year': 'year'
                 },
                 'elements_to_localize': [
-                    'engineType', 'drive_type', 'gearboxType', 'ptsType', 'color', 'body_type', 'wheel'
+                    'body_type',
+                    'color',
+                    'drive_type',
+                    'engineType',
+                    'gearboxType',
+                    'ptsType',
+                    'wheel'
                 ]
             },
             'catalog_vehicles_vehicle': {
                 'root_element': None,
                 'car_element': 'vehicle',
                 'field_mapping': {
-                    'vin': 'vin',
-                    'mark_id': 'mark',
-                    'folder_id': 'model',
-                    'modification_id': 'modification',
-                    'complectation_name': 'сomplectation-name',
-                    'complectation_code': 'complectation-code',
-                    'year': 'year',
-                    'color': 'color',
-                    'price': 'price',
-                    'max_discount': 'max_discount',
-                    'tradein_discount': 'tradein_discount',
-                    'credit_discount': 'credit_discount',
-                    'insurance_discount': 'insurance_discount',
-                    'description': 'description',
-                    'body_type': 'body_type',
-                    'drive_type': 'drive_type',
-                    'gearboxType': 'gearbox_type',
-                    'wheel': 'wheel',
-                    'engineType': 'engine_type',
-                    'run': 'run',
                     'availability': 'availability',
-                    'images': 'images',
+                    'body_type': 'body_type',
+                    'color': 'color',
+                    'complectation_code': 'complectation-code',
+                    'complectation_name': 'сomplectation-name',
+                    'credit_discount': 'credit_discount',
+                    'description': 'description',
+                    'drive_type': 'drive_type',
+                    'engineType': 'engine_type',
+                    'folder_id': 'model',
+                    'gearboxType': 'gearbox_type',
                     'image_tag': 'image',
-                    'image_url_attr': None
+                    'image_url_attr': None,
+                    'images': 'images',
+                    'insurance_discount': 'insurance_discount',
+                    'mark_id': 'mark',
+                    'max_discount': 'max_discount',
+                    'modification_id': 'modification',
+                    'optional_discount': 'optional_discount',
+                    'price': 'price',
+                    'priceWithDiscount': 'priceWithDiscount',
+                    'run': 'run',
+                    'sale_price': 'sale_price',
+                    'tradein_discount': 'tradein_discount',
+                    'vin': 'vin',
+                    'wheel': 'wheel',
+                    'year': 'year'
                 },
                 'elements_to_localize': [
-                    'engineType', 'drive_type', 'gearboxType', 'ptsType', 'color', 'body_type', 'wheel'
+                    'body_type',
+                    'color',
+                    'drive_type',
+                    'engineType',
+                    'gearboxType',
+                    'ptsType',
+                    'wheel'
                 ]
             },
             'yml_catalog_shop_offers_offer': {
                 'root_element': 'yml_catalog',
                 'car_element': 'offer',
                 'field_mapping': {
-                    'vin': None,  # В YML нет VIN, будем генерировать из других полей
-                    'mark_id': 'vendor',
-                    'folder_id': 'model',  # Будем извлекать название модели из параметра "Модель"
-                    'modification_id': 'model',  # Будем извлекать модификацию из model
-                    'complectation_name': None,  # В YML нет комплектации
-                    'year': None,  # Будем извлекать из параметра "Год выпуска"
-                    'color': None,  # Будем извлекать из параметра "Цвет"
-                    'price': 'price',
-                    'max_discount': None,  # Будем рассчитывать из sales_notes
-                    'tradein_discount': None,
-                    'credit_discount': None,
-                    'insurance_discount': None,
-                    'description': 'description',
-                    'body_type': None,  # Будем извлекать из параметра "Кузов"
-                    'drive_type': None,  # Будем извлекать из параметра "Привод"
-                    'gearboxType': None,  # Будем извлекать из параметра "КПП"
-                    'wheel': None,  # Будем извлекать из параметра "Руль"
-                    'engineType': None,  # Будем извлекать из параметра "Двигатель"
-                    'run': '0',  # Новые автомобили
                     'availability': 'available',
-                    'images': 'picture',
+                    'body_type': None,  # Будем извлекать из параметра "Кузов"
+                    'color': None,  # Будем извлекать из параметра "Цвет"
+                    'complectation_name': None,  # В YML нет комплектации
+                    'credit_discount': None,
+                    'description': 'description',
+                    'drive_type': None,  # Будем извлекать из параметра "Привод"
+                    'engineType': None,  # Будем извлекать из параметра "Двигатель"
+                    'folder_id': 'model',  # Будем извлекать название модели из параметра "Модель"
+                    'gearboxType': None,  # Будем извлекать из параметра "КПП"
                     'image_tag': 'picture',
-                    'image_url_attr': None
+                    'image_url_attr': None,
+                    'images': 'picture',
+                    'insurance_discount': None,
+                    'mark_id': 'vendor',
+                    'max_discount': None,  # Будем рассчитывать из sales_notes
+                    'modification_id': 'model',  # Будем извлекать модификацию из model
+                    'price': 'price',
+                    'run': '0',  # Новые автомобили
+                    'tradein_discount': None,
+                    'vin': None,  # В YML нет VIN, будем генерировать из других полей
+                    'wheel': None,  # Будем извлекать из параметра "Руль"
+                    'year': None  # Будем извлекать из параметра "Год выпуска"
                 },
                 'elements_to_localize': [
-                    'engineType', 'driveType', 'gearboxType', 'ptsType', 'color', 'body_type', 'wheel'
+                    'body_type',
+                    'color',
+                    'driveType',
+                    'engineType',
+                    'gearboxType',
+                    'ptsType',
+                    'wheel'
                 ]
             }
         }
@@ -319,6 +373,14 @@ class CarProcessor:
             Dict: Словарь с данными автомобиля
         """
         car_data = {}
+
+        # # 1. Сохраняем все поля из XML как есть
+        # for child in car:
+        #     if child.tag not in ['images', 'image', 'param']:  # обработаем их отдельно
+        #         if child.text:
+        #             car_data[child.tag] = child.text.strip()
+
+        # 2. Применяем field_mapping (перезаписываем нужные поля)
         field_mapping = self.config['field_mapping']
         
         # Извлекаем основные поля
@@ -560,21 +622,27 @@ class CarProcessor:
         )
         print(f"\nУникальный идентификатор: {friendly_url}")
         
-        # Базовые расчёты цены и скидки
+        # Получаем цену из car_data, если она есть, иначе используем 0
         price = int(car_data.get('price', 0) or 0)
-        max_discount = self.calculate_max_discount(car_data)
-        
-        # Обновляем данные
-        car_data['max_discount'] = max_discount
-        sale_price = price - max_discount
-        
-        # Обработка priceWithDiscount в зависимости от источника
-        if self.source_type == 'vehicles_vehicle' and 'priceWithDiscount' in car_data and car_data['priceWithDiscount']:
-            sale_price = int(car_data['priceWithDiscount'])
-        
-        car_data['priceWithDiscount'] = sale_price
-        car_data['sale_price'] = sale_price
-        
+
+        # Если max_discount уже есть в car_data, не пересчитываем, иначе считаем
+        if 'max_discount' not in car_data:
+            max_discount = self.calculate_max_discount(car_data)
+            car_data['max_discount'] = max_discount
+        else:
+            max_discount = int(car_data['max_discount'] or 0)
+
+        # Если priceWithDiscount уже есть, не пересчитываем, иначе считаем
+        if 'priceWithDiscount' not in car_data:
+            sale_price = price - max_discount
+            car_data['priceWithDiscount'] = sale_price
+        else:
+            sale_price = int(car_data['priceWithDiscount'] or 0)
+
+        # Если sale_price уже есть, не пересчитываем, иначе присваиваем sale_price
+        if 'sale_price' not in car_data:
+            car_data['sale_price'] = sale_price
+
         # Локализация элементов
         for elem_name in self.config['elements_to_localize']:
             if elem_name in car_data and car_data[elem_name]:
@@ -595,20 +663,21 @@ class CarProcessor:
         brand = car_data.get('mark_id', '')
         model_full = car_data.get('folder_id', '')
         model = get_model_info(brand, model_full, 'short')
-        key = (brand, model)
-        
-        if key in self.cars_price_data:
-            # Обновляем минимальную цену и максимальную скидку
-            self.cars_price_data[key]['price'] = min(self.cars_price_data[key]['price'], sale_price)
-            self.cars_price_data[key]['benefit'] = max(self.cars_price_data[key]['benefit'], max_discount)
-        else:
-            # Создаем новый объект в готовом для JSON формате
-            self.cars_price_data[key] = {
-                'brand': brand,
-                'model': model,
-                'price': sale_price,
-                'benefit': max_discount
-            }
+        if not model is None:
+            key = (brand, model)
+            
+            if key in self.cars_price_data:
+                # Обновляем минимальную цену и максимальную скидку
+                self.cars_price_data[key]['price'] = min(self.cars_price_data[key]['price'], sale_price)
+                self.cars_price_data[key]['benefit'] = max(self.cars_price_data[key]['benefit'], max_discount)
+            else:
+                # Создаем новый объект в готовом для JSON формате
+                self.cars_price_data[key] = {
+                    'brand': brand,
+                    'model': model,
+                    'price': sale_price,
+                    'benefit': max_discount
+                }
         # --- конец блока ---
 
         # get info from ./src/data/settings.json
