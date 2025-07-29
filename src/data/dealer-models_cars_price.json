@@ -2,14 +2,14 @@
   {
     "brand": "Belgee",
     "model": "X50",
-    "price": 2479990,
-    "benefit": 0
+    "price": 655000,
+    "benefit": 1824990
   },
   {
     "brand": "Belgee",
     "model": "X70",
-    "price": 2825990,
-    "benefit": 0
+    "price": 662700,
+    "benefit": 2163200
   },
   {
     "brand": "GAC",
@@ -20,67 +20,67 @@
   {
     "brand": "GAC",
     "model": "GS3",
-    "price": 2118000,
-    "benefit": 500000
+    "price": 1718000,
+    "benefit": 801000
   },
   {
     "brand": "GAC",
     "model": "GS4",
-    "price": 2599000,
-    "benefit": 400000
+    "price": 2289000,
+    "benefit": 710000
   },
   {
     "brand": "GAC",
     "model": "GS8",
-    "price": 3899000,
-    "benefit": 600000
+    "price": 3589000,
+    "benefit": 1020000
   },
   {
     "brand": "GAC",
     "model": "M8",
-    "price": 6299999,
-    "benefit": 0
+    "price": 5249999,
+    "benefit": 1050000
   },
   {
     "brand": "Geely",
     "model": "Atlas",
-    "price": 3512990,
-    "benefit": 0
+    "price": 710000,
+    "benefit": 2879990
   },
   {
     "brand": "Geely",
     "model": "Coolray",
-    "price": 2794990,
-    "benefit": 0
+    "price": 458090,
+    "benefit": 2336900
   },
   {
     "brand": "Geely",
     "model": "Emgrand",
-    "price": 2179990,
-    "benefit": 0
+    "price": 452000,
+    "benefit": 1727990
   },
   {
     "brand": "Geely",
     "model": "Monjaro",
-    "price": 4549990,
-    "benefit": 0
+    "price": 960000,
+    "benefit": 3589990
   },
   {
     "brand": "Geely",
     "model": "Okavango",
-    "price": 3692990,
-    "benefit": 0
+    "price": 598000,
+    "benefit": 3094990
   },
   {
     "brand": "Geely",
     "model": "Preface",
-    "price": 3357990,
-    "benefit": 0
+    "price": 567000,
+    "benefit": 2790990
   },
   {
     "brand": "Knewstar",
     "model": "001",
-    "price": 4162990,
-    "benefit": 0
+    "price": 1224000,
+    "benefit": 2938990
   }
 ]
