@@ -3,15 +3,14 @@ import os
 import json
 import argparse
 import glob
+import shutil
 from pathlib import Path
 from utils import *
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Optional, Tuple
 
 class CarProcessor:
-    def __init__(self, source_type: str):
-        self.source_type = source_type
-        self.setup_source_config()
+    def __init__(self):
         self.existing_files = set()
         self.current_thumbs = []
         self.prices_data = load_price_data()
@@ -31,9 +30,9 @@ class CarProcessor:
                 print(f"Произошла ошибка при работе с файлом: {e}")
         
         self.dealer_photos_for_cars_avito = {}
-        if os.path.exists('dealer_photos_for_cars_avito.xml'):
+        if os.path.exists('./tmp/feeds/photos/dealer_photos_for_cars_avito.xml'):
             try:
-                avito_root = get_xml_content('dealer_photos_for_cars_avito.xml', '')
+                avito_root = get_xml_content('./tmp/feeds/photos/dealer_photos_for_cars_avito.xml', '')
                 for car in avito_root.findall('Ad'):
                     vin = car.find('VIN').text
                     self.dealer_photos_for_cars_avito[vin] = {
@@ -653,7 +652,7 @@ class CarProcessor:
         
         # Обработка файла
         file_name = f"{friendly_url}.mdx"
-        file_path = os.path.join(config['cars_dir'], file_name)
+        file_path = os.path.join(config['temp_cars_dir'], file_name)
 
         # Обновляем цены и скидки на основе car_data
         update_car_prices(car_data, self.prices_data)
@@ -760,32 +759,7 @@ def find_xml_files(base_dir: str) -> List[Tuple[str, str, str]]:
     
     return xml_files
 
-def determine_output_config(category_type: str, source_type: str, base_config: Dict) -> Dict:
-    """
-    Определяет конфигурацию путей в зависимости от типа категории.
-    
-    Args:
-        category_type: Тип категории ("new" или "used")
-        source_type: Тип источника данных
-        base_config: Базовая конфигурация
-        
-    Returns:
-        Dict: Обновленная конфигурация
-    """
-    config = base_config.copy()
-    
-    if category_type == "used":
-        config['cars_dir'] = 'src/content/used_cars'
-        config['thumbs_dir'] = 'public/img/thumbs_used/'
-        config['path_car_page'] = '/used_cars/'
-        config['output_path'] = './public/used_cars.xml'
-    else:
-        config['cars_dir'] = 'src/content/cars'
-        config['thumbs_dir'] = 'public/img/thumbs/'
-        config['path_car_page'] = '/cars/'
-        config['output_path'] = './public/cars.xml'
-    
-    return config
+
 
 def normalize_source_type(folder_name: str) -> str:
     """
@@ -817,7 +791,9 @@ def main():
     parser.add_argument('--source_type', choices=['data_cars_car', 'vehicles_vehicle', 'carcopy_offers_offer', 'catalog_vehicles_vehicle', 'ads_ad', 'yml_catalog_shop_offers_offer'], help='Type of source data (auto-detected if not specified)')
     parser.add_argument('--path_car_page', default='/cars/', help='Default path to cars pages')
     parser.add_argument('--thumbs_dir', default='public/img/thumbs/', help='Default output directory for thumbnails')
+    parser.add_argument('--temp_thumbs_dir', default='tmp/img/thumbs/', help='Default temp output directory for thumbnails')
     parser.add_argument('--cars_dir', default='src/content/cars', help='Default cars directory')
+    parser.add_argument('--temp_cars_dir', default='tmp/content/cars', help='Default temp cars directory')
     parser.add_argument('--input_file', default='cars.xml', help='Input file')
     parser.add_argument('--output_path', default='./public/cars.xml', help='Output path/file')
     parser.add_argument('--domain', default=os.getenv('DOMAIN', 'localhost'), help='Repository name')
@@ -835,8 +811,8 @@ def main():
     parser.add_argument('--github_repo', help='GitHub repository in format owner/repo')
     parser.add_argument('--github_path', default='config', help='Path to config directory in GitHub repository')
     parser.add_argument('--gist_id', help='GitHub Gist ID with configuration')
-    parser.add_argument('--auto_scan', action="store_true", help='Automatically scan ./tmp/new and ./tmp/used_cars directories')
-    parser.add_argument('--base_dirs', nargs='*', default=['./tmp/new', './tmp/used_cars'], help='Base directories to scan for XML files')
+    parser.add_argument('--auto_scan', action="store_true", help='Automatically scan ./tmp/feeds/new and ./tmp/feeds/used_cars directories')
+    parser.add_argument('--base_dirs', nargs='*', default=['./tmp/feeds/new', './tmp/feeds/used_cars'], help='Base directories to scan for XML files')
     
     args = parser.parse_args()
     config = vars(args)
@@ -874,16 +850,45 @@ def main():
         
         print(f"📁 Найдено {len(all_xml_files)} XML файлов для обработки")
         
-        # Создаем единый процессор (начинаем с первого найденного типа)
-        first_file_path, first_folder, first_category = all_xml_files[0]
-        first_source_type = normalize_source_type(first_folder)
-        
         # Пробуем автоопределить тип для первого файла
-        processor = CarProcessor(first_source_type)
-        detected_type = processor.auto_detect_source_type(first_file_path)
-        if detected_type:
-            processor.update_source_type(detected_type)
-            print(f"✅ Автоопределен тип для первого файла: {detected_type}")
+        processor = CarProcessor()
+        
+        # Словарь конфигураций для разных типов категорий
+        category_configs = {
+            "used": {
+                'cars_dir': 'src/content/used_cars',
+                'temp_cars_dir': 'tmp/content/used_cars',
+                'thumbs_dir': 'public/img/thumbs_used/',
+                'temp_thumbs_dir': 'tmp/img/thumbs_used/',
+                'path_car_page': '/used_cars/',
+                'output_path': './public/used_cars.xml'
+            },
+            "new": {
+                'cars_dir': 'src/content/cars',
+                'temp_cars_dir': 'tmp/content/cars',
+                'thumbs_dir': 'public/img/thumbs/',
+                'temp_thumbs_dir': 'tmp/img/thumbs/',
+                'path_car_page': '/cars/',
+                'output_path': './public/cars.xml'
+            }
+        }
+        
+        # Очищаем временные папки до начала обработки
+        print("🧹 Очистка временных папок...")
+        for category_type, category_config in category_configs.items():
+            temp_cars_dir = category_config['temp_cars_dir']
+            if os.path.exists(temp_cars_dir):
+                shutil.rmtree(temp_cars_dir)
+                print(f"   Удалена временная папка: {temp_cars_dir}")
+            os.makedirs(temp_cars_dir, exist_ok=True)
+            print(f"   Создана временная папка: {temp_cars_dir}")
+
+            temp_thumbs_dir = category_config['temp_thumbs_dir']
+            if os.path.exists(temp_thumbs_dir):
+                shutil.rmtree(temp_thumbs_dir)
+                print(f"   Удалена временная папка превью: {temp_thumbs_dir}")
+            os.makedirs(temp_thumbs_dir, exist_ok=True)
+            print(f"   Создана временная папка превью: {temp_thumbs_dir}")
         
         # Группируем обработанные автомобили по категориям
         processed_cars_by_category = {'new': [], 'used': []}
@@ -932,8 +937,9 @@ def main():
             remove_mark_ids = source_config['remove_mark_ids']
             remove_folder_ids = source_config['remove_folder_ids']
             
-            # Обновляем конфигурацию путей в зависимости от категории
-            current_config = determine_output_config(category_type, source_type, config)
+            # Получаем конфигурацию для текущей категории из словаря
+            current_config = config.copy()
+            current_config.update(category_configs[category_type])
             current_config['move_vin_id_up'] = source_config['move_vin_id_up']
             current_config['new_address'] = source_config['new_address']
             current_config['new_phone'] = source_config['new_phone']
@@ -945,7 +951,12 @@ def main():
                 continue  # Пропускаем обработку этого файла
 
             # Настройка директорий для текущей категории
-            setup_directories(current_config['thumbs_dir'], current_config['cars_dir'])
+            if not os.path.exists(current_config['thumbs_dir']):
+                os.makedirs(current_config['thumbs_dir'])
+            
+            if not os.path.exists(current_config['cars_dir']):
+                os.makedirs(current_config['cars_dir'])
+
 
             # Обработка машин
             cars_element = processor.get_cars_element(root)
@@ -962,13 +973,10 @@ def main():
         # Создаем объединенные XML файлы по категориям в формате data_cars_car
         for category_type in ['new', 'used']:
             if processed_cars_by_category[category_type]:
-                # Определяем путь вывода для категории
-                if category_type == 'used':
-                    output_path = './public/used_cars.xml'
-                    thumbs_dir = 'public/img/thumbs_used/'
-                else:
-                    output_path = './public/cars.xml'
-                    thumbs_dir = config['thumbs_dir']
+                # Получаем конфигурацию для категории из словаря
+                category_config = category_configs[category_type]
+                output_path = category_config['output_path']
+                thumbs_dir = category_config['thumbs_dir']
                 
                 # Создаем корневую структуру data_cars_car
                 data_root = ET.Element('data')
@@ -987,30 +995,32 @@ def main():
                 # Очистка превью для категории
                 cleanup_unused_thumbs(processor.current_thumbs, thumbs_dir)
         
-        # Очистка неиспользуемых файлов для каждой категории
+        # Перенос содержимого из временных папок в основные папки для каждой категории
+        print("📁 Перенос файлов из временных папок в основные...")
         for category_type in ['new', 'used']:
-            if category_type == 'used':
-                cars_dir = 'src/content/used_cars'
-            else:
-                cars_dir = 'src/content/cars'
+            category_config = category_configs[category_type]
+            temp_cars_dir = category_config['temp_cars_dir']
+            cars_dir = category_config['cars_dir']
             
-            if os.path.exists(cars_dir):
-                for existing_file in os.listdir(cars_dir):
-                    filepath = os.path.join(cars_dir, existing_file)
-                    if filepath not in processor.existing_files:
-                        os.remove(filepath)
-                        print(f"🗑️ Удален неиспользуемый файл: {filepath}")
-        
-        if os.path.exists('output.txt') and os.path.getsize('output.txt') > 0:
-            print("❌ Найдены ошибки 404")
-
-        # --- Сохранение данных в JSON с ценами и скидками из фида ---
-        os.makedirs('src/data', exist_ok=True)
-        sorted_cars_price_data = sorted(processor.cars_price_data.values(), key=lambda x: (x['brand'], x['model']))
-        with open('src/data/dealer-models_cars_price.json', 'w', encoding='utf-8') as f:
-            json.dump(sorted_cars_price_data, f, ensure_ascii=False, indent=2)
-        print("✅ Сохранены данные о ценах в src/data/dealer-models_cars_price.json")
-        # --- конец блока ---
+            if os.path.exists(temp_cars_dir) and os.listdir(temp_cars_dir):
+                # Удаляем старое содержимое папки cars_dir
+                if os.path.exists(cars_dir):
+                    shutil.rmtree(cars_dir)
+                    print(f"   Удалено старое содержимое: {cars_dir}")
+                
+                # Создаем папку cars_dir заново
+                os.makedirs(cars_dir, exist_ok=True)
+                
+                # Копируем все файлы из temp_cars_dir в cars_dir
+                for file_name in os.listdir(temp_cars_dir):
+                    src_file = os.path.join(temp_cars_dir, file_name)
+                    dst_file = os.path.join(cars_dir, file_name)
+                    shutil.copy2(src_file, dst_file)
+                    print(f"   Скопирован файл: {file_name}")
+                
+                print(f"✅ Перенесено {len(os.listdir(temp_cars_dir))} файлов для категории {category_type}")
+            else:
+                print(f"⚠️ Временная папка {temp_cars_dir} пуста или не существует для категории {category_type}")
         
     else:
         # Режим обработки одного файла (оригинальная логика, но с новой обработкой)
@@ -1046,14 +1056,32 @@ def main():
         config['new_phone'] = source_config['new_phone']
 
         # Инициализация процессора для конкретного источника
-        processor = CarProcessor(args.source_type)
+        processor = CarProcessor()
+        detected_type = processor.auto_detect_source_type(args.input_file)
+        if detected_type:
+            processor.update_source_type(detected_type)
+            print(f"✅ Автоопределен тип для файла: {detected_type}")
+        else:
+            print(f"❌ Не удалось определить тип для файла: {args.input_file}. Использую тип из аргументов: {args.source_type}")
+            processor.update_source_type(args.source_type)
         
         # Инициализация
         root = get_xml_content(args.input_file, args.xml_url)
         if root is None:
             print(f"[update_cars.py] Не удалось получить XML для файла {args.input_file}. Завершаю выполнение.")
             return  # Завершаем выполнение функции
-        setup_directories(config['thumbs_dir'], args.cars_dir)
+
+        # Настройка директорий для текущей категории
+        if not os.path.exists(config['thumbs_dir']):
+            os.makedirs(config['thumbs_dir'])
+        
+        if not os.path.exists(config['cars_dir']):
+            os.makedirs(config['cars_dir'])
+
+        # Очистка директории для временных файлов
+        if os.path.exists(config['temp_cars_dir']):
+            shutil.rmtree(config['temp_cars_dir'])
+            os.makedirs(config['temp_cars_dir'])
         
         with open('output.txt', 'w') as file:
             file.write("")
@@ -1083,23 +1111,43 @@ def main():
         tree = ET.ElementTree(data_root)
         tree.write(args.output_path, encoding='utf-8', xml_declaration=True)
         
-        # Очистка
+        # Очистка превью
         cleanup_unused_thumbs(processor.current_thumbs, config['thumbs_dir'])
         
-        for existing_file in os.listdir(args.cars_dir):
-            filepath = os.path.join(args.cars_dir, existing_file)
-            if filepath not in processor.existing_files:
-                os.remove(filepath)
+        # Перенос содержимого из временной папки в основную папку
+        print("📁 Перенос файлов из временной папки в основную...")
+        temp_cars_dir = config['temp_cars_dir']
+        cars_dir = config['cars_dir']
         
-        if os.path.exists('output.txt') and os.path.getsize('output.txt') > 0:
-            print("❌ Найдены ошибки 404")
+        if os.path.exists(temp_cars_dir) and os.listdir(temp_cars_dir):
+            # Удаляем старое содержимое папки cars_dir
+            if os.path.exists(cars_dir):
+                shutil.rmtree(cars_dir)
+                print(f"   Удалено старое содержимое: {cars_dir}")
+            
+            # Создаем папку cars_dir заново
+            os.makedirs(cars_dir, exist_ok=True)
+            
+            # Копируем все файлы из temp_cars_dir в cars_dir
+            for file_name in os.listdir(temp_cars_dir):
+                src_file = os.path.join(temp_cars_dir, file_name)
+                dst_file = os.path.join(cars_dir, file_name)
+                shutil.copy2(src_file, dst_file)
+                print(f"   Скопирован файл: {file_name}")
+            
+            print(f"✅ Перенесено {len(os.listdir(temp_cars_dir))} файлов")
+        else:
+            print(f"⚠️ Временная папка {temp_cars_dir} пуста или не существует")
+    
+    if os.path.exists('output.txt') and os.path.getsize('output.txt') > 0:
+        print("❌ Найдены ошибки 404")
 
-        # --- Сохранение данных в JSON с ценами и скидками из фида ---
-        os.makedirs('src/data', exist_ok=True)
-        sorted_cars_price_data = sorted(processor.cars_price_data.values(), key=lambda x: (x['brand'], x['model']))
-        with open('src/data/dealer-models_cars_price.json', 'w', encoding='utf-8') as f:
-            json.dump(sorted_cars_price_data, f, ensure_ascii=False, indent=2)
-        # --- конец блока ---
+    # --- Сохранение данных в JSON с ценами и скидками из фида ---
+    os.makedirs('src/data', exist_ok=True)
+    sorted_cars_price_data = sorted(processor.cars_price_data.values(), key=lambda x: (x['brand'], x['model']))
+    with open('src/data/dealer-models_cars_price.json', 'w', encoding='utf-8') as f:
+        json.dump(sorted_cars_price_data, f, ensure_ascii=False, indent=2)
+    # --- конец блока ---
 
 if __name__ == "__main__":
     main()
