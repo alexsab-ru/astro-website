@@ -1,17 +1,5 @@
 [
   {
-    "brand": "Belgee",
-    "model": "X50",
-    "price": 1824990,
-    "benefit": 655000
-  },
-  {
-    "brand": "Belgee",
-    "model": "X70",
-    "price": 2163200,
-    "benefit": 662700
-  },
-  {
     "brand": "GAC",
     "model": "EMPOW",
     "price": 3019000,
@@ -34,47 +22,5 @@
     "model": "M8",
     "price": 5249999,
     "benefit": 1050000
-  },
-  {
-    "brand": "Geely",
-    "model": "Atlas",
-    "price": 2879990,
-    "benefit": 710000
-  },
-  {
-    "brand": "Geely",
-    "model": "Coolray",
-    "price": 2336900,
-    "benefit": 458090
-  },
-  {
-    "brand": "Geely",
-    "model": "Emgrand",
-    "price": 1727990,
-    "benefit": 452000
-  },
-  {
-    "brand": "Geely",
-    "model": "Monjaro",
-    "price": 3589990,
-    "benefit": 960000
-  },
-  {
-    "brand": "Geely",
-    "model": "Okavango",
-    "price": 3094990,
-    "benefit": 598000
-  },
-  {
-    "brand": "Geely",
-    "model": "Preface",
-    "price": 2790990,
-    "benefit": 567000
-  },
-  {
-    "brand": "KNEWSTAR",
-    "model": "001",
-    "price": 2938990,
-    "benefit": 1224000
   }
 ]
