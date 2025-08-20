@@ -14,12 +14,12 @@ if (hashURL) {
 	window.location.hash = hashURL;
 }
 
-document.querySelectorAll('a[href^="#"]:not(.popup-link)').forEach((link) => {
-	link.addEventListener('click', function (e) {		
-		if(link.classList.contains('scroll-link')){
+document.querySelectorAll('.scroll-link').forEach((link) => {
+	link.addEventListener('click', function (e) {
+		if (window.location.pathname === '/') {
 			e.preventDefault();
 		}
-		let hash = this.getAttribute('href').substring(1);
+		let hash = this.getAttribute('href').substring(2);
 		scroll(hash);
 	});
 });
