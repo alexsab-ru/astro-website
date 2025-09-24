@@ -128,47 +128,67 @@ function replacePlaceholders(content) {
   return { content: updatedContent, hasChanges };
 }
 
-// Функция для конвертации даты в формат DD.MM.YYYY
-const convertToDDMMYYYY = (dateStr) => {
-  const parts = dateStr.split(/[^\d]/);
-  if (parts[0].length === 4) {
-    return `${parts[2]}.${parts[1]}.${parts[0]}`;
-  }
-  return `${parts[0]}.${parts[1]}.${parts[2]}`;
-};
+// Нормализуем любые DD.MM.YYYY / DD-MM-YYYY / YYYY.MM.DD / и т.п. в YYYY-MM-DD
+function normalizeToISO(dateStr) {
+  const p = dateStr.split(/[^\d]/).map(Number);
+  // если первый элемент — это год (YYYY)
+  if (p[0] > 1900) return `${p[0].toString().padStart(4,'0')}-${p[1].toString().padStart(2,'0')}-${p[2].toString().padStart(2,'0')}`;
+  // иначе DD,MM,YYYY
+  return `${p[2].toString().padStart(4,'0')}-${p[1].toString().padStart(2,'0')}-${p[0].toString().padStart(2,'0')}`;
+}
 
-// Функция для проверки, находится ли дата в пределах двух дней
-const isDateWithinTwoDays = (dateStr) => {
-  const [day, month, year] = dateStr.split('.').map(Number);
-  const date = new Date(year, month - 1, day);
+// Проверяем «в пределах 2 дней» для ISO (YYYY-MM-DD)
+function isDateWithinTwoDaysISO(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
   const today = new Date();
-  
-  today.setHours(0, 0, 0, 0);
-  date.setHours(0, 0, 0, 0);
-  
-  const diffTime = Math.abs(today - date);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  return diffDays <= 2 || diffDays === 0;
-};
+  today.setHours(0,0,0,0);
+  date.setHours(0,0,0,0);
+  const diffDays = Math.ceil(Math.abs(today - date) / (1000 * 60 * 60 * 24));
+  return diffDays <= 2;
+}
+
+// Функция для конвертации ISO даты (YYYY-MM-DD) в человеко-читаемый формат (DD.MM.YYYY)
+// Используется только для вывода пользователю, внутри всё хранится в ISO
+function isoToDDMMYYYY(iso) {
+  const [y, m, d] = iso.split('-');
+  return `${d}.${m}.${y}`;
+}
 
 // Функция для поиска дат в содержимом файла
 const searchDates = (content, filePath) => {
-  // Ищем даты в формате DD.MM.YYYY или DD-MM-YYYY или DD/MM/YYYY
-  const format1 = content.match(/\b(\d{2}[.\-/]\d{2}[.\-/]\d{4})\b/g);
-  // Ищем даты в формате YYYY.MM.DD или YYYY-MM-DD или YYYY/MM/DD
-  const format2 = content.match(/\b(\d{4}[.\-/]\d{2}[.\-/]\d{2})\b/g);
-  console.log(filePath, format1, format2);
-  const allDates = [...(format1 || []), ...(format2 || [])];
-  const convertedDates = allDates.map(date => convertToDDMMYYYY(date));
-  const filteredDates = convertedDates.filter(isDateWithinTwoDays);
+  // Разбиваем текст на строки для более точной проверки
+  const lines = content.split('\n');
+  const allDates = [];
 
-  if (filteredDates.length) {
-    filesWithUpcomingDates.push({
-      filePath: filePath,
-      dates: filteredDates
-    });
+  for (const line of lines) {
+     // Проверяем, содержит ли строка pubDate: в начале
+     if (!line.trim().startsWith('pubDate:')) {
+      // Ищем даты в формате DD.MM.YYYY или DD-MM-YYYY или DD/MM/YYYY
+      const format1 = line.match(/\b(\d{2}[.\-/]\d{2}[.\-/]\d{4})\b/g);
+      // Ищем даты в формате YYYY.MM.DD или YYYY-MM-DD или YYYY/MM/DD
+      const format2 = line.match(/\b(\d{4}[.\-/]\d{2}[.\-/]\d{2})\b/g);
+
+      // Добавляем найденные даты в общий массив
+      if (format1) allDates.push(...format1);
+      if (format2) allDates.push(...format2);
+     }
   }
+
+  if (allDates.length) {
+    const converted = allDates.map(normalizeToISO);
+    const filtered = converted.filter(isDateWithinTwoDaysISO);
+    // Уникализируем и сортируем по времени "как строки"
+    const uniqueSorted = Array.from(new Set(filtered)).sort();
+
+    if (uniqueSorted.length) {
+      filesWithUpcomingDates.push({
+        filePath: filePath,
+        dates: uniqueSorted
+      });
+    }
+  }
+  
 };
 
 // Функция для формирования URL в зависимости от расположения файла
@@ -242,11 +262,7 @@ function processDirectory(directory, fileExtensions) {
     } else if (fileExtensions.includes(path.extname(filePath))) {
       // Пропускаем файлы с ценами
       if (!filePath.includes('all-prices.json') && 
-          !filePath.includes('cars_dealer_price.json') && 
-          !filePath.includes('cars.json') && 
-          !filePath.includes('dealer_price.json') && 
-          !filePath.includes('dealer-models_price.json') && 
-          !filePath.includes('federal-models_price.json')) {
+          !filePath.includes('dealer-models_price.json')) {
         processFile(filePath);
       }
     }
@@ -279,28 +295,31 @@ if (filesWithUpcomingDates.length > 0) {
   console.log('\n❗️ ВНИМАНИЕ! Приближаются даты окончания:');
   const domain = process.env.DOMAIN;
   let htmlOutput = '<b>❗️ ВНИМАНИЕ! Приближаются даты окончания:</b>\n\n';
+  let htmlOutputMarketing = '<b>❗️ ВНИМАНИЕ! Приближаются даты окончания:</b>\n\n';
   
   filesWithUpcomingDates.forEach(({ filePath, dates }) => {
     const relativePath = path.relative(process.cwd(), filePath);
     const url = generateUrl(filePath, domain);
     
+    // Преобразуем даты в человеко-читаемый формат один раз
+    const readableDates = dates.map(isoToDDMMYYYY).join(', ');
+    
     // Формируем текст для вывода (одинаковый для консоли и HTML)
-    const outputText = `\nФайл: \`${relativePath}\`
-URL: ${url}
-Даты окончания: ${dates.join(', ')}`;
+    const outputText = `\nФайл: \`${relativePath}\`\nURL: ${url}\nДаты окончания: ${readableDates}`;
     
     // Выводим в консоль
     console.log(outputText);
     
     // Добавляем в HTML для файла
-    htmlOutput += `<strong>Файл:</strong> <code>${relativePath}</code>\n
-<strong>URL:</strong> <a href="${url}">${url}</a>\n
-<strong>Даты окончания:</strong> ${dates.join(', ')}\n
-\n`;
+    htmlOutput += `<strong>Файл:</strong> <code>${relativePath}</code>\n<strong>URL:</strong> <a href="${url}">${url}</a>\n<strong>Даты окончания:</strong> ${readableDates}\n\n`;
+
+    htmlOutputMarketing += `<strong>URL:</strong> <a href="${url}">${url}</a>\n<strong>Даты окончания:</strong> ${readableDates}\n\n`;
   });
   
   // Сохраняем результаты в файл
   const outputPath = './special-offers-dates.txt';
   fs.writeFileSync(outputPath, htmlOutput, 'utf8');
-  console.log(`\nРезультаты сохранены в файл: ${outputPath}`);
+  const outputPathMarketing = './special-offers-dates-marketing.txt';
+  fs.writeFileSync(outputPathMarketing, htmlOutputMarketing, 'utf8');
+  console.log(`\nРезультаты сохранены в файл: ${outputPath}, ${outputPathMarketing}`);
 }
