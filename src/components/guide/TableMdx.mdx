@@ -1,0 +1,110 @@
+# Table
+
+### Входные параметры
+
+_Принимает массив объектов **data[...]** с абсолютно любыми ключами_
+
+_Зарезервированные ключи в объектах: `name`, `title`, `image`, `img`, `photo`, `price`_
+
+```js
+interface Props {
+  data: any[];
+  head?: string[];
+  headClasses?: string;
+  popupText?: string | HTMLElement;
+  imageClasses?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  tableLoyoutFixed?: boolean;
+  lightbox?: boolean;
+  lightboxId?: string;
+}
+```
+
+### Использование
+```js
+---
+import Table from '@/components/Table/Table.astro';
+
+const tableData = [
+    {
+        image: 'https://cdn.alexsab.ru/models/default-model-bg.webp',
+        name: 'GAC GS3',
+        engine: '1.5 AMT 170 л.с.',
+        price: 'от 2 490 000 ₽',
+    },
+    {
+        image: 'https://cdn.alexsab.ru/models/default-model-bg.webp',
+        name: 'Geely Coolray',
+        engine: '1.5 AMT 150 л.с.',
+        price: 'от 1 990 000 ₽',
+    }
+];
+
+const tableData2 = [
+    {
+        name: 'GAC GS3',
+        price: 'от 2 490 000 ₽',
+    },
+    {
+        name: 'Geely Coolray',
+        price: 'от 1 990 000 ₽',
+    },
+    {
+        name: 'Haval Jolion',
+        price: 'от 2 190 000 ₽',
+    }
+];
+
+const tableHead = ['Фото', 'Модель', 'Двигатель', 'Цена'];
+---
+```
+
+```astro
+<section>
+    <div class="container">
+        <h2 class="text-xl sm:text-4xl font-medium mb-14">Таблица c "попапами"</h2>
+
+        <Table 
+            data={tableData} 
+            head={tableHead}
+            lightbox={true}
+            lightboxId="cars-gallery"
+            popupText="Модель"
+        />
+
+        <h2 class="text-xl sm:text-4xl font-medium my-14">Обычная таблица c "table-fixed"</h2>
+
+        <Table 
+            data={tableData2}
+            tableLoyoutFixed={true}
+        />
+
+    </div>
+</section>
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|data|*|Массив объектов с данными для таблицы. **Обязательный**|
+    |head|`[]`|Массив строк для заголовков столбцов|
+    |headClasses|`sm:sticky sm:-top-[1px] lg:top[49px] !bg-accent-500 text-white z-10`|CSS классы для заголовка таблицы|
+    |popupText|-|Текст для popup модального окна при клике на поля `name` или `title`|
+    |imageClasses|`min-w-[50px] sm:min-w-0 max-w-[250px] mx-auto`|CSS классы для изображений|
+    |imageWidth|`250`|Ширина изображений в пикселях|
+    |imageHeight|`177`|Высота изображений в пикселях|
+    |tableLoyoutFixed|`false`|Использовать фиксированную ширину столбцов (`table-fixed`)|
+    |lightbox|`false`|Включить lightbox галерею для изображений|
+    |lightboxId|`gallery-id`|ID для группировки изображений в lightbox|
+</div>
+
+<div class="*:!text-left mb-10">
+    ### **Особенности работы с данными**
+    
+    - Поля с ключами `name` или `title` автоматически становятся ссылками для popup, если указан параметр `popupText`
+    - Поля с ключами `image`, `img` или `photo` автоматически отображаются как изображения
+    - При включенном `lightbox` изображения открываются в галерее
+    - Для изображений в галерее используется `alt` из данных как заголовок и `price` как описание
+</div>
+

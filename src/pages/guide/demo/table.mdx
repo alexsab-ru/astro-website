@@ -1,0 +1,76 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо Компонента Table"
+---
+import BackLink from '@/components/BackLink.astro';
+import Table from '@/components/Table/Table.astro';
+import TableMdx from '@/components/guide/TableMdx.mdx';
+
+export const tableData = [
+    {
+        image: 'https://cdn.alexsab.ru/models/default-model-bg.webp',
+        name: 'GAC GS3',
+        engine: '1.5 AMT 170 л.с.',
+        price: 'от 2 490 000 ₽',
+    },
+    {
+        image: 'https://cdn.alexsab.ru/models/default-model-bg.webp',
+        name: 'Geely Coolray',
+        engine: '1.5 AMT 150 л.с.',
+        price: 'от 1 990 000 ₽',
+    },
+    {
+        image: 'https://cdn.alexsab.ru/models/default-model-bg.webp',
+        name: 'Haval Jolion',
+        engine: '1.5 AMT 143 л.с.',
+        price: 'от 2 190 000 ₽',
+    }
+];
+
+export const tableData2 = [
+    {
+        name: 'GAC GS3',
+        price: 'от 2 490 000 ₽',
+    },
+    {
+        name: 'Geely Coolray',
+        price: 'от 1 990 000 ₽',
+    },
+    {
+        name: 'Haval Jolion',
+        price: 'от 2 190 000 ₽',
+    }
+];
+
+export const tableHead = ['Фото', 'Модель', 'Двигатель', 'Цена'];
+
+<section class="content">
+    <div class="container">
+        <h2 class="text-xl sm:text-4xl font-medium mb-14">Таблица c "попапами"</h2>
+
+        <Table 
+            data={tableData} 
+            head={tableHead}
+            lightbox={true}
+            lightboxId="cars-gallery"
+            popupText="Модель"
+        />
+
+        <h2 class="text-xl sm:text-4xl font-medium my-14">Обычная таблица c "table-fixed"</h2>
+
+        <Table 
+            data={tableData2}
+            tableLoyoutFixed={true}
+        />
+
+    </div>
+</section>
+
+<div class="container content mt-10">
+    <TableMdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>
+
