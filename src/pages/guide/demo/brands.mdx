@@ -1,0 +1,34 @@
+---
+layout: "@/layouts/Layout.astro"
+title: "Демо Компонента Brands"
+---
+import BackLink from '@/components/BackLink.astro';
+import Brands from '@/components/Brands/Brands.astro';
+import BrandsMdx from '@/components/guide/BrandsMdx.mdx';
+
+<section class="bg-gray-800 text-white">
+    <div class="container">
+        <h2 class="text-xl sm:text-4xl font-medium mb-14">Бренды (тип: logo)</h2>
+
+        <Brands type="logo" />
+
+    </div>
+</section>
+
+<section class="">
+    <div class="container">
+        <h2 class="text-xl sm:text-4xl font-medium mb-14">Бренды (тип: card)</h2>
+
+        <Brands type="card" />
+
+    </div>
+</section>
+
+<div class="container content mt-10">
+    <BrandsMdx />
+</div>
+
+<div class="my-10 px-10">
+    <BackLink />
+</div>
+

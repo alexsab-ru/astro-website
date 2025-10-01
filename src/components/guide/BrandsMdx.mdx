@@ -1,0 +1,47 @@
+# Brands
+
+### Входные параметры
+
+```js
+interface Props {
+  type?: string;
+}
+```
+
+### Использование
+
+```astro
+---
+import Brands from '@/components/Brands/Brands.astro';
+---
+
+<section>
+    <div class="container">
+        <h2 class="text-xl sm:text-4xl font-medium mb-14">Наши бренды</h2>
+
+        <Brands type="card" />
+
+    </div>
+</section>
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|type|`logo`|Тип отображения брендов: `logo` - только логотипы, `card` - карточки с количеством моделей|
+</div>
+
+<div class="*:!text-left mb-10">
+    ### **Особенности работы компонента**
+    
+    - Список брендов берется из `src/data/settings.json` (поле `brand`)
+    - Компонент автоматически подсчитывает количество моделей для каждого бренда из файлов в `src/content/cars/`
+    - При типе `logo` отображаются только логотипы брендов в виде простой сетки
+    - При типе `card` отображаются карточки с:
+        - Цветным логотипом бренда
+        - Названием бренда
+        - Количеством моделей в наличии
+        - Ссылкой на каталог с фильтром по бренду (`/cars/?brand={brand}`)
+    - Логотипы загружаются с CDN: `https://cdn.alexsab.ru/logo/{brand}/logo-color.svg` (для карточек) или `logo-footer.svg` (для логотипов)
+</div>
+
