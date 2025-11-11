@@ -12,6 +12,18 @@
     "benefit": 662700
   },
   {
+    "brand": "GAC",
+    "model": "GS3",
+    "price": 2229000,
+    "benefit": 220000
+  },
+  {
+    "brand": "GAC",
+    "model": "GS8",
+    "price": 4199000,
+    "benefit": 350000
+  },
+  {
     "brand": "Geely",
     "model": "Atlas",
     "price": 2879990,
