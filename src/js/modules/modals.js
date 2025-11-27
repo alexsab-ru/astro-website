@@ -41,6 +41,52 @@ document.querySelectorAll(".popup-link").forEach(
 			if (formName && formInput) {
 				formInput.value = formName;
 			}
+			const chooseDepartment = link.dataset.choose_department;
+			// Если выбор отдела не разрешён (choose_department !== 'true') —
+			// 1) устанавливаем по умолчанию "Отдел продаж"
+			// 2) блокируем радио-инпуты, чтобы пользователь не менял
+			// 3) скрываем весь блок выбора отдела для визуальной чистоты
+			// Если разрешён — возвращаем блок в исходное состояние
+			const departamentBlock = targetModal.querySelector('[data-departament-block]');
+			const departamentRadios = targetModal.querySelectorAll('input[name="departament"]');
+			const isChooseDeptEnabled = String(chooseDepartment).toLowerCase() === 'true';
+			if (departamentBlock && departamentRadios && departamentRadios.length) {
+				if (!isChooseDeptEnabled) {
+					// Выбираем по умолчанию "Отдел продаж"
+					departamentRadios.forEach((radio) => {
+						if (radio.value === 'Отдел продаж') {
+							radio.checked = true;
+						}
+						// Блокируем возможность изменения
+						radio.disabled = true;
+					});
+					// Скрываем сам блок
+					departamentBlock.classList.add('hidden');
+				} else {
+					// Разрешён выбор отдела — показываем блок и разблокируем радио
+					departamentBlock.classList.remove('hidden');
+					departamentRadios.forEach((radio) => {
+						radio.disabled = false;
+					});
+				}
+			}
+
+			const params = new URLSearchParams(document.location.search);
+			const brandParams = params.get("brand");
+			const root = document.documentElement;
+			const dataBrand = root.dataset.brand || brandParams || link.dataset.filtering;
+			
+			if(dataBrand){
+				let salonsStore = Alpine.store('salonsStore');
+				const sorting = link.dataset.sorting;
+				if(sorting){
+					salonsStore.sortingData(dataBrand);
+				}else{
+					salonsStore.filterData(dataBrand);
+				}
+			}
+			
+
 			reachGoal("form_open");
 			targetModal.classList.remove("hidden");
 			document.body.classList.add("overflow-hidden");

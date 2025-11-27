@@ -14,9 +14,10 @@ const { phone_common } = settings;
 
 // Ссылки под хедером
 import { groupArrayByKey } from '@/js/utils/groupArrayByKey';
+import { isModelVisible } from '@/js/utils/modelVisibility';
 import modelsData from '@/data/models.json';
 const { models } = modelsData;
-const groupModelsByBrand = groupArrayByKey(models.filter(model => model.show), 'mark_id');
+const groupModelsByBrand = groupArrayByKey(models.filter(isModelVisible), 'mark_id');
 
 // Конфигурация для динамических меню
 const dynamicMenuConfig = {
@@ -26,7 +27,9 @@ const dynamicMenuConfig = {
 		transform: (model) => ({
 			url: `/models/${model.id}/`,
 			name: model.name.toUpperCase(),
-			thumb: model.thumb
+			thumb: model.thumb,
+			status: model?.status || null,
+			badge: model?.badge || null,
 		})
 	}
 	// В будущем можно добавить другие типы:
@@ -66,6 +69,8 @@ menu.length > 0 && menu.map(item => {
 });
 
 export const LINKS_MENU = menu;
+
+export const STATUS = ['enable','show','disable','hide','preorder','comminsoon'];
 
 // Коллекции теперь хранятся в @/data/collections.json
 
