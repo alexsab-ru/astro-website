@@ -9,21 +9,17 @@ interface Props {
 	breadcrumb?: TBreadcrumb[];
 	backLink? : boolean;
 	keywords?: string;
-	content?: any;
+	brand?: string;
 }
-const {title, h1, description, image, breadcrumb, backLink = false, keywords, content} = Astro.props;
+const {title, h1, description, image, breadcrumb, backLink = false, keywords, brand} = Astro.props;
 import Layout from '@/layouts/Layout.astro';
 import Breadcrumbs from '@/components/Breadcrumbs/Breadcrumbs.astro';
 import BackLink from '@/components/BackLink.astro';
 ---
 
-<Layout title={title || h1 || content?.title} description={description} image={image} keywords={keywords}>
+<Layout title={title || h1} description={description} image={image} keywords={keywords} brand={brand?.toLowerCase() || null}>
 	<section class="content">
-		<div class="container">
-			{breadcrumb && <Breadcrumbs breadcrumb={breadcrumb} />}
-			<PageH1 h1={h1} />
 			<slot />
-
 			{backLink && (
 				<div class="mt-10">
 					<BackLink />
