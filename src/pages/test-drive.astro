@@ -45,6 +45,10 @@ const { testDrive } = modelsData;
 				<template x-for="(model, index) in models" :key="model.id+index">
 					<div class="contents">
 						<!-- Невидимый разделитель перед новым брендом -->
+						<div x-show="index > 0 && models[index - 1].mark_id !== model.mark_id" 
+							 class="basis-full h-0"></div>
+						
+						<!-- Ваша кнопка -->
 						<button
 							class="text-sm sm:text-base py-3 px-2 sm:px-4 rounded relative cursor-pointer"
 							:class="model?.id === current?.id ? 'bg-accent-500 text-white!' : 'bg-gray-200'"

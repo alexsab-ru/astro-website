@@ -19,7 +19,11 @@ import BackLink from '@/components/BackLink.astro';
 
 <Layout title={title || h1} description={description} image={image} keywords={keywords} brand={brand?.toLowerCase() || null}>
 	<section class="content">
+		<div class="container">
+			{breadcrumb && <Breadcrumbs breadcrumb={breadcrumb} />}
+			<PageH1 h1={h1} />
 			<slot />
+
 			{backLink && (
 				<div class="mt-10">
 					<BackLink />
