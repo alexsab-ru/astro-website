@@ -36,12 +36,12 @@ import './styles.css';
 		<div class="container">
 			<div class="flex items-center justify-between xs:py-2 xs:h-auto h-[60px] md:h-[80px]">
 				<Logo />
-				<div class="flex items-center xs:gap-2 gap-4 xl:gap-10">
+				<div class="flex items-center xs:gap-2 gap-4 lg:gap-10 xl:gap-10 xs:grow xs:shrink-0 xs:justify-end">
 					<div class="hidden md:flex flex-col">
 					{
 						salons.length && salons.map((salon: any, index) => {
 							return index < 2 && (
-						<a href={`tel:${phoneFormat(salon.phone)}`} class="whitespace-nowrap font-extrabold text-base xl:text-lg flex items-center gap-1 flex-nowrap transition-colors text-header-text hover:text-header-text/80 *:transition-colors *:text-header-text hover:*:text-header-text/80" title={salon.name}><Icon name="mdi:cellphone" class="text-xl" /> {salon.phone}</a>
+						<a href={`tel:${phoneFormat(salon.phone)}`} class="whitespace-nowrap font-weight-bold text-base xl:text-lg flex items-center gap-1 flex-nowrap transition-colors text-header-text hover:text-header-text/80 *:transition-colors *:text-header-text hover:*:text-header-text/80" title={salon.name}><Icon name="mdi:cellphone" class="text-xl" /> {salon.phone}</a>
 							)
 						})
 					}
@@ -57,7 +57,7 @@ import './styles.css';
 								>Адреса салонов</a>
 								<small class="block text-xs">{salons.length}&nbsp;{declOfNums(salons.length, ['салон', 'салона', 'салонов'])}</small>
 							</div>) : (
-							<div class="hidden lg:flex items-center gap-1 font-medium text-sm xl:text-base">
+							<div class="hidden xl:flex items-center gap-1 font-medium text-sm xl:text-base">
 								<Icon name="mdi:map-marker-outline" class="text-2xl text-header-text" />
 								<Fragment set:html={salons[0].address} />
 							</div>
@@ -128,7 +128,7 @@ import './styles.css';
 					<div class="flex flex-col gap-3 py-5 px-5 border-t first:border-0">
 						<div class="font-medium text-lg">{salon.name}</div>
 						<a href="#contacts" class="text-xl flex items-center gap-1 flex-nowrap text-header-text hover:text-header-text"><Icon name="mdi:map-marker-outline" class="text-2xl shrink-0 text-header-text" /><Fragment set:html={salon.address} /></a>
-						<a href={`tel:${phoneFormat(salon.phone)}`} class="text-2xl font-extrabold text-header-text flex items-center gap-1 flex-nowrap transition-colors hover:text-header-text" title={salon.name}><Icon name="mdi:cellphone" class="text-xl text-header-text" /> {salon.phone}</a>
+						<a href={`tel:${phoneFormat(salon.phone)}`} class="text-2xl font-weight-bold text-header-text flex items-center gap-1 flex-nowrap transition-colors hover:text-header-text" title={salon.name}><Icon name="mdi:cellphone" class="text-xl text-header-text" /> {salon.phone}</a>
 					</div>
 				))}
 				</div>

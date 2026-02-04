@@ -16,10 +16,10 @@ show_help() {
     echo
     echo "Available files:"
     echo "  banners.json"
+    echo "  collections.json"
     echo "  faq.json"
     echo "  federal-disclaimer.json"
     echo "  menu.json"
-    echo "  models-sections.yml"
     echo "  models.json"
     echo "  reviews.json"
     echo "  salons.json"
@@ -44,7 +44,6 @@ FILES=(
     "faq.json"
     "federal-disclaimer.json"
     "menu.json"
-    "models-sections.yml"
     "models.json"
     "reviews.json"
     "salons.json"
@@ -138,25 +137,3 @@ fi
 # Показываем результат
 printf "\n${BGGREEN}Downloaded files:${Color_Off}\n"
 ls -al src/data
-
-# Скачиваем общий models.json
-echo -e "\n${BGGREEN}Скачиваем общий models.json...${Color_Off}"
-curl -s "$JSON_PATH/models.json" -o src/data/all-models.json
-
-# Проверяем, что файл скачался и это не HTML-страница (например, 404)
-if [ ! -s src/data/all-models.json ] || grep -q '<!DOCTYPE html' src/data/all-models.json; then
-    printf "${BGRED}Внимание: общий файл models.json не найден или получен некорректный файл!${Color_Off}\n"
-else
-    node .github/scripts/filterModelsByBrand.js
-fi
-
-# Скачиваем общий cars.json
-echo -e "\n${BGGREEN}Скачиваем общий cars.json...${Color_Off}"
-curl -s "$JSON_PATH/cars.json" -o src/data/all-cars.json
-
-# Проверяем, что файл скачался и это не HTML-страница (например, 404)
-if [ ! -s src/data/all-cars.json ] || grep -q '<!DOCTYPE html' src/data/all-cars.json; then
-    printf "${BGRED}Внимание: общий файл cars.json не найден или получен некорректный файл!${Color_Off}\n"
-else
-    printf "${BGGREEN}Общий файл cars.json успешно скачан${Color_Off}\n"
-fi

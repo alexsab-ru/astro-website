@@ -23,6 +23,7 @@
   --color-accent-500: #024e6b;
 
   --logo-header-height: clamp(1rem, 2vw + 0.25rem, 1.5rem);
+  --logo-map-info-height: clamp(1rem, 2vw + 0.25rem, 1.2rem);
 
   --color-header-bg: var(--color-accent-500);
   --color-header-text: color-mix(in srgb, var(--color-white) 90%, transparent);
@@ -44,5 +45,6 @@
   --font-sans: "TT Runs", Roboto, ui-sans-serif, system-ui, -apple-system, Segoe UI, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-heading: inherit;
   --font-weight-heading-weight: 600;
+  --font-weight-weight-bold: 600;
 }
 
