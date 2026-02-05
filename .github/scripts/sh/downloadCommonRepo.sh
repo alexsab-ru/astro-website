@@ -281,7 +281,7 @@ fi
 
 # Удаляем временную директорию после обработки всех брендов
 printf "\n${BGYELLOW}Удаляем временный репозиторий...${Color_Off}\n"
-# rm -rf "$TMP_DIR"
+rm -rf "$TMP_DIR"
 trap - EXIT INT TERM
 
 echo "✅ Done"
