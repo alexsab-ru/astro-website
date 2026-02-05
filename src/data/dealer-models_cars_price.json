@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "brand": "Gac",
+    "model": "GS8",
+    "price": 3589000,
+    "benefit": 1050000
+  },
+  {
+    "brand": "Gac",
+    "model": "S7",
+    "price": 5849000,
+    "benefit": 200000
+  }
+]
