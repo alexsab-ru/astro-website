@@ -11,11 +11,36 @@ const readJson = (filePath) => {
   }
 };
 
-const parseList = (str) =>
-  (str || '')
-    .split(',')
-    .map(s => s.trim().toLowerCase())
-    .filter(Boolean);
+const readOptionalJson = (filePath) => {
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (err) {
+    logError(`Ошибка чтения JSON файла: ${filePath}`);
+    return null;
+  }
+};
+
+const parseList = (value) => {
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .flatMap(item => (typeof item === 'string' ? item.split(',') : []))
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  return [];
+};
 
 const normalizeArray = (arr) =>
   Array.isArray(arr) ? arr.map(id => String(id).toLowerCase()) : [];
@@ -52,7 +77,7 @@ try {
   if (!settings) throw new Error('Не удалось загрузить файл settings.json');
   const allModels = readJson(allModelsFilePath);
   if (!allModels) throw new Error('Не удалось загрузить файл all-models.json');
-  const federalDisclaimer = readJson(federalDisclaimerFilePath);
+  const federalDisclaimer = readOptionalJson(federalDisclaimerFilePath);
 
   if (settings.brand == 'BRAND') {
     // random brand from unique brands
@@ -60,13 +85,18 @@ try {
     logWarning('Ни одна модель не прошла фильтрацию. models.json будет заполнен случайным брендом: ' + settings.brand);
   }
   let brands = parseList(settings.brand);
+  const hasBrandFilter = brands.length > 0;
+  if (!hasBrandFilter) {
+    logWarning('brand не указан в settings.json: фильтруем models.json по всем брендам');
+  }
+
   const modelIDs = normalizeArray(settings.modelIDs);
   const testDriveIDs = normalizeArray(settings.testDriveIDs);
   const serviceIDs = normalizeArray(settings.serviceIDs);
 
   // Универсальная фильтрация по бренду и ID
   const filterBy = (targetIDs) => (m) => {
-    const markMatch = m.mark_id && brands.includes(String(m.mark_id).toLowerCase());
+    const markMatch = !hasBrandFilter || (m.mark_id && brands.includes(String(m.mark_id).toLowerCase()));
     const idMatch = m.id && targetIDs.includes(String(m.id).toLowerCase());
     // Модель видна, если: (status существует и не 'disable' и не 'hide') ИЛИ show === true
     const isVisible = (m?.status && m.status !== 'disable' && m.status !== 'hide') || m?.show;

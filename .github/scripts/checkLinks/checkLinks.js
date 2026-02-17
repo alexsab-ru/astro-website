@@ -38,7 +38,7 @@ const linksToSkip = [
   'https://shop.vsk.ru/',
   'https://www.vsk.ru/klientam',
   'https://www.cbr.ru/statistics/insurance/ssd_stat/',
-
+  'https://sovcombank.ru/'
 ];
 
 dotenv.config();
@@ -51,6 +51,10 @@ const RETRY_CONFIG = {
   retryDelay: 2000, // 2 секунды
   timeout: 10000, // 10 секунд
 };
+
+const Codes = {
+  RATE_LIMIT: 429, // Rate limiting - не ошибка ссылки, а защита от ботов
+}
 
 /**
  * Gets domain from environment variable or .env file
@@ -214,19 +218,29 @@ async function retryBrokenLinks(brokenLinks) {
         retryErrors: true,
         retryErrorsCount: RETRY_CONFIG.maxRetries,
         retryErrorsJitter: RETRY_CONFIG.retryDelay,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'ru-RU,ru;q=0.9,en;q=0.8',
+        }
       });
       
       const linkResult = result.links[0];
       if (linkResult && linkResult.state === 'BROKEN') {
-        retryResults.push({
-          url: link.url, // Сохраняем оригинальную ссылку в отчете
-          parent: link.parent,
-          status: linkResult.status,
-          retryAttempts: RETRY_CONFIG.maxRetries + 1,
-          transformedUrl: isVkEmbed ? transformedUrl : undefined,
-          error: extractFailureReason(linkResult.failureDetails),
-        });
-        console.log(`❌ Ссылка действительно битая: ${transformedUrl} (статус: ${linkResult.status})`);
+        // Исключаем 429 (Rate Limiting) - это не битая ссылка, а защита от ботов
+        if (linkResult.status === Codes.RATE_LIMIT) {
+          console.log(`⏭️ Пропускаю ${transformedUrl} - статус 429 (Rate Limiting). Сервер работает, но ограничивает частоту запросов`);
+        } else {
+          retryResults.push({
+            url: link.url, // Сохраняем оригинальную ссылку в отчете
+            parent: link.parent,
+            status: linkResult.status,
+            retryAttempts: RETRY_CONFIG.maxRetries + 1,
+            transformedUrl: isVkEmbed ? transformedUrl : undefined,
+            error: extractFailureReason(linkResult.failureDetails),
+          });
+          console.log(`❌ Ссылка действительно битая: ${transformedUrl} (статус: ${linkResult.status})`);
+        }
       } else {
         console.log(`✅ Ссылка работает после повторной проверки: ${transformedUrl}`);
       }
@@ -288,6 +302,14 @@ async function checkLinks() {
 
   const brokenLinks = result.links
     .filter(x => x.state === 'BROKEN')
+    .filter(x => {
+      // Исключаем 429 (Rate Limiting) - это не битая ссылка, а временная блокировка
+      if (x.status === Codes.RATE_LIMIT) {
+        console.log(`⏭️ Пропускаю ${x.url} - статус 429 (Rate Limiting), сервер работает`);
+        return false;
+      }
+      return true;
+    })
     .map((item) => {
       return {
         url: item.url,

@@ -20,9 +20,16 @@ salons
 
 `<br />(далее совместно именуемые — «Операторы», а отдельно — «Оператор»).`;
 
-const contact_text = legal_entity && legal_inn ? 
-`${legal_entity ? `- Наименование организации: ${legal_entity};<br />` : ''}${legal_city ? `- Юридический адрес: ${legal_city};<br />` : ''}${phone_common ? `- Телефон: ${phone_common};<br />` : ''}${email_common ? `- Электронная почта: ${email_common}.` : ''}` : 
-`По всем вопросам, связанным с обработкой персональных данных, вы можете обратиться к администрациям Операторов через форму обратной связи на сайте ${site} или по контактным данным, указанным на Сайте.`;
+const contact_text = salons
+    .filter(salon => (salon?.name && salon?.name !== '' || salon?.legal_entity && salon?.legal_entity !== ''))
+    .map(s => `<p class="not-last:border-b not-last:pb-4">` +
+        `${s?.name ? `<strong>${s?.name}</strong><br />` : ''}` +
+        `${s?.legal_entity || legal_entity ? `- Юридическое лицо: <strong>${s?.legal_entity || legal_entity}</strong><br />` : ''}` +
+        `${s?.legal_inn || legal_inn ? `- ИНН: <strong>${s?.legal_inn || legal_inn}</strong><br />` : ''}` +
+        `${s?.address ? `- Юридический адрес: <strong>${s?.address}</strong><br />` : ''}` +
+        `${s?.phone ? `- Телефон: <strong>${s?.phone}</strong><br />` : ''}` +
+        `${s?.email ? `- Электронная почта: <strong>${s?.email}</strong>` : ''}` +
+    `</p>`).join('');
 ---
 
 <PageLayout
@@ -38,7 +45,7 @@ const contact_text = legal_entity && legal_inn ?
 
 <PrivacyPolicy />
 
-<p set:html={contact_text} />
+<Fragment set:html={contact_text} />
 
 
 </PageLayout>
