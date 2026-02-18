@@ -1,0 +1,53 @@
+---
+import Layout from '@/layouts/Layout.astro';
+// import { ChatWidget } from '@/components/React/ChatWidget/ChatWidget';
+import { ChatWidget } from '@/components/React/ChatWidget/ChatWidget-v2';
+import { USPSection } from '@/components/React/USPSection';
+import Banner from '@/components/Banner/Banner.astro'
+import answers from '@/data/quiz.json';
+const banners = [
+    {
+        "id": 1,
+        "show": true,
+        "type": "video",
+        "view": "popup-link",
+        "video": {
+            "desktop": "https://alexsab.ru/video/jetour-dashing-compress.mp4"
+        },
+        "image": {
+            "desktop": "https://cdn.alexsab.ru/models/default-model-bg.webp"
+        },
+        "title": "Заголовок баннера до 31.08.2024",
+        "descr": "Подзаголовок баннера может быть длиннее или короче за 1 234 567 ₽",
+        "btn": "Онлайн запись",
+        "btnUrl": "#common-modal",
+        "dataTitle": "Онлайн запись",
+        "dataFormName": "Онлайн запись. Баннер",
+        "badge": {
+            "autoname": "Jetour Dashing",
+            "title": "Ежегодная национальная премия",
+            "descr": "Победитель номинации <br>«новинка в&nbsp;массовом сегменте»",
+            "image": "https://jetour-alpha.ru/img/badge-4x4-2024.png"
+        },
+        "autoplay": 6000
+    },
+];
+---
+
+<Layout
+    h1="Политика конфиденциальности"
+    title="Политика конфиденциальности"
+    description={`Политика конфиденциальности: цели и правовые основания обработки персональных данных по 152-ФЗ, перечень данных, права пользователя и контакты оператора.`}
+>
+
+<Banner banners={banners} />
+
+<section>
+    <div class="container">
+        <USPSection client:only />
+        <ChatWidget client:only config={answers} />
+    </div>
+</section>
+
+
+</Layout>
