@@ -38,7 +38,8 @@ interface ChatWidgetProps {
   config: QuizConfig;
   accent?: string;
   managerName?: string;
-  brandName?: string;
+  brand?: string;
+  dealer?: string;
 }
 
 // ──────────────── component ────────────────
@@ -47,7 +48,8 @@ export function ChatWidget({
   config,
   accent = DEFAULT_ACCENT,
   managerName = "Алексей — ваш менеджер",
-  brandName = "Официальный дилер",
+  brand = "CHERY",
+  dealer = "Официальный дилер",
 }: ChatWidgetProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState("welcome");
@@ -71,7 +73,11 @@ export function ChatWidget({
 
   // ───── intro ─────
   map.intro = {
-    botMessages: [stripHtml(intro.title)],
+    botMessages: [
+      "Здравствуйте! 👋",
+      `Я — менеджер ${brand}. Помогу подобрать автомобиль за пару минут!`,
+      stripHtml(intro.title)
+    ],
     nextStep: () => questions[0]?.id || "done",
   };
 
@@ -257,7 +263,7 @@ export function ChatWidget({
   // ──────────────── UI (ПОЛНОСТЬЮ СОХРАНЕН) ────────────────
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pb-8">
+    <div className="w-full max-w-7xl mx-auto">
       <div
         className="flex flex-col rounded-2xl overflow-hidden border border-gray-200 shadow-xl"
         style={{ height: "min(640px, 70vh)" }}
@@ -285,7 +291,7 @@ export function ChatWidget({
             className="px-3 py-1 rounded-full bg-white/15 hidden sm:block"
             style={{ fontSize: 12 }}
           >
-            {brandName}
+            {dealer}
           </div>
         </div>
 
@@ -313,14 +319,14 @@ export function ChatWidget({
                     : "bg-white text-gray-800 rounded-2xl rounded-bl-md shadow-sm border border-gray-100"
                 }`}
                 style={{
-                  fontSize: 14,
+                  fontSize: 13,
                   lineHeight: 1.55,
                   ...(msg.type === "user"
                     ? { backgroundColor: accent }
                     : {}),
                 }}
+                dangerouslySetInnerHTML={{__html: msg.text}}
               >
-                {msg.text}
               </div>
             </motion.div>
           ))}
@@ -401,7 +407,7 @@ export function ChatWidget({
             animate={{ opacity: 1, y: 0 }}
             className="px-4 sm:px-5 py-3 bg-white border-t border-gray-100 shrink-0"
           >
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <input
                 type={cfg.inputField.type}
                 placeholder={cfg.inputField.placeholder}
@@ -410,11 +416,11 @@ export function ChatWidget({
                 onKeyDown={(e) =>
                   e.key === "Enter" && handleInputSubmit()
                 }
-                className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 outline-none"
+                className="flex-1 bg-gray-100 rounded-full px-3 py-1.5 sm:px-4 sm:py-2.5 outline-none"
               />
               <button
                 onClick={handleInputSubmit}
-                className="w-10 h-10 rounded-full text-white flex items-center justify-center"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full text-white flex items-center justify-center shrink-0"
                 style={{ backgroundColor: accent }}
               >
                 <Send className="w-4 h-4" />
@@ -424,7 +430,7 @@ export function ChatWidget({
         )}
 
         <div className="px-4 py-2.5 bg-white border-t border-gray-100 shrink-0 text-center text-gray-300 text-xs">
-          {brandName}
+          {dealer}
         </div>
       </div>
     </div>
