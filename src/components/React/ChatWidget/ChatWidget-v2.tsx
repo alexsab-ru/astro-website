@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion } from "motion/react";
 import { Send, User, CheckCircle2 } from "lucide-react";
-
+import { Footer, Header, Message, Typing, OptionButton } from "./Elements"
+ 
 const DEFAULT_ACCENT = "#d40221";
 
 // ──────────────── types ────────────────
@@ -264,36 +265,8 @@ export function ChatWidget({
 
   return (
     <div className="w-full max-w-7xl mx-auto">
-      <div
-        className="flex flex-col rounded-2xl overflow-hidden border border-gray-200 shadow-xl"
-        style={{ height: "min(640px, 70vh)" }}
-      >
-        {/* Header */}
-        <div
-          className="text-white px-5 py-4 flex items-center gap-3 shrink-0"
-          style={{
-            background: `linear-gradient(135deg, ${accent}, #a50019)`,
-          }}
-        >
-          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-            <User className="w-5 h-5" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div style={{ fontSize: 15, fontWeight: 600 }}>
-              {managerName}
-            </div>
-            <div className="flex items-center gap-1.5" style={{ fontSize: 12 }}>
-              <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
-              Онлайн
-            </div>
-          </div>
-          <div
-            className="px-3 py-1 rounded-full bg-white/15 hidden sm:block"
-            style={{ fontSize: 12 }}
-          >
-            {dealer}
-          </div>
-        </div>
+      <div className="flex flex-col rounded-2xl overflow-hidden border border-gray-200 shadow-xl min-h-[500px] h-[70vh]">
+        <Header managerName={managerName} dealer={dealer} />
 
         {/* Messages */}
         <div
