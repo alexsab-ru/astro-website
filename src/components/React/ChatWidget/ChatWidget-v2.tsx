@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion } from "motion/react";
 import { Send, User, CheckCircle2 } from "lucide-react";
-import { Footer, Header, Message, Typing, OptionButton } from "./Elements"
+import { Footer, Header, Message, Typing } from "./Elements"
  
 const DEFAULT_ACCENT = "#d40221";
 
