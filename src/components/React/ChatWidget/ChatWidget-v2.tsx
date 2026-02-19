@@ -292,13 +292,7 @@ export function ChatWidget({
                     setShowOptions(false);
                     handleAnswer(opt.value);
                   }}
-                  className="bg-white border px-4 py-2 rounded-full hover:shadow-md transition-all cursor-pointer shadow-sm"
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    borderColor: `${accent}40`,
-                    color: accent,
-                  }}
+                  className="bg-white px-4 py-2 rounded-full hover:shadow-md transition-all cursor-pointer shadow-sm text-sm font-medium border border-accent-500 text-accent-500"
                 >
                   {opt.label}
                 </button>
@@ -314,10 +308,10 @@ export function ChatWidget({
             >
               <div className="bg-green-50 border border-green-200 rounded-2xl px-6 py-5 text-center">
                 <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-2" />
-                <div className="text-green-800" style={{ fontSize: 15, fontWeight: 600 }}>
+                <div className="text-green-800 text-sm font-semibold">
                   Заявка отправлена!
                 </div>
-                <div className="text-green-600 mt-1" style={{ fontSize: 13 }}>
+                <div className="text-green-600 mt-1 text-xs">
                   Ожидайте звонка менеджера
                 </div>
               </div>
@@ -345,10 +339,9 @@ export function ChatWidget({
               />
               <button
                 onClick={handleInputSubmit}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full text-white flex items-center justify-center shrink-0"
-                style={{ backgroundColor: accent }}
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full text-white flex items-center justify-center shrink-0 bg-accent-500"
               >
-                <Send className="w-4 h-4" />
+                <Send className="size-3 sm:size-4" />
               </button>
             </div>
           </motion.div>
