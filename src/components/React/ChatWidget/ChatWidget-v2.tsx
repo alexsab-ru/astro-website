@@ -354,9 +354,7 @@ export function ChatWidget({
           </motion.div>
         )}
 
-        <div className="px-4 py-2.5 bg-white border-t border-gray-100 shrink-0 text-center text-gray-300 text-xs">
-          {dealer}
-        </div>
+        <Footer dealer={dealer} />
       </div>
     </div>
   );
