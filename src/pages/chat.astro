@@ -45,7 +45,7 @@ const banners = [
 <section>
     <div class="container">
         <USPSection client:only />
-        <ChatWidget client:only config={answers} />
+        <ChatWidget client:visible={{rootMargin: "0px"}} config={answers} />
     </div>
 </section>
 
