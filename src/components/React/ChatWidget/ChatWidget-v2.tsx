@@ -274,34 +274,7 @@ export function ChatWidget({
           className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3 bg-gray-50"
         >
           {messages.map((msg) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22 }}
-              className={`flex ${
-                msg.type === "user"
-                  ? "justify-end"
-                  : "justify-start"
-              }`}
-            >
-              <div
-                className={`max-w-[75%] px-4 py-2.5 ${
-                  msg.type === "user"
-                    ? "text-white rounded-2xl rounded-br-md"
-                    : "bg-white text-gray-800 rounded-2xl rounded-bl-md shadow-sm border border-gray-100"
-                }`}
-                style={{
-                  fontSize: 13,
-                  lineHeight: 1.55,
-                  ...(msg.type === "user"
-                    ? { backgroundColor: accent }
-                    : {}),
-                }}
-                dangerouslySetInnerHTML={{__html: msg.text}}
-              >
-              </div>
-            </motion.div>
+            <Message message={msg} key={msg.id} />
           ))}
 
           {isTyping && (
