@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion } from "motion/react";
 import { Send, User, CheckCircle2 } from "lucide-react";
-import { Footer, Header, Message, Typing } from "./Elements"
- 
-const DEFAULT_ACCENT = "#d40221";
+import { Footer, Header, Message, Typing } from "./Elements";
 
 // ──────────────── types ────────────────
 
@@ -37,7 +35,6 @@ interface StepConfig {
 
 interface ChatWidgetProps {
   config: QuizConfig;
-  accent?: string;
   managerName?: string;
   brand?: string;
   dealer?: string;
@@ -47,7 +44,6 @@ interface ChatWidgetProps {
 
 export function ChatWidget({
   config,
-  accent = DEFAULT_ACCENT,
   managerName = "Алексей — ваш менеджер",
   brand = "CHERY",
   dealer = "Официальный дилер",
