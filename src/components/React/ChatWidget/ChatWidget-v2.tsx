@@ -44,7 +44,7 @@ interface QuizQuestion {
   id: string;
   type: "radio" | "checkbox";
   title: string;
-  answerOptions: string[];
+  answerOptions: any[];
 }
 
 interface QuizFinal {
@@ -56,7 +56,12 @@ type QuizConfig = Array<QuizIntro | QuizQuestion | QuizFinal>;
 
 interface StepConfig {
   botMessages: string[];
-  options?: { label: string; value: string }[];
+  options?: { 
+    label: string; 
+    value: string; 
+    image?: string;
+    description?: string; 
+  }[];
   inputField?: { placeholder: string; type: string };
   multiple?: boolean;
   nextStep: () => string;
@@ -127,8 +132,10 @@ export function ChatWidget({
     map[q.id] = {
       botMessages: [parseTemplate(q.title, answers)],
       options: q.answerOptions.map((opt) => ({
-        label: opt,
-        value: opt,
+        label: opt?.label || opt,
+        value: opt?.value || opt,
+        image: opt?.image || '',
+        description: opt?.description || '',
       })),
       multiple: q.type === "checkbox",
       nextStep: () => next,
@@ -158,7 +165,7 @@ export function ChatWidget({
       placeholder: "+7 (___) ___-__-__",
       type: "tel",
     },
-    nextStep: () => "",
+    nextStep: () => "done",
   };
 
   // ───── финал ─────
@@ -400,20 +407,59 @@ export function ChatWidget({
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-wrap gap-2 pt-1"
+              className={`pt-1 ${currentStep === "model" ? "grid sm:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" : "flex flex-wrap gap-2"}`}
             >
-              {cfg.options.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => {
-                    setShowOptions(false);
-                    handleAnswer(opt.value);
-                  }}
-                  className="bg-white px-4 py-2 rounded-full hover:shadow-md transition-all cursor-pointer shadow-sm text-sm font-medium border border-accent-500 text-accent-500"
-                >
-                  {opt.label}
-                </button>
-              ))}
+              {cfg.options.map((opt) => {
+                // Карточки с изображениями для шага выбора модели
+                if (opt.image && currentStep === "model") {
+                  return (
+                    <motion.button
+                      key={opt.value}
+                      onClick={() => {
+                        setShowOptions(false);
+                        handleAnswer(opt.value);
+                      }}
+                      className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-red-500 transition-all cursor-pointer group"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="aspect-video w-full overflow-hidden bg-gray-100">
+                        <img
+                          src={opt.image}
+                          alt={opt.label}
+                          className="w-full h-auto my-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                      <div className="p-3 text-center">
+                        <div
+                          className="font-semibold text-sm text-accent-500"
+                        >
+                          {opt.label}
+                        </div>
+                        {opt.description && (
+                          <div
+                            className="text-gray-500 mt-0.5 text-xs"
+                          >
+                            {opt.description}
+                          </div>
+                        )}
+                      </div>
+                    </motion.button>
+                  );
+                }
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setShowOptions(false);
+                      handleAnswer(opt.value);
+                    }}
+                    className="bg-white px-4 py-2 rounded-full hover:shadow-md transition-all cursor-pointer shadow-sm text-sm font-medium border border-accent-500 text-accent-500"
+                  >
+                    {opt.label}
+                  </button>
+                )
+              })}
             </motion.div>
           )}
 
