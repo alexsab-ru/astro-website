@@ -36,17 +36,21 @@ interface StepConfig {
 interface ChatWidgetProps {
   config: QuizConfig;
   managerName?: string;
+  managerPosition?: string;
   brand?: string;
   dealer?: string;
+  legalCityWhere?: string;
 }
 
 // ──────────────── component ────────────────
 
 export function ChatWidget({
   config,
-  managerName = "Алексей — ваш менеджер",
+  managerName = "Алексей",
+  managerPosition = "руководитель отдела продаж",
   brand = "CHERY",
   dealer = "Официальный дилер",
+  legalCityWhere = 'Самаре'
 }: ChatWidgetProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState("welcome");
@@ -68,13 +72,17 @@ export function ChatWidget({
 
   const map: Record<string, StepConfig> = {};
 
+  const botIntroMessages = 
+    Array.isArray(intro.title) ? intro.title : typeof intro.title === "string" ? [
+      "Здравствуйте! 👋",
+      `Меня зовут ${managerName}, ${managerPosition} официального дилера ${dealer} в ${legalCityWhere}!`,
+      `Ответьте на несколько вопросов, и я смогу подобрать для Вас наиболее выгодное персональное предложение на новый ${brand}`,
+      intro.title,
+    ] : [];
+
   // ───── intro ─────
   map.intro = {
-    botMessages: [
-      "Здравствуйте! 👋",
-      `Я — менеджер ${brand}. Помогу подобрать автомобиль за пару минут!`,
-      stripHtml(intro.title)
-    ],
+    botMessages: botIntroMessages,
     nextStep: () => questions[0]?.id || "done",
   };
 
