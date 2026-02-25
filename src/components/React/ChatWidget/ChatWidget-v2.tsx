@@ -2,6 +2,35 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion } from "motion/react";
 import { Send, User, CheckCircle2 } from "lucide-react";
 import { Footer, Header, Message, Typing } from "./Elements";
+import { getPair } from '@/js/utils/helpers';
+import * as yup from 'yup';
+import axios from 'axios';
+
+const phoneSchema = yup.string()
+  .required("Укажите номер телефона")
+  .matches(/^\+7 \d{3} \d{3}-\d{2}-\d{2}$/, "Некорректный номер");
+
+// ──────────────── helpers ────────────────
+function parseTemplate(str: string, data: Record<string, any>) {
+  return str.replace(/\{(.*?)\}/g, (_, key) => data[key] || "");
+}
+
+const maskPhone = (value: string) => {
+  let num = value
+    .replace(/^(\+7|8|7)/g, "")
+    .replace(/\D/g, "")
+    .split("");
+
+  const i = num.length;
+
+  if (i > 0) num.unshift("+7");
+  if (i >= 1) num.splice(1, 0, " ");
+  if (i >= 4) num.splice(5, 0, " ");
+  if (i >= 7) num.splice(9, 0, "-");
+  if (i >= 9) num.splice(12, 0, "-");
+
+  return num.join("");
+};
 
 // ──────────────── types ────────────────
 
@@ -40,6 +69,7 @@ interface ChatWidgetProps {
   brand?: string;
   dealer?: string;
   legalCityWhere?: string;
+  formName?: string;
 }
 
 // ──────────────── component ────────────────
@@ -50,7 +80,8 @@ export function ChatWidget({
   managerPosition = "руководитель отдела продаж",
   brand = "CHERY",
   dealer = "Официальный дилер",
-  legalCityWhere = 'Самаре'
+  legalCityWhere = 'Самаре',
+  formName = 'Квиз чат'
 }: ChatWidgetProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState("welcome");
@@ -90,7 +121,7 @@ export function ChatWidget({
   questions.forEach((q, index) => {
     const next =
       index === questions.length - 1
-        ? "contactName"
+        ? "name"
         : questions[index + 1].id;
 
     map[q.id] = {
@@ -105,7 +136,7 @@ export function ChatWidget({
   });
 
   // ───── имя ─────
-  map.contactName = {
+  map.name = {
     botMessages: [
       "Отлично 👍",
       "Как я могу к вам обращаться?",
@@ -114,11 +145,11 @@ export function ChatWidget({
       placeholder: "Введите ваше имя",
       type: "text",
     },
-    nextStep: () => "contactPhone",
+    nextStep: () => "phone",
   };
 
   // ───── телефон ─────
-  map.contactPhone = {
+  map.phone = {
     botMessages: [
       "Приятно познакомиться! 😊",
       final.title,
@@ -127,14 +158,14 @@ export function ChatWidget({
       placeholder: "+7 (___) ___-__-__",
       type: "tel",
     },
-    nextStep: () => "done",
+    nextStep: () => "",
   };
 
   // ───── финал ─────
   map.done = {
     botMessages: [
       parseTemplate(
-        "Спасибо, {contactName}! Ваша заявка принята ✅",
+        "Спасибо, {name}! Ваша заявка принята ✅",
         answers
       ),
     ],
@@ -143,8 +174,6 @@ export function ChatWidget({
 
   return map;
 }, [config, answers]);
-
-
 
   // ──────────────── helpers ────────────────
 
@@ -211,6 +240,58 @@ export function ChatWidget({
 
   // ──────────────── answer handler ────────────────
 
+  const sendLead = async (data: Record<string, any>) => {
+    setIsTyping(true);
+    const pairs = getPair();
+    if(Object.keys(pairs).length > 0){
+      Object.entries(pairs).forEach(function(pair){
+        data[pair[0]] = pair[1];
+      });
+    }     
+
+    data.form = formName;
+    data.page_url = window.location.origin + window.location.pathname;
+
+    console.log(data);
+
+    const options = {
+      method: "POST",
+      mode: "cors",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/x-www-form-urlencoded", },
+      data: data,
+      url: "/api/send-lead",
+    };
+
+    await axios(options)
+    .then(function (response) {
+      if (window.location.hostname == "localhost"){
+        console.log('Отправка письма', response);
+      }
+      
+      setIsFinished(true);
+    })
+    .catch(function (error) {
+      if (window.location.hostname == "localhost"){
+        console.log('Ошибка отправки письма', error);
+      }
+      setIsFinished(false);
+      setCurrentStep('phone');
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `bot-error-${Date.now()}`,
+          type: "bot",
+          text: "Упс 😔 Ошибка отправки. Попробуйте снова.",
+        }
+      ]);
+    })
+    .finally(function () {
+      setIsTyping(false);
+    });
+  };
+
   const handleAnswer = useCallback(
     (value: string) => {
       setMessages((prev) => [
@@ -231,10 +312,10 @@ export function ChatWidget({
       const nextKey = steps[currentStep].nextStep();
       setCurrentStep(nextKey);
 
-      if (nextKey === "done") setIsFinished(true);
+      // if (nextKey === "done") setIsFinished(true);
 
       // 👇 персонализация здесь
-      if (currentStep === "contactName") {
+      if (currentStep === "name") {
         addBotMessages(
           [
             `${value}, приятно познакомиться! 😊`,
@@ -257,8 +338,40 @@ export function ChatWidget({
   );
 
 
-  const handleInputSubmit = () => {
+  const handleInputSubmit = async () => {
     if (!inputValue.trim()) return;
+
+    // Если это шаг телефона — валидируем
+    if (currentStep === "phone") {
+      try {
+        await phoneSchema.validate(inputValue);
+
+        const updatedAnswers = {
+          ...answers,
+          phone: inputValue,
+        };
+
+        setAnswers(updatedAnswers);
+
+        await sendLead(updatedAnswers); // отправляем письмо
+
+        handleAnswer(inputValue);
+        setInputValue("");
+
+      } catch (err: any) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `bot-error-${Date.now()}`,
+            type: "bot",
+            text: err.message,
+          }
+        ]);
+      }
+
+      return;
+    }
+
     handleAnswer(inputValue);
     setInputValue("");
   };
@@ -335,10 +448,22 @@ export function ChatWidget({
                 type={cfg.inputField.type}
                 placeholder={cfg.inputField.placeholder}
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e) => {
+                  if (currentStep === "phone") {
+                    const masked = maskPhone(e.target.value);
+                    setInputValue(masked);
+                  } else {
+                    setInputValue(e.target.value);
+                  }
+                }}
                 onKeyDown={(e) =>
                   e.key === "Enter" && handleInputSubmit()
                 }
+                onFocus={() => {
+                  if (currentStep === "phone" && !inputValue) {
+                    setInputValue("+7 ");
+                  }
+                }}
                 className="flex-1 bg-gray-100 rounded-full px-3 py-1.5 sm:px-4 sm:py-2.5 outline-none"
               />
               <button
@@ -355,9 +480,4 @@ export function ChatWidget({
       </div>
     </div>
   );
-}
-
-// ──────────────── helpers ────────────────
-function parseTemplate(str: string, data: Record<string, any>) {
-  return str.replace(/\{(.*?)\}/g, (_, key) => data[key] || "");
 }
