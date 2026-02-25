@@ -6,6 +6,9 @@ import { getPair } from '@/js/utils/helpers';
 import * as yup from 'yup';
 import axios from 'axios';
 
+import settings from '@/data/settings.json';
+const { connectforms_link } = settings;
+
 const phoneSchema = yup.string()
   .required("Укажите номер телефона")
   .matches(/^\+7 \d{3} \d{3}-\d{2}-\d{2}$/, "Некорректный номер");
@@ -271,7 +274,7 @@ export function ChatWidget({
       credentials: "same-origin",
       headers: { "Content-Type": "application/x-www-form-urlencoded", },
       data: data,
-      url: "/api/send-lead",
+      url: connectforms_link,
     };
 
     await axios(options)
