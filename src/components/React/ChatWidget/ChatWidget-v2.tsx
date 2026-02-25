@@ -94,7 +94,7 @@ export function ChatWidget({
         : questions[index + 1].id;
 
     map[q.id] = {
-      botMessages: [parseTemplate(stripHtml(q.title), answers)],
+      botMessages: [parseTemplate(q.title, answers)],
       options: q.answerOptions.map((opt) => ({
         label: opt,
         value: opt,
@@ -121,7 +121,7 @@ export function ChatWidget({
   map.contactPhone = {
     botMessages: [
       "Приятно познакомиться! 😊",
-      stripHtml(final.title),
+      final.title,
     ],
     inputField: {
       placeholder: "+7 (___) ___-__-__",
@@ -238,7 +238,7 @@ export function ChatWidget({
         addBotMessages(
           [
             `${value}, приятно познакомиться! 😊`,
-            stripHtml((config[config.length - 1] as any).title),
+            (config[config.length - 1] as any).title,
           ],
           () => setShowOptions(true),
         );
@@ -358,11 +358,6 @@ export function ChatWidget({
 }
 
 // ──────────────── helpers ────────────────
-
-function stripHtml(str: string) {
-  return str?.replace(/<[^>]+>/g, "") || "";
-}
-
 function parseTemplate(str: string, data: Record<string, any>) {
   return str.replace(/\{(.*?)\}/g, (_, key) => data[key] || "");
 }
