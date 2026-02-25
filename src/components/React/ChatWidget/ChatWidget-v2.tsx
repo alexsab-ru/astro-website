@@ -350,14 +350,13 @@ export function ChatWidget({
 
   const handleInputSubmit = async () => {
     if (!inputValue.trim()) return;
-    
-    if(!consentChecked){
-      setAgreeError('Чтобы продолжить, установите флажок')
-      return;
-    }
 
     // Если это шаг телефона — валидируем
     if (currentStep === "phone") {
+      if(!consentChecked){
+        setAgreeError('Чтобы продолжить, установите флажок')
+        return;
+      }
       try {
         await phoneSchema.validate(inputValue);
 
