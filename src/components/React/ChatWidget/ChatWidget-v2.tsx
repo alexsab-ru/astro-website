@@ -93,6 +93,8 @@ export function ChatWidget({
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [showOptions, setShowOptions] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [agreeError, setAgreeError] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
 
@@ -257,6 +259,7 @@ export function ChatWidget({
     }     
 
     data.form = formName;
+    data.agree = 'on';
     data.page_url = window.location.origin + window.location.pathname;
 
     console.log(data);
@@ -347,6 +350,11 @@ export function ChatWidget({
 
   const handleInputSubmit = async () => {
     if (!inputValue.trim()) return;
+    
+    if(!consentChecked){
+      setAgreeError('Чтобы продолжить, установите флажок')
+      return;
+    }
 
     // Если это шаг телефона — валидируем
     if (currentStep === "phone") {
@@ -489,6 +497,46 @@ export function ChatWidget({
             animate={{ opacity: 1, y: 0 }}
             className="px-4 sm:px-5 py-3 bg-white border-t border-gray-100 shrink-0"
           >
+            {/* Чекбокс согласия для шага ввода телефона */}
+            {currentStep === "phone" && (
+              <>
+              <div className="mb-3 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="consent"
+                  checked={consentChecked}
+                  onChange={(e) => {
+                    setConsentChecked(e.target.checked)
+                    if(!e.target.checked){
+                      setAgreeError('Чтобы продолжить, установите флажок')
+                    }else{
+                      setAgreeError(null)
+                    }                  
+                  }}
+                  className="mt-1 w-4 h-4 cursor-pointer shrink-0"
+                />
+                <label
+                  htmlFor="consent"
+                  className="text-gray-600 cursor-pointer select-none"
+                  style={{ fontSize: 12, lineHeight: 1.4 }}
+                >
+                  Я согласен на{" "}
+                  <a
+                    href="#privacy"
+                    className="underline hover:no-underline text-accent-500"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // Скроллим к футеру с политикой
+                      document.querySelector("footer")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  >
+                    обработку персональных данных
+                  </a>
+                </label>
+              </div>
+              {agreeError && (<div className="text-xs text-red-500">{agreeError}</div>)}
+              </>
+            )}
             <div className="flex items-center gap-2">
               <input
                 type={cfg.inputField.type}
