@@ -5,6 +5,8 @@ import { ChatWidget } from '@/components/React/ChatWidget/ChatWidget-v2';
 import { USPSection } from '@/components/React/USPSection';
 import Banner from '@/components/Banner/Banner.astro'
 import answers from '@/data/quiz.json';
+import modelsData from '@/data/models.json';
+const { models } = modelsData;
 const banners = [
     {
         "id": 1,
@@ -32,6 +34,27 @@ const banners = [
         "autoplay": 6000
     },
 ];
+const quizConfig = answers.map(answer => {
+    if (answer?.id !== 'model') return answer;
+    
+    const newOptions = answer.answerOptions.reduce((acc, a) => {        
+        const model = models.find(m => m.name === a);        
+        if (model) {
+            acc.push({
+                label: model.name,
+                value: model.name,
+                description: model.slogan,
+                image: model.thumb,
+            });
+        }
+        return acc;
+    }, []);
+
+    return {
+        ...answer,
+        answerOptions: newOptions
+    };
+});
 ---
 
 <Layout
@@ -45,7 +68,7 @@ const banners = [
 <section>
     <div class="container">
         <USPSection client:only />
-        <ChatWidget client:visible={{rootMargin: "-200px"}} config={answers} />
+        <ChatWidget client:visible={{rootMargin: "-200px"}} config={quizConfig} />
     </div>
 </section>
 
