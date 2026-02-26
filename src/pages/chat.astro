@@ -63,13 +63,13 @@ const quizConfig = answers.map(answer => {
     description={`Чат квиз`}
 >
 
-<Banner banners={banners} />
+<!-- <Banner banners={banners} /> -->
 
 <section>
     <div class="container">
-        <USPSection client:only />
-        <ChatWidget client:visible={{rootMargin: "-200px"}} config={quizConfig} />
+        <USPSection client:visible />
     </div>
+    <ChatWidget client:visible={{rootMargin: "-200px"}} config={quizConfig} />
 </section>
 
 
