@@ -78,7 +78,7 @@ export function InputField({
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="px-4 sm:px-5 py-3 bg-white border-t border-gray-100 shrink-0"
+      className="px-4 sm:px-5 py-3 bg-white border-t shrink-0"
     >
       {/* Чекбокс согласия для шага ввода телефона */}
       {currentStep === "phone" && (
@@ -116,6 +116,7 @@ export function InputField({
           onKeyDown={(e) => e.key === "Enter" && onSubmit()}
           onFocus={handleFocus}
           className="flex-1 bg-gray-100 rounded-full px-3 sm:px-4 py-2.5 outline-none text-xs sm:text-sm"
+          {...currentStep === "phone" && {autoFocus: true}}
         />
         <button
           onClick={onSubmit}
