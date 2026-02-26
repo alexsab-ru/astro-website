@@ -23,7 +23,7 @@ const usps = [
 
 export function USPSection() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-10">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-10">
       {usps.map((u, i) => (
         <motion.div
           key={i}
@@ -33,8 +33,7 @@ export function USPSection() {
           className="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100"
         >
           <div
-            className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-white"
-            style={{ backgroundColor: ACCENT }}
+            className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-white bg-accent-500"
           >
             {u.icon}
           </div>
