@@ -430,8 +430,8 @@ export function ChatWidget({
   // ──────────────── UI (ПОЛНОСТЬЮ СОХРАНЕН) ────────────────
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
-      <div className="flex flex-col rounded-2xl overflow-hidden border border-gray-200 shadow-xl min-h-[500px] h-[70vh]">
+    <div className="w-full max-w-7xl mx-auto px-0 md:px-5">
+      <div className="flex flex-col rounded-xl md:rounded-2xl overflow-hidden border border-gray-200 shadow-xl min-h-[500px] h-[70vh]">
         <Header managerName={managerName} dealer={dealer} />
 
         {/* Messages */}
@@ -449,7 +449,7 @@ export function ChatWidget({
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`pt-1 ${currentStep === "model" ? "grid sm:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" : "flex flex-wrap gap-2"}`}
+              className={`pt-1 ${currentStep === "model" ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" : "flex flex-wrap gap-2"}`}
             >
               {cfg.options.map((opt) => {
                 // Карточки с изображениями для шага выбора модели
@@ -461,26 +461,26 @@ export function ChatWidget({
                         setShowOptions(false);
                         handleAnswer(opt.value);
                       }}
-                      className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-red-500 transition-all cursor-pointer group"
+                      className="flex flex-col bg-white border-2 border-gray-200 rounded-md sm:rounded-xl overflow-hidden hover:shadow-lg hover:border-red-500 transition-all cursor-pointer group"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <div className="aspect-video w-full overflow-hidden bg-gray-100">
+                      <div className="aspect-video w-full overflow-hidden bg-gray-100 relative">
                         <img
                           src={opt.image}
                           alt={opt.label}
-                          className="w-full h-auto my-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="absolute inset-0 w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
-                      <div className="p-3 text-center">
+                      <div className="p-2 sm:p-3 text-center">
                         <div
-                          className="font-semibold text-sm text-accent-500"
+                          className="font-semibold text-xs sm:text-sm text-accent-500"
                         >
                           {opt.label}
                         </div>
                         {opt.description && (
                           <div
-                            className="text-gray-500 mt-0.5 text-xs"
+                            className="text-gray-500 mt-0.5 text-[10px] sm:text-xs"
                           >
                             {opt.description}
                           </div>
@@ -496,7 +496,7 @@ export function ChatWidget({
                       setShowOptions(false);
                       handleAnswer(opt.value);
                     }}
-                    className="bg-white px-4 py-2 rounded-full hover:shadow-md transition-all cursor-pointer shadow-sm text-sm font-medium border border-accent-500 text-accent-500"
+                    className="bg-white px-4 py-2 rounded-full hover:shadow-md transition-all cursor-pointer shadow-sm text-xs sm:text-sm font-medium border border-accent-500 text-accent-500"
                   >
                     {opt.label}
                   </button>
@@ -580,19 +580,19 @@ export function ChatWidget({
                     setInputValue("+7 ");
                   }
                 }}
-                className="flex-1 bg-gray-100 rounded-full px-3 py-1.5 sm:px-4 sm:py-2.5 outline-none"
+                className="flex-1 bg-gray-100 rounded-full px-3 sm:px-4 py-2.5 outline-none text-xs sm:text-sm"
               />
               <button
                 onClick={handleInputSubmit}
                 disabled={isTyping}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full text-white flex items-center justify-center shrink-0 bg-accent-500"
+                className="size-8 sm:size-10 rounded-full text-white flex items-center justify-center shrink-0 bg-accent-500"
               >
                 <Send className="size-3 sm:size-4" />
               </button>
             </div>
           </motion.div>
         )}
-
+        
         <Footer dealer={dealer} />
       </div>
     </div>
