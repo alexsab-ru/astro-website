@@ -1,6 +1,6 @@
 // ──────────────── Хук для отправки формы ────────────────
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { getPair } from '@/js/utils/helpers';
 import settings from '@/data/settings.json';
@@ -11,7 +11,6 @@ interface UseFormSubmissionParams {
   formName: string;
   setIsTyping: (value: boolean) => void;
   setMessages: React.Dispatch<React.SetStateAction<any[]>>;
-  setInputValue: (value: string) => void;
   setCurrentStep: (step: string) => void;
   scroll: () => void;
 }
@@ -27,11 +26,12 @@ export function useFormSubmission({
   formName,
   setIsTyping,
   setMessages,
-  setInputValue,
   setCurrentStep,
   scroll,
 }: UseFormSubmissionParams) {
   const [isFinished, setIsFinished] = useState(false);
+  // Используем ref для хранения функции setInputValue, которая будет установлена позже
+  const setInputValueRef = useRef<((value: string) => void) | null>(null);
 
   /**
    * Отправляет данные формы на сервер
@@ -87,7 +87,7 @@ export function useFormSubmission({
             text: `Упс 😔: ${errorMsg}. Попробуйте еще раз.`,
           }
         ]);
-        setInputValue(data.phone);
+        setInputValueRef.current?.(data.phone);
         setCurrentStep('phone');
         setIsFinished(false);
       }
@@ -103,18 +103,19 @@ export function useFormSubmission({
           text: "Упс 😔 Ошибка соединения. Проверьте интернет и попробуйте еще раз.",
         }
       ]);
-      setInputValue(data.phone);
+      setInputValueRef.current?.(data.phone);
       setCurrentStep('phone');
       setIsFinished(false);
     } finally {
       setIsTyping(false);
       scroll();
     }
-  }, [formName, setIsTyping, setMessages, setInputValue, setCurrentStep, scroll]);
+  }, [formName, setIsTyping, setMessages, setCurrentStep, scroll]);
 
   return {
     isFinished,
     setIsFinished,
     sendLead,
+    setInputValueRef, // Возвращаем ref для установки функции извне
   };
 }
