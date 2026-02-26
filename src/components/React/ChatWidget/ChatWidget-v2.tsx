@@ -131,13 +131,13 @@ export function ChatWidget({
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 md:px-5">
-      <div className="flex flex-col rounded-xl md:rounded-2xl overflow-hidden border border-gray-200 shadow-xl min-h-[500px] h-[70vh]">
+      <div className="flex flex-col rounded-xl md:rounded-2xl overflow-hidden border shadow-xl min-h-[500px] h-[70vh]">
         <Header managerName={managerName} dealer={dealer} />
 
         {/* Messages */}
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3 bg-gray-50"
+          className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-5 space-y-3 bg-gray-50"
         >
           {messages.map((msg) => (
             <Message message={msg} key={msg.id} />
