@@ -1,28 +1,20 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
-import { Send, User, CheckCircle2 } from "lucide-react";
+import { Send, CheckCircle2 } from "lucide-react";
 import { Footer, Header, Message, Typing } from "./Elements";
-import { getPair } from '@/js/utils/helpers';
-import axios from 'axios';
-
-import settings from '@/data/settings.json';
-const { connectforms_link } = settings;
 
 import { AGREE_LABEL } from "@/const";
-import type { 
-  ChatMessage, 
-  QuizConfig, 
-  StepConfig, 
-  ChatWidgetProps,
-  AnswerOption,
-  QuizIntro,
-  QuizQuestion,
-  QuizFinal
-} from "./types";
+import type { ChatWidgetProps } from "./types";
 
 // Импортируем утилиты из отдельных файлов
 import { maskPhone } from './utils';
 import { phoneSchema } from './validation';
+
+// Импортируем хуки
+import { useChatScroll } from './hooks/useChatScroll';
+import { useChatMessages } from './hooks/useChatMessages';
+import { useChatSteps } from './hooks/useChatSteps';
+import { useFormSubmission } from './hooks/useFormSubmission';
 
 // ──────────────── component ────────────────
 
@@ -35,156 +27,60 @@ export function ChatWidget({
   legalCityWhere = 'Самаре',
   formName = 'Квиз чат'
 }: ChatWidgetProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [currentStep, setCurrentStep] = useState("welcome");
-  const [answers, setAnswers] = useState<Record<string, any>>({});
-  const [showOptions, setShowOptions] = useState(false);
+  // Хук для автоскролла
+  const { scrollRef, scroll } = useChatScroll();
+
+  // Хук для управления шагами
+  const {
+    currentStep,
+    setCurrentStep,
+    answers,
+    setAnswers,
+    showOptions,
+    setShowOptions,
+    steps,
+  } = useChatSteps({
+    config,
+    managerName,
+    managerPosition,
+    brand,
+    dealer,
+    legalCityWhere,
+  });
+
+  // Локальные состояния для формы ввода (объявляем до использования в хуках)
   const [inputValue, setInputValue] = useState("");
   const [consentChecked, setConsentChecked] = useState(false);
   const [agreeError, setAgreeError] = useState<string | null>(null);
-  const [isTyping, setIsTyping] = useState(false);
-  const [isFinished, setIsFinished] = useState(false);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const hasInit = useRef(false);
+  // Хук для управления сообщениями
+  const {
+    messages,
+    setMessages,
+    isTyping,
+    setIsTyping,
+    addUserMessage,
+    addBotMessage,
+    addBotMessages,
+  } = useChatMessages(scroll, setShowOptions);
 
-  // ──────────────── dynamic steps builder ────────────────
-
-  const steps = useMemo(() => {
-  const intro = config[0] as QuizIntro;
-  const questions = config.filter((q) => "id" in q) as QuizQuestion[];
-  const final = config[config.length - 1] as QuizFinal;
-
-  const map: Record<string, StepConfig> = {};
-
-  const botIntroMessages = 
-    Array.isArray(intro.title) ? intro.title : typeof intro.title === "string" ? [
-      "Здравствуйте! 👋",
-      `Меня зовут ${managerName}, ${managerPosition} официального дилера ${dealer} в ${legalCityWhere}!`,
-      `Ответьте на несколько вопросов, и я смогу подобрать для Вас наиболее выгодное персональное предложение на новый ${brand}`,
-      intro.title,
-    ] : [];
-
-  // ───── intro ─────
-  map.intro = {
-    botMessages: botIntroMessages,
-    nextStep: () => questions[0]?.id || "done",
-  };
-
-  // ───── questions ─────
-  questions.forEach((q, index) => {
-    const next =
-      index === questions.length - 1
-        ? "name"
-        : questions[index + 1].id;
-
-    map[q.id] = {
-      botMessages: [q.title],
-      options: q.answerOptions.map((opt) => {
-        // Если опция - строка, преобразуем в объект AnswerOption
-        if (typeof opt === 'string') {
-          return {
-            label: opt,
-            value: opt,
-            image: '',
-            description: '',
-          };
-        }
-        // Если опция - объект AnswerOption, используем его свойства
-        return {
-          label: opt.label || opt.value || '',
-          value: opt.value || opt.label || '',
-          image: opt.image || '',
-          description: opt.description || '',
-        };
-      }),
-      multiple: q.type === "checkbox",
-      nextStep: () => next,
-    };
+  // Хук для отправки формы
+  const {
+    isFinished,
+    setIsFinished,
+    sendLead,
+  } = useFormSubmission({
+    formName,
+    setIsTyping,
+    setMessages,
+    setInputValue,
+    setCurrentStep,
+    scroll,
   });
 
-  // ───── имя ─────
-  map.name = {
-    botMessages: [
-      "Отлично 👍",
-      "Как я могу к вам обращаться?",
-    ],
-    inputField: {
-      placeholder: "Введите ваше имя",
-      type: "text",
-      name: "name"
-    },
-    nextStep: () => "phone",
-  };
+  const hasInit = useRef(false);
 
-  // ───── телефон ─────
-  map.phone = {
-    botMessages: [
-      "Приятно познакомиться! 😊",
-      final.title,
-    ],
-    inputField: {
-      placeholder: "+7 (___) ___-__-__",
-      type: "tel",
-      name: "phone"
-    },
-    nextStep: () => "done",
-  };
-
-  // ───── финал ─────
-  map.done = {
-    botMessages: [
-      `Спасибо, ${answers.name || ''}! Ваша заявка принята ✅`,
-    ],
-    nextStep: () => "done",
-  };
-
-  return map;
-}, [config, answers]);
-
-  // ──────────────── helpers ────────────────
-
-  const scroll = useCallback(() => {
-    setTimeout(() => {
-      scrollRef.current?.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: "smooth",
-      });
-    }, 80);
-  }, []);
-
-  const addBotMessages = useCallback(
-    (texts: string[], onDone?: () => void) => {
-      setIsTyping(true);
-      setShowOptions(false);
-      let i = 0;
-
-      const next = () => {
-        if (i >= texts.length) {
-          setIsTyping(false);
-          onDone?.();
-          return;
-        }
-
-        const text = texts[i];
-        i++;
-
-        setTimeout(() => {
-          setMessages((prev) => [
-            ...prev,
-            { id: `bot-${Date.now()}-${i}`, type: "bot", text },
-          ]);
-          scroll();
-          next();
-        }, 500 + text.length * 6);
-      };
-
-      next();
-    },
-    [scroll],
-  );
-
-  // init
+  // Инициализация чата при первом рендере
   useEffect(() => {
     if (!hasInit.current) {
       hasInit.current = true;
@@ -198,95 +94,22 @@ export function ChatWidget({
         });
       });
     }
-  }, [addBotMessages, steps]);
+  }, [addBotMessages, steps, setCurrentStep, setShowOptions]);
 
-
+  // Автоскролл при изменении сообщений или опций
   useEffect(() => {
     scroll();
   }, [messages, showOptions, scroll]);
 
   // ──────────────── answer handler ────────────────
 
-  const sendLead = async (data: Record<string, any>) => {
-    setIsTyping(true);
-    const pairs = getPair();
-    if(Object.keys(pairs).length > 0){
-      Object.entries(pairs).forEach(function(pair){
-        data[pair[0]] = pair[1];
-      });
-    }     
-
-    data.form = formName;
-    data.agree = 'on';
-    data.page_url = window.location.origin + window.location.pathname;
-
-    console.log(data);
-
-    const options = {
-      method: "POST",
-      mode: "cors",
-      cache: "no-cache",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", },
-      data: data,
-      url: connectforms_link,
-    };
-
-    await axios(options)
-    .then(function (response) {
-      if (window.location.hostname == "localhost"){
-        console.log('Отправка письма', response);
-      }
-      
-      const res = response.data;
-      if (res?.answer && res.answer.toLowerCase() === 'ok') {
-        setIsFinished(true);
-      } else {
-        const errorMsg = res?.error || "Ошибка на стороне сервера. Попробуйте еще раз.";
-        setMessages(prev => [
-          ...prev,
-          {
-            id: `bot-error-server-${Date.now()}`,
-            type: "bot",
-            text: `Упс 😔: ${errorMsg}. Попробуйте еще раз.`,
-          }
-        ]);
-        setInputValue(data.phone);
-        setCurrentStep('phone');
-        setIsFinished(false);
-      }
-    })
-    .catch(function (error) {
-      if (window.location.hostname == "localhost"){
-        console.log('Ошибка отправки письма', error);
-      }
-      setMessages(prev => [
-        ...prev,
-        {
-          id: `bot-error-${Date.now()}`,
-          type: "bot",
-          text: "Упс 😔 Ошибка соединения. Проверьте интернет и попробуйте еще раз.",
-        }
-      ]);
-      setInputValue(data.phone);
-      setCurrentStep('phone');
-      setIsFinished(false);
-    })
-    .finally(function () {
-      setIsTyping(false);
-      scroll();
-    });
-  };
-
   const handleAnswer = useCallback(
     (value: string) => {
-      setMessages((prev) => [
-        ...prev,
-        { id: `user-${Date.now()}`, type: "user", text: value },
-      ]);
+      // Добавляем сообщение пользователя
+      addUserMessage(value);
 
+      // Сохраняем ответ пользователя
       let updatedAnswers = answers;
-
       if (currentStep !== "intro") {
         updatedAnswers = {
           ...answers,
@@ -295,32 +118,32 @@ export function ChatWidget({
         setAnswers(updatedAnswers);
       }
 
+      // Переходим к следующему шагу
       const nextKey = steps[currentStep].nextStep();
       setCurrentStep(nextKey);
 
-      // if (nextKey === "done") setIsFinished(true);
-
-      // 👇 персонализация здесь
+      // Персонализация для шага ввода имени
       if (currentStep === "name") {
+        const final = config[config.length - 1] as any;
         addBotMessages(
           [
             `${value}, приятно познакомиться! 😊`,
-            (config[config.length - 1] as any).title,
+            final.title,
           ],
           () => setShowOptions(true),
         );
         return;
       }
 
+      // Показываем сообщения следующего шага
       const nextCfg = steps[nextKey];
-
       if (nextCfg?.botMessages?.length) {
         addBotMessages(nextCfg.botMessages, () => {
           if (nextKey !== "done") setShowOptions(true);
         });
       }
     },
-    [currentStep, steps, addBotMessages, answers, config],
+    [currentStep, steps, addBotMessages, addUserMessage, answers, setAnswers, setCurrentStep, setShowOptions, config],
   );
 
 
@@ -345,28 +168,14 @@ export function ChatWidget({
 
         // Показываем сообщение о начале отправки
         const userName = answers.name || "";
-        setMessages(prev => [
-          ...prev,
-          { id: `user-${Date.now()}`, type: "user", text: inputValue },
-          {
-            id: `bot-sending-${Date.now()}`,
-            type: "bot",
-            text: `Спасибо${userName ? ', ' + userName : ''}! Ваша заявка отправляется...`,
-          }
-        ]);
+        addUserMessage(inputValue);
+        addBotMessage(`Спасибо${userName ? ', ' + userName : ''}! Ваша заявка отправляется...`);
         setInputValue("");
 
         await sendLead(updatedAnswers); // отправляем письмо
 
       } catch (err: any) {
-        setMessages(prev => [
-          ...prev,
-          {
-            id: `bot-error-${Date.now()}`,
-            type: "bot",
-            text: err.message,
-          }
-        ]);
+        addBotMessage(err.message);
       }
 
       return;
