@@ -116,7 +116,6 @@ export function InputField({
           onKeyDown={(e) => e.key === "Enter" && onSubmit()}
           onFocus={handleFocus}
           className="flex-1 bg-gray-100 rounded-full px-3 sm:px-4 py-2.5 outline-none text-xs sm:text-sm"
-          {...currentStep === "phone" && {autoFocus: true}}
         />
         <button
           onClick={onSubmit}
