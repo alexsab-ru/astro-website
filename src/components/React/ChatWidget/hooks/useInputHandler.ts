@@ -1,6 +1,6 @@
 // ──────────────── Хук для обработки ввода данных ────────────────
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { phoneSchema } from '../validation';
 
 interface UseInputHandlerParams {
@@ -34,6 +34,12 @@ export function useInputHandler({
   const [consentChecked, setConsentChecked] = useState(false);
   const [agreeError, setAgreeError] = useState<string | null>(null);
 
+  // храним последний отправленный номер, чтобы при повторной попытке
+  // не дублировать сообщение пользователя
+  const lastPhoneRef = useRef<string>("");
+  // храним последний благодарственный текст, чтобы не повторять его
+  const lastThanksRef = useRef<string>("");
+
   /**
    * Обрабатывает отправку формы ввода
    * Валидирует данные для шага телефона, для остальных шагов передает в handleAnswer
@@ -57,12 +63,28 @@ export function useInputHandler({
 
         setAnswers(updatedAnswers);
 
-        // Показываем сообщение о начале отправки
+        // Если номер не изменился по сравнению с предыдущим отправленным,
+        // не добавляем повторно сообщение пользователя
+        const phoneUnchanged =
+          inputValue &&
+          (answers.phone === inputValue || lastPhoneRef.current === inputValue);
+
+        if (!phoneUnchanged) {
+          addUserMessage(inputValue);
+        }
+
+        // запомним номер, который пытаемся отправить
+        lastPhoneRef.current = inputValue;
+
+        // Показываем сообщение о начале отправки (в любом случае)
         const userName = answers.name || "";
-        addUserMessage(inputValue);
-        addBotMessage(
-          `Спасибо${userName ? ", " + userName : ""}! Ваша заявка отправляется...`
-        );
+        const thanksText =
+          `Спасибо${userName ? ", " + userName : ""}! Ваша заявка отправляется...`;
+        // при повторной попытке с тем же телефоном не дублируем сообщение
+        if (!phoneUnchanged || lastThanksRef.current !== thanksText) {
+          addBotMessage(thanksText);
+          lastThanksRef.current = thanksText;
+        }
         setInputValue("");
 
         await sendLead(updatedAnswers); // отправляем письмо
