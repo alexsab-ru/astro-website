@@ -49,7 +49,7 @@ export function OptionsList({
             <motion.button
               key={opt.value}
               onClick={() => handleSelect(opt.value)}
-              className="flex flex-col bg-white border-2 border-gray-200 rounded-md sm:rounded-xl overflow-hidden hover:shadow-lg hover:border-red-500 transition-all cursor-pointer group"
+              className="flex flex-col bg-white border-2 rounded-md sm:rounded-xl overflow-hidden hover:shadow-lg hover:border-accent-500 transition-all cursor-pointer group"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
