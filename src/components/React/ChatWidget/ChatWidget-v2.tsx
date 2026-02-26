@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import {
   Header,
   Footer,
@@ -11,14 +11,14 @@ import {
 
 import type { ChatWidgetProps } from "./types";
 
-// Импортируем утилиты из отдельных файлов
-import { phoneSchema } from './validation';
-
 // Импортируем хуки
 import { useChatScroll } from './hooks/useChatScroll';
 import { useChatMessages } from './hooks/useChatMessages';
 import { useChatSteps } from './hooks/useChatSteps';
 import { useFormSubmission } from './hooks/useFormSubmission';
+import { useAnswerHandler } from './hooks/useAnswerHandler';
+import { useInputHandler } from './hooks/useInputHandler';
+import { useChatInit } from './hooks/useChatInit';
 
 // ──────────────── component ────────────────
 
@@ -52,11 +52,6 @@ export function ChatWidget({
     legalCityWhere,
   });
 
-  // Локальные состояния для формы ввода (объявляем до использования в хуках)
-  const [inputValue, setInputValue] = useState("");
-  const [consentChecked, setConsentChecked] = useState(false);
-  const [agreeError, setAgreeError] = useState<string | null>(null);
-
   // Хук для управления сообщениями
   const {
     messages,
@@ -73,121 +68,62 @@ export function ChatWidget({
     isFinished,
     setIsFinished,
     sendLead,
+    setInputValueRef,
   } = useFormSubmission({
     formName,
     setIsTyping,
     setMessages,
-    setInputValue,
     setCurrentStep,
     scroll,
   });
 
-  const hasInit = useRef(false);
+  // Хук для обработки ответов пользователя
+  const { handleAnswer } = useAnswerHandler({
+    currentStep,
+    steps,
+    answers,
+    setAnswers,
+    setCurrentStep,
+    setShowOptions,
+    addUserMessage,
+    addBotMessages,
+    config,
+  });
 
-  // Инициализация чата при первом рендере
-  useEffect(() => {
-    if (!hasInit.current) {
-      hasInit.current = true;
+  // Хук для обработки ввода данных
+  const {
+    inputValue,
+    setInputValue,
+    consentChecked,
+    setConsentChecked,
+    agreeError,
+    setAgreeError,
+    handleInputSubmit,
+  } = useInputHandler({
+    currentStep,
+    answers,
+    setAnswers,
+    addUserMessage,
+    addBotMessage,
+    sendLead,
+    handleAnswer,
+  });
 
-      addBotMessages(steps.intro.botMessages, () => {
-        const firstStep = steps.intro.nextStep();
-        setCurrentStep(firstStep);
+  // Устанавливаем setInputValue в ref для useFormSubmission
+  setInputValueRef.current = setInputValue;
 
-        addBotMessages(steps[firstStep].botMessages, () => {
-          setShowOptions(true);
-        });
-      });
-    }
-  }, [addBotMessages, steps, setCurrentStep, setShowOptions]);
+  // Инициализация чата
+  useChatInit({
+    steps,
+    addBotMessages,
+    setCurrentStep,
+    setShowOptions,
+  });
 
   // Автоскролл при изменении сообщений или опций
   useEffect(() => {
     scroll();
   }, [messages, showOptions, scroll]);
-
-  // ──────────────── answer handler ────────────────
-
-  const handleAnswer = useCallback(
-    (value: string) => {
-      // Добавляем сообщение пользователя
-      addUserMessage(value);
-
-      // Сохраняем ответ пользователя
-      let updatedAnswers = answers;
-      if (currentStep !== "intro") {
-        updatedAnswers = {
-          ...answers,
-          [currentStep]: value,
-        };
-        setAnswers(updatedAnswers);
-      }
-
-      // Переходим к следующему шагу
-      const nextKey = steps[currentStep].nextStep();
-      setCurrentStep(nextKey);
-
-      // Персонализация для шага ввода имени
-      if (currentStep === "name") {
-        const final = config[config.length - 1] as any;
-        addBotMessages(
-          [
-            `${value}, приятно познакомиться! 😊`,
-            final.title,
-          ],
-          () => setShowOptions(true),
-        );
-        return;
-      }
-
-      // Показываем сообщения следующего шага
-      const nextCfg = steps[nextKey];
-      if (nextCfg?.botMessages?.length) {
-        addBotMessages(nextCfg.botMessages, () => {
-          if (nextKey !== "done") setShowOptions(true);
-        });
-      }
-    },
-    [currentStep, steps, addBotMessages, addUserMessage, answers, setAnswers, setCurrentStep, setShowOptions, config],
-  );
-
-
-  const handleInputSubmit = async () => {
-    if (!inputValue.trim()) return;
-
-    // Если это шаг телефона — валидируем
-    if (currentStep === "phone") {
-      if(!consentChecked){
-        setAgreeError('Чтобы продолжить, установите флажок')
-        return;
-      }
-      try {
-        await phoneSchema.validate(inputValue);
-
-        const updatedAnswers = {
-          ...answers,
-          phone: inputValue,
-        };
-
-        setAnswers(updatedAnswers);
-
-        // Показываем сообщение о начале отправки
-        const userName = answers.name || "";
-        addUserMessage(inputValue);
-        addBotMessage(`Спасибо${userName ? ', ' + userName : ''}! Ваша заявка отправляется...`);
-        setInputValue("");
-
-        await sendLead(updatedAnswers); // отправляем письмо
-
-      } catch (err: any) {
-        addBotMessage(err.message);
-      }
-
-      return;
-    }
-
-    handleAnswer(inputValue);
-    setInputValue("");
-  };
 
   const cfg = steps[currentStep];
 
