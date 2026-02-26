@@ -37,50 +37,20 @@ const maskPhone = (value: string) => {
   return num.join("");
 };
 
-// ──────────────── types ────────────────
+import type { 
+  ChatMessage, 
+  QuizConfig, 
+  StepConfig, 
+  ChatWidgetProps,
+  AnswerOption,
+  QuizIntro,
+  QuizQuestion,
+  QuizFinal
+} from "./types";
 
-interface QuizIntro {
-  title: string;
-  description?: string;
-  startButtonText?: string;
-}
-
-interface QuizQuestion {
-  id: string;
-  type: "radio" | "checkbox";
-  title: string;
-  answerOptions: any[];
-}
-
-interface QuizFinal {
-  title: string;
-  description?: string;
-}
-
-type QuizConfig = Array<QuizIntro | QuizQuestion | QuizFinal>;
-
-interface StepConfig {
-  botMessages: string[];
-  options?: { 
-    label: string; 
-    value: string; 
-    image?: string;
-    description?: string; 
-  }[];
-  inputField?: { placeholder: string; type: string; name: string };
-  multiple?: boolean;
-  nextStep: () => string;
-}
-
-interface ChatWidgetProps {
-  config: QuizConfig;
-  managerName?: string;
-  managerPosition?: string;
-  brand?: string;
-  dealer?: string;
-  legalCityWhere?: string;
-  formName?: string;
-}
+// Импортируем утилиты из отдельных файлов
+import { maskPhone } from './utils';
+import { phoneSchema } from './validation';
 
 // ──────────────── component ────────────────
 
@@ -93,13 +63,13 @@ export function ChatWidget({
   legalCityWhere = 'Самаре',
   formName = 'Квиз чат'
 }: ChatWidgetProps) {
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentStep, setCurrentStep] = useState("welcome");
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [showOptions, setShowOptions] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [consentChecked, setConsentChecked] = useState(false);
-  const [agreeError, setAgreeError] = useState(null);
+  const [agreeError, setAgreeError] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
 
@@ -137,13 +107,25 @@ export function ChatWidget({
         : questions[index + 1].id;
 
     map[q.id] = {
-      botMessages: [parseTemplate(q.title, answers)],
-      options: q.answerOptions.map((opt) => ({
-        label: opt?.label || opt,
-        value: opt?.value || opt,
-        image: opt?.image || '',
-        description: opt?.description || '',
-      })),
+      botMessages: [q.title],
+      options: q.answerOptions.map((opt) => {
+        // Если опция - строка, преобразуем в объект AnswerOption
+        if (typeof opt === 'string') {
+          return {
+            label: opt,
+            value: opt,
+            image: '',
+            description: '',
+          };
+        }
+        // Если опция - объект AnswerOption, используем его свойства
+        return {
+          label: opt.label || opt.value || '',
+          value: opt.value || opt.label || '',
+          image: opt.image || '',
+          description: opt.description || '',
+        };
+      }),
       multiple: q.type === "checkbox",
       nextStep: () => next,
     };
@@ -180,10 +162,7 @@ export function ChatWidget({
   // ───── финал ─────
   map.done = {
     botMessages: [
-      parseTemplate(
-        "Спасибо, {name}! Ваша заявка принята ✅",
-        answers
-      ),
+      `Спасибо, ${answers.name || ''}! Ваша заявка принята ✅`,
     ],
     nextStep: () => "done",
   };
