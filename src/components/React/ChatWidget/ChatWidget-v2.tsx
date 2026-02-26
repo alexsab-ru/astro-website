@@ -3,40 +3,12 @@ import { motion } from "motion/react";
 import { Send, User, CheckCircle2 } from "lucide-react";
 import { Footer, Header, Message, Typing } from "./Elements";
 import { getPair } from '@/js/utils/helpers';
-import * as yup from 'yup';
 import axios from 'axios';
 
 import settings from '@/data/settings.json';
 const { connectforms_link } = settings;
 
 import { AGREE_LABEL } from "@/const";
-
-const phoneSchema = yup.string()
-  .required("Укажите номер телефона")
-  .matches(/^\+7 \d{3} \d{3}-\d{2}-\d{2}$/, "Некорректный номер");
-
-// ──────────────── helpers ────────────────
-function parseTemplate(str: string, data: Record<string, any>) {
-  return str.replace(/\{(.*?)\}/g, (_, key) => data[key] || "");
-}
-
-const maskPhone = (value: string) => {
-  let num = value
-    .replace(/^(\+7|8|7)/g, "")
-    .replace(/\D/g, "")
-    .split("");
-
-  const i = num.length;
-
-  if (i > 0) num.unshift("+7");
-  if (i >= 1) num.splice(1, 0, " ");
-  if (i >= 4) num.splice(5, 0, " ");
-  if (i >= 7) num.splice(9, 0, "-");
-  if (i >= 9) num.splice(12, 0, "-");
-
-  return num.join("");
-};
-
 import type { 
   ChatMessage, 
   QuizConfig, 
