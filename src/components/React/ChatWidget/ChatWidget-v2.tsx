@@ -173,7 +173,7 @@ export function ChatWidget({
           />
         )}
         
-        <Footer dealer={dealer} />
+        {/* <Footer dealer={dealer} /> */}
       </div>
     </div>
   );
