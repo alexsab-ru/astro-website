@@ -9,6 +9,8 @@ import axios from 'axios';
 import settings from '@/data/settings.json';
 const { connectforms_link } = settings;
 
+import { AGREE_LABEL } from "@/const";
+
 const phoneSchema = yup.string()
   .required("Укажите номер телефона")
   .matches(/^\+7 \d{3} \d{3}-\d{2}-\d{2}$/, "Некорректный номер");
@@ -65,7 +67,7 @@ interface StepConfig {
     image?: string;
     description?: string; 
   }[];
-  inputField?: { placeholder: string; type: string };
+  inputField?: { placeholder: string; type: string; name: string };
   multiple?: boolean;
   nextStep: () => string;
 }
@@ -156,6 +158,7 @@ export function ChatWidget({
     inputField: {
       placeholder: "Введите ваше имя",
       type: "text",
+      name: "name"
     },
     nextStep: () => "phone",
   };
@@ -169,6 +172,7 @@ export function ChatWidget({
     inputField: {
       placeholder: "+7 (___) ___-__-__",
       type: "tel",
+      name: "phone"
     },
     nextStep: () => "done",
   };
@@ -283,25 +287,43 @@ export function ChatWidget({
         console.log('Отправка письма', response);
       }
       
-      setIsFinished(true);
+      const res = response.data;
+      if (res?.answer && res.answer.toLowerCase() === 'ok') {
+        setIsFinished(true);
+      } else {
+        const errorMsg = res?.error || "Ошибка на стороне сервера. Попробуйте еще раз.";
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `bot-error-server-${Date.now()}`,
+            type: "bot",
+            text: `Упс 😔: ${errorMsg}. Попробуйте еще раз.`,
+          }
+        ]);
+        setInputValue(data.phone);
+        setCurrentStep('phone');
+        setIsFinished(false);
+      }
     })
     .catch(function (error) {
       if (window.location.hostname == "localhost"){
         console.log('Ошибка отправки письма', error);
       }
-      setIsFinished(false);
-      setCurrentStep('phone');
       setMessages(prev => [
         ...prev,
         {
           id: `bot-error-${Date.now()}`,
           type: "bot",
-          text: "Упс 😔 Ошибка отправки. Попробуйте снова.",
+          text: "Упс 😔 Ошибка соединения. Проверьте интернет и попробуйте еще раз.",
         }
       ]);
+      setInputValue(data.phone);
+      setCurrentStep('phone');
+      setIsFinished(false);
     })
     .finally(function () {
       setIsTyping(false);
+      scroll();
     });
   };
 
@@ -370,10 +392,20 @@ export function ChatWidget({
 
         setAnswers(updatedAnswers);
 
-        await sendLead(updatedAnswers); // отправляем письмо
-
-        handleAnswer(inputValue);
+        // Показываем сообщение о начале отправки
+        const userName = answers.name || "";
+        setMessages(prev => [
+          ...prev,
+          { id: `user-${Date.now()}`, type: "user", text: inputValue },
+          {
+            id: `bot-sending-${Date.now()}`,
+            type: "bot",
+            text: `Спасибо${userName ? ', ' + userName : ''}! Ваша заявка отправляется...`,
+          }
+        ]);
         setInputValue("");
+
+        await sendLead(updatedAnswers); // отправляем письмо
 
       } catch (err: any) {
         setMessages(prev => [
@@ -501,11 +533,11 @@ export function ChatWidget({
           >
             {/* Чекбокс согласия для шага ввода телефона */}
             {currentStep === "phone" && (
-              <>
-              <div className="mb-3 flex items-center gap-2">
+              <label className="cursor-pointer block mb-4">
                 <input
                   type="checkbox"
                   id="consent"
+                  name="agree"
                   checked={consentChecked}
                   onChange={(e) => {
                     setConsentChecked(e.target.checked)
@@ -515,33 +547,21 @@ export function ChatWidget({
                       setAgreeError(null)
                     }                  
                   }}
-                  className="mt-1 w-4 h-4 cursor-pointer shrink-0"
+                  className="sr-only"
                 />
-                <label
-                  htmlFor="consent"
-                  className="text-gray-600 cursor-pointer select-none"
-                  style={{ fontSize: 12, lineHeight: 1.4 }}
-                >
-                  Я согласен на{" "}
-                  <a
-                    href="#privacy"
-                    className="underline hover:no-underline text-accent-500"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // Скроллим к футеру с политикой
-                      document.querySelector("footer")?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                  >
-                    обработку персональных данных
-                  </a>
-                </label>
-              </div>
-              {agreeError && (<div className="text-xs text-red-500">{agreeError}</div>)}
-              </>
+                <div className={`text-black/80 text-xs sm:text-sm flex items-start`}>
+                  <span className={`fake-checkbox-black mr-2`}></span>
+                  <div>
+                    <div dangerouslySetInnerHTML={{__html: AGREE_LABEL}}></div>
+                    {agreeError && (<div className="error-message mt-2 text-xs text-red-500">{agreeError}</div>)}
+                  </div>
+                </div>
+              </label>
             )}
             <div className="flex items-center gap-2">
               <input
                 type={cfg.inputField.type}
+                name={cfg.inputField.name}
                 placeholder={cfg.inputField.placeholder}
                 value={inputValue}
                 onChange={(e) => {
@@ -564,6 +584,7 @@ export function ChatWidget({
               />
               <button
                 onClick={handleInputSubmit}
+                disabled={isTyping}
                 className="w-8 h-8 sm:w-10 sm:h-10 rounded-full text-white flex items-center justify-center shrink-0 bg-accent-500"
               >
                 <Send className="size-3 sm:size-4" />
