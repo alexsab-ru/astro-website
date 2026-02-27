@@ -130,7 +130,7 @@ export function ChatWidget({
   // ──────────────── UI (ПОЛНОСТЬЮ СОХРАНЕН) ────────────────
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 md:px-5">
+    <div className="w-full max-w-5xl 2xl:max-w-7xl mx-auto px-0 md:px-5">
       <div className="flex flex-col rounded-xl md:rounded-2xl overflow-hidden border shadow-xl min-h-[500px] h-[70vh]">
         <Header managerName={managerName} dealer={dealer} />
 
@@ -138,6 +138,7 @@ export function ChatWidget({
         <div
           ref={scrollRef}
           className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-5 space-y-3 bg-gray-50"
+          id="chat"
         >
           {messages.map((msg) => (
             <Message message={msg} key={msg.id} />
