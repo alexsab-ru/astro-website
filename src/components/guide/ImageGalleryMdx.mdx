@@ -1,0 +1,150 @@
+# ImageGallery
+
+Набор из трёх компонентов для отображения фотогалереи с лайтбоксом (GLightbox):
+- **`Grid`** — адаптивная сетка с умными паттернами раскладки (1–6+ фото)
+- **`SimpleGrid`** — простая равномерная сетка в 2 колонки
+- **`Sections`** — галерея, разбитая по секциям с заголовками
+
+---
+
+## Grid
+
+### Входные параметры
+
+```js
+interface Props {
+  images: { url: string; title?: string; description?: string }[];
+  gallery?: string;
+}
+```
+
+### Использование
+
+```js
+---
+import Grid from '@/components/ImageGallery/Grid.astro';
+---
+
+<Grid
+  images={[
+    { url: 'https://example.com/photo1.webp', title: 'Фото 1' },
+    { url: 'https://example.com/photo2.webp', title: 'Фото 2' },
+    { url: 'https://example.com/photo3.webp', title: 'Фото 3' },
+  ]}
+  gallery="my-gallery"
+/>
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |images|-|Массив объектов с изображениями|
+    |images[].url|-|URL изображения|
+    |images[].title|-|Подпись в лайтбоксе (опционально)|
+    |images[].description|-|Описание в лайтбоксе (опционально)|
+    |gallery|`'gallery'`|Имя группы для GLightbox|
+</div>
+
+---
+
+## SimpleGrid
+
+### Входные параметры
+
+```js
+interface Props {
+  images: { url: string; title?: string; description?: string }[];
+  gallery?: string;
+  title?: string;
+}
+```
+
+### Использование
+
+```js
+---
+import SimpleGrid from '@/components/ImageGallery/SimpleGrid.astro';
+---
+
+<SimpleGrid
+  images={[
+    { url: 'https://example.com/photo1.webp', title: 'Фото 1' },
+    { url: 'https://example.com/photo2.webp', title: 'Фото 2' },
+  ]}
+  gallery="simple-gallery"
+  title="Название галереи"
+/>
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |images|-|Массив объектов с изображениями|
+    |images[].url|-|URL изображения|
+    |images[].title|-|Подпись в лайтбоксе (опционально)|
+    |images[].description|-|Описание в лайтбоксе (опционально)|
+    |gallery|`'gallery'`|Имя группы для GLightbox|
+    |title|-|Общий alt для изображений (опционально)|
+</div>
+
+---
+
+## Sections
+
+### Входные параметры
+
+```js
+interface Props {
+  sections: {
+    id: string;
+    title: string;
+    images?: { url: string; title?: string; description?: string }[];
+  }[];
+  variant?: 'grid' | 'simple';
+  ctaHref?: string;
+  ctaText?: string;
+}
+```
+
+### Использование
+
+```js
+---
+import Sections from '@/components/ImageGallery/Sections.astro';
+---
+
+<Sections
+  variant="grid"
+  ctaHref="/contacts/"
+  ctaText="Записаться на тест-драйв"
+  sections={[
+    {
+      id: 'exterior',
+      title: 'Экстерьер',
+      images: [
+        { url: 'https://example.com/ext1.webp', title: 'Вид спереди' },
+        { url: 'https://example.com/ext2.webp', title: 'Вид сбоку' },
+      ],
+    },
+    {
+      id: 'interior',
+      title: 'Интерьер',
+      images: [
+        { url: 'https://example.com/int1.webp', title: 'Передние сиденья' },
+      ],
+    },
+  ]}
+/>
+```
+
+<div class="*:!text-left my-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+    |sections|-|Массив секций с заголовками и изображениями|
+    |sections[].id|-|Уникальный идентификатор секции|
+    |sections[].title|-|Заголовок секции (h2)|
+    |sections[].images|-|Массив изображений секции|
+    |variant|`'grid'`|Тип сетки: `'grid'` или `'simple'`|
+    |ctaHref|-|Ссылка кнопки CTA (опционально)|
+    |ctaText|`'Узнать подробности'`|Текст кнопки CTA|
+</div>
