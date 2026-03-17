@@ -1,11 +1,15 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-// import { ChatWidget } from '@/components/React/ChatWidget/ChatWidget';
 import { ChatWidget } from '@/components/React/ChatWidget/ChatWidget-v2';
 import { USPSection } from '@/components/React/USPSection';
 import Banner from '@/components/Banner/Banner.astro'
-import answers from '@/data/quiz.json';
+import siteSettings from '@/data/settings.json';
 import modelsData from '@/data/models.json';
+
+// import.meta.glob — Vite-нативный optional import (не падает если файла нет)
+const chatFiles = import.meta.glob('/src/data/chat-landing.json', { eager: true });
+const chatConfig: any = (Object.values(chatFiles)[0] as any)?.default || { settings: {}, questions: [] };
+
 const { models } = modelsData;
 const banners = [
     {
@@ -20,7 +24,7 @@ const banners = [
             "desktop": "https://cdn.alexsab.ru/models/default-model-bg.webp"
         },
         "title": "Заголовок баннера до 31.08.2024",
-        "descr": "Подзаголовок баннера может быть длиннее или короче за 1 234 567 ₽",
+        "descr": "Подзаголовок баннера может быть длиннее или короче за 1 234 567 ₽",
         "btn": "Онлайн запись",
         "btnUrl": "#common-modal",
         "dataTitle": "Онлайн запись",
@@ -34,27 +38,45 @@ const banners = [
         "autoplay": 6000
     },
 ];
-const quizConfig = answers.map(answer => {
-    if (answer?.id !== 'model') return answer;
-    
-    const newOptions = answer.answerOptions.reduce((acc, a) => {        
-        const model = models.find(m => m.name === a);        
-        if (model) {
-            acc.push({
-                label: model.name,
-                value: model.name,
-                description: model.slogan,
-                image: model.thumb,
-            });
-        }
-        return acc;
-    }, []);
+// Fallback: берём brand/dealer/legalCityWhere из settings.json если не заданы в chat-landing.json
+const chatSettings = chatConfig.settings || {};
+const mergedSettings = {
+    ...chatSettings,
+    brand: chatSettings.brand || siteSettings.brand || '',
+    dealer: chatSettings.dealer || siteSettings.site_name || '',
+    legalCityWhere: chatSettings.legalCityWhere || siteSettings.legal_city_where || '',
+};
 
-    return {
-        ...answer,
-        answerOptions: newOptions
-    };
-});
+// Обогащаем вопросы данными из models.json
+const config = {
+    ...chatConfig,
+    settings: mergedSettings,
+    // Данные моделей для динамических опций (цвета по выбранной модели)
+    models: models.map((m: any) => ({
+        name: m.name,
+        colors: (m.colors || []).map((c: any) => ({ id: c.id, name: c.name })),
+    })),
+    questions: chatConfig.questions.map(q => {
+        if (q.id !== 'model') return q;
+        // Если answerOptions пуст — показываем все модели, иначе только указанные
+        const sourceNames = q.answerOptions.length === 0
+            ? models.map((m: any) => m.name)
+            : q.answerOptions.map((a: any) => typeof a === 'string' ? a : a);
+        const newOptions = sourceNames.reduce((acc: any[], name: string) => {
+            const model = models.find((m: any) => m.name === name);
+            if (model) {
+                acc.push({
+                    label: model.name,
+                    value: model.name,
+                    description: model.slogan,
+                    image: model.thumb,
+                });
+            }
+            return acc;
+        }, []);
+        return { ...q, answerOptions: newOptions };
+    }),
+};
 ---
 
 <Layout
@@ -62,15 +84,18 @@ const quizConfig = answers.map(answer => {
     title="Чат квиз"
     description={`Чат квиз`}
     footerVersion="3"
+    showHeaderMenu={false}
+    showFooterLinks={false}
+    logoNoLink={true}
 >
 
 <!-- <Banner banners={banners} /> -->
 
-<section class="pb-20!">
+<section class="pb-14!">
     <div class="container">
         <USPSection client:visible />
     </div>
-    <ChatWidget client:visible={{rootMargin: "-200px"}} config={quizConfig} />
+    <ChatWidget client:visible={{rootMargin: "-210px"}} config={config} />
 </section>
 
 

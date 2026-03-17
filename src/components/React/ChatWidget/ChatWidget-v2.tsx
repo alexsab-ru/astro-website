@@ -1,7 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import {
   Header,
-  Footer,
   Message,
   Typing,
   OptionsList,
@@ -11,7 +10,6 @@ import {
 
 import type { ChatWidgetProps } from "./types";
 
-// Импортируем хуки
 import { useChatScroll } from './hooks/useChatScroll';
 import { useChatMessages } from './hooks/useChatMessages';
 import { useChatSteps } from './hooks/useChatSteps';
@@ -22,19 +20,25 @@ import { useChatInit } from './hooks/useChatInit';
 
 // ──────────────── component ────────────────
 
-export function ChatWidget({
-  config,
-  managerName = "Алексей",
-  managerPosition = "руководитель отдела продаж",
-  brand = "CHERY",
-  dealer = "Официальный дилер",
-  legalCityWhere = 'Самаре',
-  formName = 'Квиз чат'
-}: ChatWidgetProps) {
-  // Хук для автоскролла
+export function ChatWidget({ config }: ChatWidgetProps) {
+  const settings = config.settings || {};
+  const isOnline = Array.isArray(config.questions) && config.questions.length > 0;
+  const managerName = settings.managerName || 'Менеджер';
+  const formName = settings.formName || 'Квиз чат';
+  const dealer = settings.dealer || 'Официальный дилер';
+
+  // Автоскролл: отключён до первого ответа пользователя
+  const scrollEnabled = useRef(false);
   const { scrollRef, scroll } = useChatScroll();
 
-  // Хук для управления шагами
+  const scrollIfEnabled = useCallback(() => {
+    if (scrollEnabled.current) scroll();
+  }, [scroll]);
+
+  const enableScroll = useCallback(() => {
+    scrollEnabled.current = true;
+  }, []);
+
   const {
     currentStep,
     setCurrentStep,
@@ -43,16 +47,8 @@ export function ChatWidget({
     showOptions,
     setShowOptions,
     steps,
-  } = useChatSteps({
-    config,
-    managerName,
-    managerPosition,
-    brand,
-    dealer,
-    legalCityWhere,
-  });
+  } = useChatSteps(config);
 
-  // Хук для управления сообщениями
   const {
     messages,
     setMessages,
@@ -60,13 +56,17 @@ export function ChatWidget({
     setIsTyping,
     addUserMessage,
     addBotMessage,
+    addErrorMessage,
     addBotMessages,
-  } = useChatMessages(scroll, setShowOptions);
+  } = useChatMessages({
+    scroll: scrollIfEnabled,
+    setShowOptions,
+    messageDelayBase: settings.messageDelayBase,
+    messageDelayPerChar: settings.messageDelayPerChar,
+  });
 
-  // Хук для отправки формы
   const {
     isFinished,
-    setIsFinished,
     sendLead,
     setInputValueRef,
   } = useFormSubmission({
@@ -74,10 +74,9 @@ export function ChatWidget({
     setIsTyping,
     setMessages,
     setCurrentStep,
-    scroll,
+    scroll: scrollIfEnabled,
   });
 
-  // Хук для обработки ответов пользователя
   const { handleAnswer } = useAnswerHandler({
     currentStep,
     steps,
@@ -88,9 +87,9 @@ export function ChatWidget({
     addUserMessage,
     addBotMessages,
     config,
+    onFirstAnswer: enableScroll,
   });
 
-  // Хук для обработки ввода данных
   const {
     inputValue,
     setInputValue,
@@ -105,14 +104,13 @@ export function ChatWidget({
     setAnswers,
     addUserMessage,
     addBotMessage,
+    addErrorMessage,
     sendLead,
     handleAnswer,
   });
 
-  // Устанавливаем setInputValue в ref для useFormSubmission
   setInputValueRef.current = setInputValue;
 
-  // Инициализация чата
   useChatInit({
     steps,
     addBotMessages,
@@ -120,19 +118,16 @@ export function ChatWidget({
     setShowOptions,
   });
 
-  // Автоскролл при изменении сообщений или опций
   useEffect(() => {
-    scroll();
-  }, [messages, showOptions, scroll]);
+    scrollIfEnabled();
+  }, [messages, showOptions, scrollIfEnabled]);
 
   const cfg = steps[currentStep];
-
-  // ──────────────── UI (ПОЛНОСТЬЮ СОХРАНЕН) ────────────────
 
   return (
     <div className="w-full max-w-5xl 2xl:max-w-7xl mx-auto px-0 md:px-5">
       <div className="flex flex-col rounded-xl md:rounded-2xl overflow-hidden border shadow-xl min-h-[500px] h-[70vh]">
-        <Header managerName={managerName} dealer={dealer} />
+        <Header managerName={managerName} managerPhoto={settings.managerPhoto} dealer={dealer} isOnline={isOnline} />
 
         {/* Messages */}
         <div
@@ -173,8 +168,6 @@ export function ChatWidget({
             onSubmit={handleInputSubmit}
           />
         )}
-        
-        {/* <Footer dealer={dealer} /> */}
       </div>
     </div>
   );

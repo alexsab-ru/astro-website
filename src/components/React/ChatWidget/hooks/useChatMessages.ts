@@ -1,6 +1,6 @@
 // ──────────────── Хук для управления сообщениями чата ────────────────
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { ChatMessage } from '../types';
 
 /**
@@ -11,12 +11,23 @@ import type { ChatMessage } from '../types';
  * @param setShowOptions - функция для управления видимостью опций
  * @returns объект с состоянием и функциями для работы с сообщениями
  */
-export function useChatMessages(
-  scroll: () => void,
-  setShowOptions: (value: boolean) => void
-) {
+interface UseChatMessagesParams {
+  scroll: () => void;
+  setShowOptions: (value: boolean) => void;
+  messageDelayBase?: number;
+  messageDelayPerChar?: number;
+}
+
+export function useChatMessages({
+  scroll,
+  setShowOptions,
+  messageDelayBase = 1000,
+  messageDelayPerChar = 10,
+}: UseChatMessagesParams) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(true);
+  const idCounter = useRef(0);
+  const nextId = (prefix: string) => `${prefix}-${Date.now()}-${++idCounter.current}`;
 
   /**
    * Добавляет сообщение пользователя в чат
@@ -26,7 +37,7 @@ export function useChatMessages(
   const addUserMessage = useCallback((text: string) => {
     setMessages((prev) => [
       ...prev,
-      { id: `user-${Date.now()}`, type: "user", text },
+      { id: nextId("user"), type: "user", text },
     ]);
     scroll();
   }, [scroll]);
@@ -39,7 +50,15 @@ export function useChatMessages(
   const addBotMessage = useCallback((text: string) => {
     setMessages((prev) => [
       ...prev,
-      { id: `bot-${Date.now()}`, type: "bot", text },
+      { id: nextId("bot"), type: "bot", text },
+    ]);
+    scroll();
+  }, [scroll]);
+
+  const addErrorMessage = useCallback((text: string) => {
+    setMessages((prev) => [
+      ...prev,
+      { id: nextId("error"), type: "error", text },
     ]);
     scroll();
   }, [scroll]);
@@ -70,11 +89,11 @@ export function useChatMessages(
         setTimeout(() => {
           setMessages((prev) => [
             ...prev,
-            { id: `bot-${Date.now()}-${i}`, type: "bot", text },
+            { id: nextId("bot"), type: "bot", text },
           ]);
           scroll();
           next();
-        }, 500 + text.length * 6);
+        }, messageDelayBase + text.length * messageDelayPerChar);
       };
 
       next();
@@ -89,6 +108,7 @@ export function useChatMessages(
     setIsTyping,
     addUserMessage,
     addBotMessage,
+    addErrorMessage,
     addBotMessages,
   };
 }
