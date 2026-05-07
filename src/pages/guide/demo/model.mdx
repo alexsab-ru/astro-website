@@ -5,7 +5,7 @@ title: "Демо Секции Модели"
 import BackLink from '@/components/BackLink.astro';
 import Model from '@/components/Model/Model.astro';
 import ModelMdx from '@/components/guide/ModelMdx.mdx';
-import modelsData from '@/data/models.json';
+import modelsData from '@/data/site/models.json';
 export const model = modelsData.models.filter(model => model.show)[1];
 export const breadcrumb = { name: `Модели`, href: "/models/" };
 

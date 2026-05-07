@@ -28,7 +28,7 @@ let quizData: TStep[] = [];
 // Загружаем данные из quiz.json, если quizSteps не передан
 if (!Astro.props.quizSteps || Astro.props.quizSteps.length === 0) {
     try {
-        const { default: data } = await import('@/data/quiz.json');
+        const { default: data } = await import('@/data/site/quiz.json');
         quizData = data || [];
     } catch (err) {
         console.warn('Failed to load quiz.json:', err);
