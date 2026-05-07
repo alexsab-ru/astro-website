@@ -1,11 +1,14 @@
 ---
 import { getCollection, render } from 'astro:content';
 import CarPageLayout from '@/layouts/CarPageLayout.astro';
-import { findModelByCarData } from '@/js/utils/car.utils';
+import { findModelByCarData } from '@/js/utils/car';
+import { getModelBrandId } from '@/js/utils/modelFields';
 import { normalizeModelId } from '@/js/utils/normalizeModelId';
+import { isRouteDisabled } from '@/js/utils/siteRoutes';
 
 export async function getStaticPaths() {
-const cars = await (getCollection as any)('cars');
+	if (isRouteDisabled('/cars/')) return [];
+	const cars = await (getCollection as any)('cars');
 
 	// Проверяем, что массив cars не пустой перед обработкой
 	if (cars && cars.length > 0) {
@@ -31,7 +34,7 @@ const lastViewedModelForStore = car?.data
 		const baseId = relatedModel?.id || String(car.data.folder_id || '');
 		return {
 			idNormalized: normalizeModelId(baseId),
-			markId: relatedModel?.mark_id || car.data.mark_id,
+			markId: getModelBrandId(relatedModel) || String(car.data.mark_id || '').toLowerCase(),
 		};
 	})()
 	: null;

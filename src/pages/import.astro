@@ -1,13 +1,17 @@
 ---
+import { isRouteDisabled, SITE_NOT_FOUND_PATH } from '@/js/utils/siteRoutes';
+if (isRouteDisabled('/import/')) {
+	return Astro.rewrite(SITE_NOT_FOUND_PATH);
+}
 import PageLayout from '@/layouts/PageLayout.astro';
 import Button from '@/components/Button/Button.astro';
 import Checkbox from '@/components/Checkbox/Checkbox.astro';
 import Input from '@/components/Input.astro';
 import ChoosingDealerSelect from '@/components/ChoosingDealerSelect/ChoosingDealerSelect.astro';
 import {AGREE_LABEL} from '@/const';
-import settings from '@/data/settings.json';
-const { site_name, brand } = settings;
-import salonsData from '@/data/salons.json';
+import settings from '@/data/site/settings.json';
+const { brand } = settings;
+import salonsData from '@/data/site/salons.json';
 import type { ISalon } from '@/types/ISalon';
 const salons = salonsData.filter((salon: ISalon) => !salon?.type || salon?.type.includes('import'));
 ---
@@ -28,7 +32,7 @@ const salons = salonsData.filter((salon: ISalon) => !salon?.type || salon?.type.
 		<div x-show="$store.import.step === 0">
 			<ul>
 				<li> - Вы получите эПТС и тех. паспорт на авто</li>
-				<li> - Рассрочка на услуги ДЦ {site_name}</li>
+				<li> - Надежная сделка</li>
 				<li> - Депозитный договор и инвойс на Ваше имя.</li>
 			</ul>
 		

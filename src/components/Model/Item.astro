@@ -2,18 +2,22 @@
 interface Props {
 	model: any;
 	modelPath?: string;
+	headingLevel?: 'h2' | 'h3';
 }
 import {Icon} from 'astro-icon/components';
 import { currencyFormat } from '@/js/utils/numbers.format';
 import { createDisclaimerIcon } from '@/js/utils/disclaimer';
 import { setPrefixModelUrl } from '@/js/utils/helpers';
+import { getModelBadgeData } from '@/js/utils/modelBadge';
+import { getModelBrandDisplayName, getModelThumb, getModelTitle } from '@/js/utils/modelFields';
 import { IS_MODEL_PREFIX_URL } from '@/const';
-const { model, modelPath } = Astro.props;
+let { model, modelPath, headingLevel = 'h3' } = Astro.props;
+const HeadingTag = headingLevel;
 const noPriceText = (model?.status && (model.status === 'preorder' || model.status === 'comminsoon')) ? 'cкоро в продаже' : 'по запросу';
-// В UI показываем человекочитаемое имя модели из caption.
-// Если caption не заполнен, оставляем старое поведение через name.
-const modelTitle = model?.caption || model?.name;
+const modelTitle = getModelTitle(model);
+const brandDisplayName = getModelBrandDisplayName(model);
 const resolvedModelPath = modelPath || `/models/${setPrefixModelUrl(model, IS_MODEL_PREFIX_URL)}/`;
+const { image: badgeImage, alt: badgeAlt } = getModelBadgeData(model, 'model_list', modelTitle || '');
 ---
 
 <a
@@ -21,12 +25,12 @@ const resolvedModelPath = modelPath || `/models/${setPrefixModelUrl(model, IS_MO
 	class="mb-[4%] lg:mb-0 w-[48%] lg:w-[calc(33.33%-calc(40px/3))] xl:w-[calc(25%-calc(60px/4))] flex flex-col border p-3 sm:pt-10 sm:pb-4 sm:px-5 overflow-hidden shadow-xl transition-all duration-500 in-expo group hover:border-gray-400 hover:shadow-md no-underline!"
 >
 	<div>
-		<h3
-			class="leading-none! xs:text-xs! text-sm! sm:text-2xl! uppercase transition-colors duration-300 group-hover:text-accent-500 m-0! p-0!"
-		>
-			<small class="block xs:text-[10px] text-xs sm:text-sm leading-none! text-title-brand-model-item">{model.mark_id}</small>
-			<span>{modelTitle}</span>
-		</h3>
+	<HeadingTag
+		class="leading-none! xs:text-xs! text-sm! sm:text-2xl! uppercase transition-colors duration-300 group-hover:text-accent-500 m-0! p-0! before:content-none! text-left! w-auto!"
+	>
+		<small class="block xs:text-[10px] text-xs sm:text-sm leading-none! text-title-brand-model-item">{brandDisplayName}</small>
+		<span>{modelTitle}</span>
+	</HeadingTag>
 		{
 			model?.benefit && !isNaN(model?.benefit) && model?.benefit != 0 && model?.benefit != '' && (
 				<span class="block text-xs sm:text-lg text-black/80">
@@ -42,17 +46,17 @@ const resolvedModelPath = modelPath || `/models/${setPrefixModelUrl(model, IS_MO
 		class="relative grow flex items-center aspect-4/3 justify-center lazy"
 	>
 		{
-			model?.badge && (
+			badgeImage && (
 				<img
-					data-src={model.badge?.horisontal || model.badge?.img }
-					alt={model.badge?.alt}
-					class="opacity-0 absolute right-0 top-0 xs:h-7 h-8 sm:h-14 w-auto z-10"
+					data-src={badgeImage}
+					alt={badgeAlt}
+					class="opacity-0 absolute right-0 top-0 h-auto xs:w-[60px] w-[100px] z-10"
 				/>
 			)
 		}
 		<img
 			src="https://cdn.alexsab.ru/loaders/simple-loading-gray.svg"
-			data-src={model.thumb}
+			data-src={getModelThumb(model)}
 			class="scale-100 transition-transform duration-500 in-expo group-hover:scale-105 max-h-full"
 			alt={modelTitle}
 			loading="lazy"

@@ -34,7 +34,9 @@ const schema = yup.object().shape({
 		.required('Чтобы продолжить, установите этот флажок'),
 });
 
-function AvtoInfoForm() {	
+const SEND_MAIL_COOKIE = 'SEND_MAIL';
+
+function AvtoInfoForm({ ct_routeKey = '' } = {}) {
 	const { 
 		vinState, 
 		mileageState, 
@@ -129,6 +131,9 @@ function AvtoInfoForm() {
 	const onSubmit = async (data, e) => {
 		const isFormCorrect = await trigger();
 		if (!isFormCorrect) return;
+		// Динамический импорт: модуль содержит browser-only код (window.*), SSR его не должен трогать
+		const { reachGoal, setCookie, deleteCookie, createRequest } = await import('@alexsab-ru/scripts');
+		reachGoal("form_submit");
 		showLoader();
 		const info = JSON.parse(JSON.stringify(avtoInfo));
 		delete info.brand.popular;
@@ -175,6 +180,27 @@ function AvtoInfoForm() {
 					formData.append(pair[0], pair[1]);
 				});
 				formData.append("page_url", window.location.origin + window.location.pathname);
+
+				// Запрос на колл-бэк в КолТач (если передан ct_routeKey)
+				if (ct_routeKey) {
+					try {
+						const requestData = await createRequest(ct_routeKey, data.phone || '', data.name || '');
+						formData.append("ct_callback", true);
+						formData.append("ctw_createRequest", JSON.stringify(requestData));
+					} catch (ctError) {
+						formData.append("ctw_createRequest", String(ctError));
+						if (window.location.hostname == "localhost")
+							console.log('Ошибка createRequest КолТач', ctError);
+					}
+				}
+
+				// Объект для аналитики (eventCategory: "Lead" → reachGoal отправит в КолТач)
+				const formDataObj = {
+					eventProperties: Object.fromEntries(formData.entries()),
+					eventCategory: "Lead",
+					sourceName: "page",
+				};
+
 				const options = {
 					method: "POST",
 					mode: "cors",
@@ -188,6 +214,8 @@ function AvtoInfoForm() {
 				.then(function (response) {
 					if (window.location.hostname == "localhost")
 						console.log('Отправка письма', response);
+					reachGoal("form_success", formDataObj);
+					setCookie(SEND_MAIL_COOKIE, true, { domain: window.location.hostname, path: '/', expires: 600 });
 					// recalculate();
 					e.target.reset();
 					setStep(2);
@@ -196,6 +224,8 @@ function AvtoInfoForm() {
 				.catch(function (error) {
 					if (window.location.hostname == "localhost")
 						console.log('Ошибка отправки письма', error);
+					reachGoal("form_error");
+					deleteCookie(SEND_MAIL_COOKIE);
 					setError();
 					scroll('trade-in-calc');
 				});
@@ -203,6 +233,7 @@ function AvtoInfoForm() {
 			}else{
 				if (window.location.hostname == "localhost")
 					console.log('Error fetch express', res);
+				reachGoal("form_error");
 				setError();
 				hideLoader();
 				scroll('trade-in-calc');
@@ -210,6 +241,7 @@ function AvtoInfoForm() {
 		}, (error) => {
 			if (window.location.hostname == "localhost")
 				console.log('Error fetch express', error);
+			reachGoal("form_error");
 			setError();
 			hideLoader();
 			scroll('trade-in-calc');

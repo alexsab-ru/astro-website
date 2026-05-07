@@ -2,7 +2,7 @@ name: Generate Astro Files from XML
 
 on:
   schedule:
-    - cron: '0 3-17 * * *'  # Запускается каждый час с 3 до 17 (UTC)
+    - cron: '0 3-17 * * *'  # Запускается каждый час с 3 до 17 (UTC) — 06:00 до 20:00 по МСК
   push:
     paths:
       - '.github/scripts/sh/getAirStorage.sh'
@@ -10,6 +10,7 @@ on:
       - '.github/scripts/sh/getDealerPrices.sh'
       - '.github/scripts/sh/getDealerServicePrices.sh'
       - '.github/scripts/sh/getDealerStorage.sh'
+      - '.github/scripts/sh/process_xml.sh'
       - '.github/scripts/sh/getSortStorage.sh'
       - '.github/scripts/CarFeedProcessorCSV.py'
       - '.github/scripts/config_air_storage-friend.json'
@@ -20,11 +21,14 @@ on:
       - '.github/scripts/mergeCarPrices.js'
       - '.github/scripts/update_cars_air_storage.py'
       - '.github/scripts/update_cars.py'
+      - '.github/scripts/image_mirror.py'
+      - '.github/scripts/sh/uploadImageMirror.sh'
       - '.github/scripts/utils.py'
       - '.github/workflows/update_cars.yml'
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: write
 
 concurrency:
@@ -67,15 +71,15 @@ jobs:
 
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
-        node-version: '18'
+        node-version: '25'
 
     - name: Cache pnpm dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ~/.pnpm-store
@@ -85,24 +89,40 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pnpm-
 
+    - name: Init output.txt
+      run: |
+        > output.txt
+
     - name: Install dependencies
       run: |
         npm install -g pnpm
         pnpm install --no-frozen-lockfile
-        pnpm downloadCommonRepo -f settings.json --skip-model-sections
+        pnpm downloadCommonRepo -f settings.json,env.json
       env:
         JSON_REPO: ${{ secrets.JSON_REPO }}
         DOMAIN: ${{ vars.DOMAIN }}
         FINE_GRAINED_PAT: ${{ secrets.FINE_GRAINED_PAT }}
+
+    - name: Migrate legacy dealer models cars price file
+      run: |
+        legacy_file="src/data/dealer-models_cars_price.json"
+        target_file="src/data/site/dealer-models_cars_price.json"
+        if [[ -f "$legacy_file" ]]; then
+          mkdir -p "$(dirname "$target_file")"
+          mv -f "$legacy_file" "$target_file"
+          echo "✅ Migrated $legacy_file → $target_file"
+        else
+          echo "ℹ $legacy_file not found — skipping migration"
+        fi
     
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
-        python-version: '3.10'
+        python-version: '3.13'
         architecture: "x64"
 
     - name: Cache pip dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -114,203 +134,326 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests lxml pyyaml Pillow beautifulsoup4
 
+    - name: Load env.json into environment
+      run: |
+        if [ -f src/data/site/env.json ]; then
+          node -e '
+            const data = JSON.parse(require("fs").readFileSync("src/data/site/env.json","utf8"));
+            for (const [k,v] of Object.entries(data)) {
+              if (typeof v === "object") console.log(k+"="+JSON.stringify(v));
+              else console.log(k+"="+v);
+            }
+          ' >> $GITHUB_ENV
+          echo "✅ env.json loaded into environment"
+        else
+          echo "⚠ src/data/site/env.json not found — skipping"
+        fi
 
     - name: Get Dealer cars Storage
-      if: ${{ vars.DEALER_STORAGE_CSV_URL }}
+      if: ${{ env.DEALER_STORAGE_CSV_URL }}
       run: |
         pnpm run getDealerStorage_new_cars_xml
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        CSV_URL: ${{ vars.DEALER_STORAGE_CSV_URL }}
-        DEALER_STORAGE_CSV_URL: ${{ vars.DEALER_STORAGE_CSV_URL }}
-        QUERY_STRING: ${{ vars.DEALER_STORAGE_CSV_COLUMN }}
-        DEALER_STORAGE_CSV_COLUMN: ${{ vars.DEALER_STORAGE_CSV_COLUMN }}
+        CSV_URL: ${{ env.DEALER_STORAGE_CSV_URL }}
+        DEALER_STORAGE_CSV_URL: ${{ env.DEALER_STORAGE_CSV_URL }}
+        QUERY_STRING: ${{ env.DEALER_STORAGE_CSV_COLUMN }}
+        DEALER_STORAGE_CSV_COLUMN: ${{ env.DEALER_STORAGE_CSV_COLUMN }}
 
     - name: Get Dealer used_cars Storage
-      if: ${{ vars.USED_CARS_STORAGE_CSV_URL }}
+      if: ${{ env.USED_CARS_STORAGE_CSV_URL }}
       run: |
         pnpm run getDealerStorage_used_cars_xml
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        CSV_URL: ${{ vars.USED_CARS_STORAGE_CSV_URL }}
-        USED_CARS_STORAGE_CSV_URL: ${{ vars.USED_CARS_STORAGE_CSV_URL }}
-        QUERY_STRING: ${{ vars.USED_CARS_STORAGE_CSV_COLUMN }}
-        USED_CARS_STORAGE_CSV_COLUMN: ${{ vars.USED_CARS_STORAGE_CSV_COLUMN }}
+        CSV_URL: ${{ env.USED_CARS_STORAGE_CSV_URL }}
+        USED_CARS_STORAGE_CSV_URL: ${{ env.USED_CARS_STORAGE_CSV_URL }}
+        QUERY_STRING: ${{ env.USED_CARS_STORAGE_CSV_COLUMN }}
+        USED_CARS_STORAGE_CSV_COLUMN: ${{ env.USED_CARS_STORAGE_CSV_COLUMN }}
 
     - name: Get Avito Dealer cars Storage
-      if: ${{ vars.AVITO_DEALER_STORAGE_CSV_URL }}
+      if: ${{ env.AVITO_DEALER_STORAGE_CSV_URL }}
       run: |
         pnpm run getDealerStorage_avito_xml
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        CSV_URL: ${{ vars.AVITO_DEALER_STORAGE_CSV_URL }}
-        AVITO_DEALER_STORAGE_CSV_URL: ${{ vars.AVITO_DEALER_STORAGE_CSV_URL }}
-        QUERY_STRING: ${{ vars.AVITO_DEALER_STORAGE_CSV_COLUMN }}
-        AVITO_DEALER_STORAGE_CSV_COLUMN: ${{ vars.AVITO_DEALER_STORAGE_CSV_COLUMN }}
+        CSV_URL: ${{ env.AVITO_DEALER_STORAGE_CSV_URL }}
+        AVITO_DEALER_STORAGE_CSV_URL: ${{ env.AVITO_DEALER_STORAGE_CSV_URL }}
+        QUERY_STRING: ${{ env.AVITO_DEALER_STORAGE_CSV_COLUMN }}
+        AVITO_DEALER_STORAGE_CSV_COLUMN: ${{ env.AVITO_DEALER_STORAGE_CSV_COLUMN }}
 
 
     - name: Get XML from Avito to get dealer photos for cars
-      if: ${{ vars.DEALER_PHOTOS_FOR_CARS_AVITO_URL }}
+      if: ${{ env.DEALER_PHOTOS_FOR_CARS_AVITO_URL }}
       run: |
         pnpm run getOne_DEALER_PHOTOS_FOR_CARS_AVITO_URL
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.DEALER_PHOTOS_FOR_CARS_AVITO_URL }}
-        DEALER_PHOTOS_FOR_CARS_AVITO_URL: ${{ vars.DEALER_PHOTOS_FOR_CARS_AVITO_URL }}
+        XML_URL: ${{ env.DEALER_PHOTOS_FOR_CARS_AVITO_URL }}
+        DEALER_PHOTOS_FOR_CARS_AVITO_URL: ${{ env.DEALER_PHOTOS_FOR_CARS_AVITO_URL }}
 
     - name: Get cars data_cars_car XML
-      if: ${{ vars.XML_URL_DATA_CARS_CAR }}
+      if: ${{ env.XML_URL_DATA_CARS_CAR }}
       run: |
         pnpm getOne_XML_URL_DATA_CARS_CAR
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.XML_URL_DATA_CARS_CAR }}
-        XML_URL_DATA_CARS_CAR: ${{ vars.XML_URL_DATA_CARS_CAR }}
+        XML_URL: ${{ env.XML_URL_DATA_CARS_CAR }}
+        XML_URL_DATA_CARS_CAR: ${{ env.XML_URL_DATA_CARS_CAR }}
 
     - name: Get cars catalog_vehicles_vehicle XML
-      if: ${{ vars.XML_URL_CATALOG_VEHICLES_VEHICLE }}
+      if: ${{ env.XML_URL_CATALOG_VEHICLES_VEHICLE }}
       run: |
         pnpm getOne_XML_URL_CATALOG_VEHICLES_VEHICLE
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.XML_URL_CATALOG_VEHICLES_VEHICLE }}
-        XML_URL_CATALOG_VEHICLES_VEHICLE: ${{ vars.XML_URL_CATALOG_VEHICLES_VEHICLE }}
+        XML_URL: ${{ env.XML_URL_CATALOG_VEHICLES_VEHICLE }}
+        XML_URL_CATALOG_VEHICLES_VEHICLE: ${{ env.XML_URL_CATALOG_VEHICLES_VEHICLE }}
 
     - name: Get cars vehicles_vehicle XML
-      if: ${{ vars.XML_URL_VEHICLES_VEHICLE }}
+      if: ${{ env.XML_URL_VEHICLES_VEHICLE }}
       run: |
         pnpm getOne_XML_URL_VEHICLES_VEHICLE
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.XML_URL_VEHICLES_VEHICLE }}
-        XML_URL_VEHICLES_VEHICLE: ${{ vars.XML_URL_VEHICLES_VEHICLE }}
+        XML_URL: ${{ env.XML_URL_VEHICLES_VEHICLE }}
+        XML_URL_VEHICLES_VEHICLE: ${{ env.XML_URL_VEHICLES_VEHICLE }}
 
     - name: Get cars ads_ad XML
-      if: ${{ vars.XML_URL_ADS_AD }}
+      if: ${{ env.XML_URL_ADS_AD }}
       run: |
         pnpm getOne_XML_URL_ADS_AD
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.XML_URL_ADS_AD }}
-        XML_URL_ADS_AD: ${{ vars.XML_URL_ADS_AD }}
+        XML_URL: ${{ env.XML_URL_ADS_AD }}
+        XML_URL_ADS_AD: ${{ env.XML_URL_ADS_AD }}
 
     - name: Get cars carcopy_offers_offer XML
-      if: ${{ vars.XML_URL_CARCOPY_OFFERS_OFFER }}
+      if: ${{ env.XML_URL_CARCOPY_OFFERS_OFFER }}
       run: |
         pnpm getOne_XML_URL_CARCOPY_OFFERS_OFFER
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.XML_URL_CARCOPY_OFFERS_OFFER }}
-        XML_URL_CARCOPY_OFFERS_OFFER: ${{ vars.XML_URL_CARCOPY_OFFERS_OFFER }}
+        XML_URL: ${{ env.XML_URL_CARCOPY_OFFERS_OFFER }}
+        XML_URL_CARCOPY_OFFERS_OFFER: ${{ env.XML_URL_CARCOPY_OFFERS_OFFER }}
 
     - name: Get used_cars data_cars_car XML
-      if: ${{ vars.USED_CARS_DATA_CARS_CAR }}
+      if: ${{ env.USED_CARS_DATA_CARS_CAR }}
       run: |
         pnpm getOne_USED_CARS_DATA_CARS_CAR
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.USED_CARS_DATA_CARS_CAR }}
-        USED_CARS_DATA_CARS_CAR: ${{ vars.USED_CARS_DATA_CARS_CAR }}
+        XML_URL: ${{ env.USED_CARS_DATA_CARS_CAR }}
+        USED_CARS_DATA_CARS_CAR: ${{ env.USED_CARS_DATA_CARS_CAR }}
 
     - name: Get used_cars catalog_vehicles_vehicle XML
-      if: ${{ vars.USED_CARS_CATALOG_VEHICLES_VEHICLE }}
+      if: ${{ env.USED_CARS_CATALOG_VEHICLES_VEHICLE }}
       run: |
         pnpm getOne_USED_CARS_CATALOG_VEHICLES_VEHICLE
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.USED_CARS_CATALOG_VEHICLES_VEHICLE }}
-        USED_CARS_CATALOG_VEHICLES_VEHICLE: ${{ vars.USED_CARS_CATALOG_VEHICLES_VEHICLE }}
+        XML_URL: ${{ env.USED_CARS_CATALOG_VEHICLES_VEHICLE }}
+        USED_CARS_CATALOG_VEHICLES_VEHICLE: ${{ env.USED_CARS_CATALOG_VEHICLES_VEHICLE }}
 
     - name: Get used_cars vehicles_vehicle XML
-      if: ${{ vars.USED_CARS_VEHICLES_VEHICLE }}
+      if: ${{ env.USED_CARS_VEHICLES_VEHICLE }}
       run: |
         pnpm getOne_USED_CARS_VEHICLES_VEHICLE
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.USED_CARS_VEHICLES_VEHICLE }}
-        USED_CARS_VEHICLES_VEHICLE: ${{ vars.USED_CARS_VEHICLES_VEHICLE }}
+        XML_URL: ${{ env.USED_CARS_VEHICLES_VEHICLE }}
+        USED_CARS_VEHICLES_VEHICLE: ${{ env.USED_CARS_VEHICLES_VEHICLE }}
 
     - name: Get used_cars ads_ad XML
-      if: ${{ vars.USED_CARS_ADS_AD }}
+      if: ${{ env.USED_CARS_ADS_AD }}
       run: |
         pnpm getOne_USED_CARS_ADS_AD
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.USED_CARS_ADS_AD }}
-        USED_CARS_ADS_AD: ${{ vars.USED_CARS_ADS_AD }}
+        XML_URL: ${{ env.USED_CARS_ADS_AD }}
+        USED_CARS_ADS_AD: ${{ env.USED_CARS_ADS_AD }}
 
     - name: Get used_cars carcopy_offers_offer XML
-      if: ${{ vars.USED_CARS_CARCOPY_OFFERS_OFFER }}
+      if: ${{ env.USED_CARS_CARCOPY_OFFERS_OFFER }}
       run: |
         pnpm getOne_USED_CARS_CARCOPY_OFFERS_OFFER
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.USED_CARS_CARCOPY_OFFERS_OFFER }}
-        USED_CARS_CARCOPY_OFFERS_OFFER: ${{ vars.USED_CARS_CARCOPY_OFFERS_OFFER }}
+        XML_URL: ${{ env.USED_CARS_CARCOPY_OFFERS_OFFER }}
+        USED_CARS_CARCOPY_OFFERS_OFFER: ${{ env.USED_CARS_CARCOPY_OFFERS_OFFER }}
 
     - name: Get air storage
-      if: ${{ vars.AIR_STORAGE_CSV_URL }}
+      if: ${{ env.AIR_STORAGE_CSV_URL }}
       run: |
         pnpm run getAirStorage
       env:
-        CSV_URL: ${{ vars.AIR_STORAGE_CSV_URL }}
-        AIR_STORAGE_CSV_URL: ${{ vars.AIR_STORAGE_CSV_URL }}
+        CSV_URL: ${{ env.AIR_STORAGE_CSV_URL }}
+        AIR_STORAGE_CSV_URL: ${{ env.AIR_STORAGE_CSV_URL }}
 
     - name: Get sort storage
-      if: ${{ vars.SORT_STORAGE_CSV_URL }}
+      if: ${{ env.SORT_STORAGE_CSV_URL }}
       run: |
         pnpm run getSortStorage
       env:
-        CSV_URL: ${{ vars.SORT_STORAGE_CSV_URL }}
-        SORT_STORAGE_CSV_URL: ${{ vars.SORT_STORAGE_CSV_URL }}
+        CSV_URL: ${{ env.SORT_STORAGE_CSV_URL }}
+        SORT_STORAGE_CSV_URL: ${{ env.SORT_STORAGE_CSV_URL }}
 
     - name: Get Dealer JSON cars price
-      if: ${{ vars.DEALER_CARS_PRICE_CSV_URL }}
+      if: ${{ env.DEALER_CARS_PRICE_CSV_URL }}
       run: |
         pnpm run getDealerCarsPrice
       env:
-        CSV_URL: ${{ vars.DEALER_CARS_PRICE_CSV_URL }}
-        DEALER_CARS_PRICE_CSV_URL: ${{ vars.DEALER_CARS_PRICE_CSV_URL }}
+        CSV_URL: ${{ env.DEALER_CARS_PRICE_CSV_URL }}
+        DEALER_CARS_PRICE_CSV_URL: ${{ env.DEALER_CARS_PRICE_CSV_URL }}
 
-
-    - name: Generate src/content/cars/ and src/content/used_cars/
+    - name: Download image mirror manifests from CDN
+      if: ${{ vars.MIRROR_CAR_IMAGES == 'true' }}
       run: |
-        pnpm cars auto
+        if [[ -z "${CDN_SSH_HOST:-}" || -z "${CDN_SSH_USER:-}" || -z "${CDN_SSH_PRIVATE_KEY:-}" ]]; then
+          echo "CDN SSH secrets are not configured; skipping image mirror manifest download"
+          exit 0
+        fi
+
+        install -m 700 -d ~/.ssh
+        printf '%s' "$CDN_SSH_PRIVATE_KEY" | sed 's/\\n/\n/g' | tr -d '\r' > ~/.ssh/cdn_cars
+        printf '\n' >> ~/.ssh/cdn_cars
+        chmod 600 ~/.ssh/cdn_cars
+
+        if ! ssh-keygen -y -f ~/.ssh/cdn_cars > /dev/null; then
+          echo "CDN_SSH_PRIVATE_KEY is not a valid unencrypted private key"
+          exit 1
+        fi
+
+        ssh-keyscan -p "${CDN_SSH_PORT:-22}" -H "$CDN_SSH_HOST" >> ~/.ssh/known_hosts
+        site="${DOMAIN#http://}"
+        site="${site#https://}"
+        site="${site%%/*}"
+        site="${site%/}"
+        remote_base="${CDN_REMOTE_PATH:-.}"
+        remote_base="${remote_base%/}"
+
+        if [[ -z "$site" ]]; then
+          echo "DOMAIN is empty; skipping image mirror manifest download"
+          exit 0
+        fi
+
+        mkdir -p "tmp/image_mirror/cars/$site"
+
+        rsync -rzO --no-perms --prune-empty-dirs --itemize-changes \
+          --include='*/' \
+          --include='manifest.json' \
+          --exclude='*' \
+          -e "ssh -p ${CDN_SSH_PORT:-22} -i ~/.ssh/cdn_cars -o IdentitiesOnly=yes -o BatchMode=yes" \
+          "$CDN_SSH_USER@$CDN_SSH_HOST:$remote_base/$site/" \
+          "tmp/image_mirror/cars/$site/" || {
+            echo "Could not download image mirror manifests from CDN; continuing with empty local manifests"
+            exit 0
+          }
       env:
+        CDN_SSH_HOST: ${{ secrets.CDN_SSH_HOST }}
+        CDN_SSH_PORT: ${{ secrets.CDN_SSH_PORT }}
+        CDN_SSH_USER: ${{ secrets.CDN_SSH_USER }}
+        CDN_SSH_PRIVATE_KEY: ${{ secrets.CDN_SSH_PRIVATE_KEY }}
+        CDN_REMOTE_PATH: ${{ secrets.CDN_REMOTE_PATH }}
         DOMAIN: ${{ vars.DOMAIN }}
 
+    - name: Generate src/content/cars/ and src/content/used_cars/
+      id: generate_cars
+      continue-on-error: true
+      run: |
+        mirror_args=""
+        if [[ "${MIRROR_CAR_IMAGES:-}" == "true" ]]; then
+          mirror_args="--mirror_images"
+          if [[ -n "${MIRROR_AUTOLOAD_DOWNLOAD_DELAY_SECONDS:-}" ]]; then
+            mirror_args="$mirror_args --mirror_autoload_download_delay_seconds ${MIRROR_AUTOLOAD_DOWNLOAD_DELAY_SECONDS}"
+          fi
+        fi
+        pnpm cars auto $mirror_args
+      env:
+        DOMAIN: ${{ vars.DOMAIN }}
+        CDN_BASE_URL: ${{ secrets.CDN_BASE_URL }}
+        MIRROR_CAR_IMAGES: ${{ vars.MIRROR_CAR_IMAGES }}
+        MIRROR_AUTOLOAD_DOWNLOAD_DELAY_SECONDS: ${{ vars.MIRROR_AUTOLOAD_DOWNLOAD_DELAY_SECONDS }}
+
+    - name: Upload mirrored car images to CDN
+      if: ${{ always() && vars.MIRROR_CAR_IMAGES == 'true' }}
+      run: |
+        if [[ ! -d tmp/image_mirror/cars ]]; then
+          echo "No mirrored images to upload"
+          exit 0
+        fi
+
+        if ! find tmp/image_mirror/cars -type f \( -name '*.webp' -o -name 'manifest.json' \) -print -quit | grep -q .; then
+          echo "No mirrored image files or manifests to upload"
+          exit 0
+        fi
+
+        if [[ -z "${CDN_SSH_HOST:-}" || -z "${CDN_SSH_USER:-}" || -z "${CDN_SSH_PRIVATE_KEY:-}" ]]; then
+          echo "CDN SSH secrets are not configured; skipping image mirror upload"
+          exit 0
+        fi
+
+        install -m 700 -d ~/.ssh
+        printf '%s' "$CDN_SSH_PRIVATE_KEY" | sed 's/\\n/\n/g' | tr -d '\r' > ~/.ssh/cdn_cars
+        printf '\n' >> ~/.ssh/cdn_cars
+        chmod 600 ~/.ssh/cdn_cars
+
+        if ! ssh-keygen -y -f ~/.ssh/cdn_cars > /dev/null; then
+          echo "CDN_SSH_PRIVATE_KEY is not a valid unencrypted private key"
+          exit 1
+        fi
+
+        ssh-keyscan -p "${CDN_SSH_PORT:-22}" -H "$CDN_SSH_HOST" >> ~/.ssh/known_hosts
+
+        rsync -rzO --no-perms --itemize-changes \
+          -e "ssh -p ${CDN_SSH_PORT:-22} -i ~/.ssh/cdn_cars -o IdentitiesOnly=yes -o BatchMode=yes" \
+          tmp/image_mirror/cars/ \
+          "$CDN_SSH_USER@$CDN_SSH_HOST:${CDN_REMOTE_PATH:-.}/"
+      env:
+        CDN_SSH_HOST: ${{ secrets.CDN_SSH_HOST }}
+        CDN_SSH_PORT: ${{ secrets.CDN_SSH_PORT }}
+        CDN_SSH_USER: ${{ secrets.CDN_SSH_USER }}
+        CDN_SSH_PRIVATE_KEY: ${{ secrets.CDN_SSH_PRIVATE_KEY }}
+        CDN_REMOTE_PATH: ${{ secrets.CDN_REMOTE_PATH }}
+
+    - name: Stop after failed car generation
+      if: ${{ steps.generate_cars.outcome == 'failure' }}
+      run: |
+        echo "Car generation failed after writing mirrored images. Uploaded available image mirror files; stopping before committing partial content."
+        exit 1
+
     - name: Get Dealer XML for auto.ru and generate auto.ru xml
-      if: ${{ vars.AUTORU_XML_URL && !vars.AUTORU_FRIEND_XML_URL }}
+      if: ${{ env.AUTORU_XML_URL && !env.AUTORU_FRIEND_XML_URL }}
       run: |
         python .github/scripts/getOneXML.py
         python .github/scripts/update_cars_air_storage.py --source_type autoru  --output_path "./public/autoru.xml"
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.AUTORU_XML_URL }}
-        AUTORU_XML_URL: ${{ vars.AUTORU_XML_URL }}
+        XML_URL: ${{ env.AUTORU_XML_URL }}
+        AUTORU_XML_URL: ${{ env.AUTORU_XML_URL }}
 
     - name: Get Dealer AutoRu xml if friend url exists
-      if: ${{ vars.AUTORU_XML_URL && vars.AUTORU_FRIEND_XML_URL }}
+      if: ${{ env.AUTORU_XML_URL && env.AUTORU_FRIEND_XML_URL }}
       run: |
         python .github/scripts/getOneXML.py
         python .github/scripts/update_cars_air_storage.py --source_type autoru --output_path="./public/autoru_dc.xml"
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.AUTORU_XML_URL }}
-        AUTORU_XML_URL: ${{ vars.AUTORU_XML_URL }}
+        XML_URL: ${{ env.AUTORU_XML_URL }}
+        AUTORU_XML_URL: ${{ env.AUTORU_XML_URL }}
 
     - name: Get friends AutoRu xml
-      if: ${{ vars.AUTORU_FRIEND_XML_URL }}
+      if: ${{ env.AUTORU_FRIEND_XML_URL }}
       run: |
         python .github/scripts/getOneXML.py --output_path="cars_friend.xml"
         python .github/scripts/update_cars_air_storage.py --source_type autoru --input_file cars_friend.xml --output_path="./public/autoru_friend.xml" --config_path="./.github/scripts/config_air_storage-friend.json"
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.AUTORU_FRIEND_XML_URL }}
-        AUTORU_FRIEND_XML_URL: ${{ vars.AUTORU_FRIEND_XML_URL }}
+        XML_URL: ${{ env.AUTORU_FRIEND_XML_URL }}
+        AUTORU_FRIEND_XML_URL: ${{ env.AUTORU_FRIEND_XML_URL }}
 
     - name: Merge AutoRu xmls
-      if: ${{ vars.AUTORU_FRIEND_XML_URL }}
+      if: ${{ env.AUTORU_FRIEND_XML_URL }}
       run: |
         python .github/scripts/getOneXML.py --output_path="./public/autoru.xml"
       env:
@@ -318,47 +461,47 @@ jobs:
         XML_URL: "./public/autoru_dc.xml ./public/autoru_friend.xml"
 
     - name: Get Dealer XML for avito and generate avito xml if friend url not exists
-      if: ${{ vars.AVITO_XML_URL_DATA_CARS_CAR }}
+      if: ${{ env.AVITO_XML_URL_DATA_CARS_CAR }}
       run: |
         python .github/scripts/getOneXML.py
         python .github/scripts/update_cars_air_storage.py --source_type autoru --output_path="./public/avito.xml"
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: "${{ vars.AVITO_XML_URL_DATA_CARS_CAR }} ./tmp/feeds/avito/csv/cars.xml"
-        AVITO_XML_URL_DATA_CARS_CAR: ${{ vars.AVITO_XML_URL_DATA_CARS_CAR }}
+        XML_URL: "${{ env.AVITO_XML_URL_DATA_CARS_CAR }} ./tmp/feeds/avito/csv/cars.xml"
+        AVITO_XML_URL_DATA_CARS_CAR: ${{ env.AVITO_XML_URL_DATA_CARS_CAR }}
 
     - name: Get Dealer XML for avito and generate avito xml if friend url not exists
-      if: ${{ vars.AVITO_XML_URL && !vars.AVITO_FRIEND_XML_URL }}
+      if: ${{ env.AVITO_XML_URL && !env.AVITO_FRIEND_XML_URL }}
       run: |
         python .github/scripts/getOneXML.py
         python .github/scripts/update_cars_air_storage.py --source_type avito --output_path="./public/avito.xml"
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: "${{ vars.AVITO_XML_URL }} ./tmp/feeds/avito/csv/cars.xml"
-        AVITO_XML_URL: ${{ vars.AVITO_XML_URL }}
+        XML_URL: "${{ env.AVITO_XML_URL }} ./tmp/feeds/avito/csv/cars.xml"
+        AVITO_XML_URL: ${{ env.AVITO_XML_URL }}
 
     - name: Get Dealer Avito xml if friend url exists
-      if: ${{ vars.AVITO_XML_URL && vars.AVITO_FRIEND_XML_URL }}
+      if: ${{ env.AVITO_XML_URL && env.AVITO_FRIEND_XML_URL }}
       run: |
         python .github/scripts/getOneXML.py
         python .github/scripts/update_cars_air_storage.py --source_type avito --output_path="./public/avito_dc.xml"
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.AVITO_XML_URL }}
-        AVITO_XML_URL: ${{ vars.AVITO_XML_URL }}
+        XML_URL: ${{ env.AVITO_XML_URL }}
+        AVITO_XML_URL: ${{ env.AVITO_XML_URL }}
 
     - name: Get friends Avito xml
-      if: ${{ vars.AVITO_FRIEND_XML_URL }}
+      if: ${{ env.AVITO_FRIEND_XML_URL }}
       run: |
         python .github/scripts/getOneXML.py --output_path="cars_friend.xml"
         python .github/scripts/update_cars_air_storage.py --source_type avito --input_file cars_friend.xml --output_path="./public/avito_friend.xml" --config_path="./.github/scripts/config_air_storage-friend.json"
       env:
         DOMAIN: ${{ vars.DOMAIN }}
-        XML_URL: ${{ vars.AVITO_FRIEND_XML_URL }}
-        AVITO_FRIEND_XML_URL: ${{ vars.AVITO_FRIEND_XML_URL }}
+        XML_URL: ${{ env.AVITO_FRIEND_XML_URL }}
+        AVITO_FRIEND_XML_URL: ${{ env.AVITO_FRIEND_XML_URL }}
 
     - name: Merge Avito xmls
-      if: ${{ vars.AVITO_FRIEND_XML_URL }}
+      if: ${{ env.AVITO_FRIEND_XML_URL }}
       run: |
         python .github/scripts/getOneXML.py --output_path="./public/avito.xml"
       env:
@@ -390,16 +533,14 @@ jobs:
     - name: Check for changes
       id: check_changes
       run: |
-        if git diff --exit-code; then
-          echo 'check_changes true — git diff'
-          echo "changes=true" >> $GITHUB_ENV
-          echo "changes=true" >> $GITHUB_OUTPUT
-        elif git status -s; then
+        status_output=$(git status --short --untracked-files=all | grep -vE '^.. (output(_wrapped)?\.txt|cars(_friend)?\.xml)$' || true)
+        if [[ -n "$status_output" ]]; then
           echo 'check_changes true — git status'
+          printf '%s\n' "$status_output"
           echo "changes=true" >> $GITHUB_ENV
           echo "changes=true" >> $GITHUB_OUTPUT
         else
-          echo 'check_changes else'
+          echo 'check_changes false — no repo changes to commit'
           echo "changes=false" >> $GITHUB_ENV
           echo "changes=false" >> $GITHUB_OUTPUT
         fi
@@ -415,7 +556,8 @@ jobs:
         if [[ -d src/content/cars && $(find src/content/cars -type f -name "*.mdx") ]]; then git add src/content/cars/*.mdx; fi
         if [[ -d src/content/used_cars && $(find src/content/used_cars -type f -name "*.mdx") ]]; then git add src/content/used_cars/*.mdx; fi
         if [[ "$GITHUB_REF_NAME" != "master" ]]; then
-          if [[ -f src/data/dealer-models_cars_price.json ]]; then git add src/data/dealer-models_cars_price.json --force; fi
+          git add -u src/data || true
+          if [[ -f src/data/site/dealer-models_cars_price.json ]]; then git add src/data/site/dealer-models_cars_price.json --force; fi
         fi
         if [[ -f public/cars.xml ]]; then git add public/cars.xml; fi
         if [[ -f public/used_cars.xml ]]; then git add public/used_cars.xml; fi
@@ -424,6 +566,20 @@ jobs:
         git commit -m "Update cars from XML" -a || echo "No changes to commit"
         git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
         git push origin $GITHUB_REF_NAME
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Trigger Pages deploy
+      if: env.changes == 'true'
+      run: |
+        payload=$(printf '{"ref":"%s"}' "$GITHUB_REF_NAME")
+        curl -L \
+          -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/action-pages.yml/dispatches" \
+          -d "$payload"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

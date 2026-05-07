@@ -11,8 +11,13 @@ def process_car(car: ET.Element, config, all_duplicates, air_storage_data, eleme
     Обрабатывает отдельный автомобиль в XML.
     """
     if config.get('generate_friendly_url', False):
-        friendly_url = f"{join_car_data(car, 'mark_id', 'folder_id', 'modification_id', 'complectation_name', 'color', 'year')}"
-        friendly_url = f"{process_friendly_url(friendly_url)}"
+        friendly_url = join_car_data(car, 'mark_id', 'folder_id', 'modification_id', 'complectation_name', 'color', 'year')
+        friendly_url = process_friendly_url(friendly_url,
+            mark_id=car.find('mark_id').text,
+            folder_id=car.find('folder_id').text,
+            vin=car.find('vin').text,
+            log_warnings=config.get('category_type') != 'used',
+        )
         print(f"Уникальный идентификатор: {friendly_url}")
         create_child_element(car, 'url', f"https://{config['domain']}/cars/{friendly_url}/")
 
@@ -92,7 +97,7 @@ def main():
     parser.add_argument('--source_type', choices=['autoru', 'avito'], required=True, help='Source type')
     parser.add_argument('--config_source', 
                     choices=['env', 'file', 'github'], 
-                    default='file',
+                    default='env',
                     help='Config source type (file, env, or github)')
     parser.add_argument('--config_path', default='./.github/scripts/config_air_storage.json', help='Path to configuration file')
     parser.add_argument('--github_repo', help='GitHub repository in format owner/repo')
@@ -155,16 +160,23 @@ def main():
     config['new_phone'] = source_config['new_phone']
 
     root = get_xml_content(args.input_file, args.xml_url)
+    if root is None:
+        warning_msg = f"⚠️ Не удалось получить XML для {args.input_file}. Обработка {args.source_type} пропущена."
+        print(warning_msg)
+        with open('output.txt', 'a', encoding='utf-8') as file:
+            file.write(f"{warning_msg}\n")
+        return
+
     tree = ET.ElementTree(root)
 
     # Загружаем данные из JSON файла
     air_storage_data = {}
-    if os.path.exists('./src/data/air_storage.json'):
+    if os.path.exists('./src/data/site/air_storage.json'):
         try:
-            with open('./src/data/air_storage.json', 'r', encoding='utf-8') as f:
+            with open('./src/data/site/air_storage.json', 'r', encoding='utf-8') as f:
                 air_storage_data = json.load(f)
         except json.JSONDecodeError:
-            print("Ошибка при чтении ./src/data/air_storage.json")
+            print("Ошибка при чтении ./src/data/site/air_storage.json")
         except Exception as e:
             print(f"Произошла ошибка при работе с файлом: {e}")
 

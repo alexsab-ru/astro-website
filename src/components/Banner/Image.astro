@@ -1,11 +1,11 @@
 ---
-import { getObjectPosition } from '@/js/utils/media';
+import { getObjectPosition } from './media';
 import type { TBanner } from './types'
 interface Props{
 	banner?: TBanner;
 	index?: number;
 }
-import settings from '@/data/settings.json';
+import settings from '@/data/site/settings.json';
 const { site_name, site_description, legal_city_where } = settings;
 const {banner, index} = Astro.props;
 
@@ -21,7 +21,7 @@ const pos = getObjectPosition(banner);
 	<img
 		src={mobileImage || desktopImage}
 		class={`absolute inset-0 h-full w-full object-cover ${pos.className}`}
-		{...pos.style ? {style: pos.style} : {}}
+		style={pos.style}
 		{...banner?.title ? {alt: banner.title.replace(/<[^>]*>/g, '')} : {alt: `${site_name} ${site_description} в ${legal_city_where}`} }
 		{...index === 0 ? {fetchpriority: 'high'} : {}}
 		loading="lazy"

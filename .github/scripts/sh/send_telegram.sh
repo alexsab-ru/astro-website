@@ -48,14 +48,21 @@ send_telegram_messages() {
             
             # Формируем базовый URL запроса
             local request_url="https://api.telegram.org/bot${token}/sendMessage"
-            local request_data="chat_id=${chat_id}&parse_mode=${parse_mode}&text=${MESSAGE}&disable_web_page_preview=true"
-            
+
+            # Формируем аргументы curl
+            local curl_args=(-s -X POST "$request_url"
+                --data-urlencode "chat_id=${chat_id}"
+                --data-urlencode "parse_mode=${parse_mode}"
+                --data-urlencode "text=${MESSAGE}"
+                --data-urlencode "disable_web_page_preview=true"
+            )
+
             # Добавляем message_thread_id, если он есть
             if [ ! -z "$message_thread_id" ]; then
-                request_data="${request_data}&message_thread_id=${message_thread_id}"
+                curl_args+=(--data-urlencode "message_thread_id=${message_thread_id}")
             fi
-            
-            RESPONSE=$(curl -s -X POST "$request_url" -d "$request_data")
+
+            RESPONSE=$(curl "${curl_args[@]}")
 
             if ! echo "$RESPONSE" | grep -q '"ok":true'; then
                 echo "Error sending message part $i to chat $chat_id: $RESPONSE" >&2
@@ -64,6 +71,51 @@ send_telegram_messages() {
             # Добавляем небольшую задержку между отправками сообщений
             sleep 1
         done
+    done <<< "$chat_ids"
+}
+
+send_telegram_file() {
+    local token=$(trim_quotes "$1")
+    local chat_ids=$(trim_quotes "$2")
+    local file_path=$(trim_quotes "$3")
+    local caption=$(trim_quotes "$4")
+
+    if [ -z "$token" ] || [ -z "$chat_ids" ] || [ -z "$file_path" ]; then
+        echo "Error: Missing required parameters" >&2
+        echo "Usage: send_telegram_file token chat_ids file_path [caption]" >&2
+        return 1
+    fi
+
+    if [ ! -f "$file_path" ]; then
+        echo "Error: File not found: $file_path" >&2
+        return 1
+    fi
+
+    while IFS= read -r chat_line; do
+        IFS=',/' read -r chat_id message_thread_id <<< "$chat_line"
+
+        echo -e "${BGGREEN}Sending file $(basename $file_path) to Telegram chat $chat_id${Color_Off}"
+
+        local curl_args=(-s -X POST "https://api.telegram.org/bot${token}/sendDocument"
+            -F "chat_id=${chat_id}"
+            -F "document=@${file_path}"
+        )
+
+        if [ -n "$caption" ]; then
+            curl_args+=(-F "caption=${caption}")
+        fi
+
+        if [ -n "$message_thread_id" ]; then
+            curl_args+=(-F "message_thread_id=${message_thread_id}")
+        fi
+
+        RESPONSE=$(curl "${curl_args[@]}")
+
+        if ! echo "$RESPONSE" | grep -q '"ok":true'; then
+            echo "Error sending file to chat $chat_id: $RESPONSE" >&2
+        fi
+
+        sleep 1
     done <<< "$chat_ids"
 }
 
@@ -100,14 +152,21 @@ send_telegram_message() {
         
         # Формируем базовый URL запроса
         local request_url="https://api.telegram.org/bot${token}/sendMessage"
-        local request_data="chat_id=${chat_id}&parse_mode=${parse_mode}&text=${message}&disable_web_page_preview=true"
-        
+
+        # Формируем аргументы curl
+        local curl_args=(-s -X POST "$request_url"
+            --data-urlencode "chat_id=${chat_id}"
+            --data-urlencode "parse_mode=${parse_mode}"
+            --data-urlencode "text=${message}"
+            --data-urlencode "disable_web_page_preview=true"
+        )
+
         # Добавляем message_thread_id, если он есть
         if [ ! -z "$message_thread_id" ]; then
-            request_data="${request_data}&message_thread_id=${message_thread_id}"
+            curl_args+=(--data-urlencode "message_thread_id=${message_thread_id}")
         fi
-        
-        RESPONSE=$(curl -s -X POST "$request_url" -d "$request_data")
+
+        RESPONSE=$(curl "${curl_args[@]}")
 
         if ! echo "$RESPONSE" | grep -q '"ok":true'; then
             echo "Error sending message to chat $chat_id: $RESPONSE" >&2

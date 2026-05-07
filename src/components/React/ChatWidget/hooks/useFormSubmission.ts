@@ -3,12 +3,15 @@
 import { useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { getPair } from '@/js/utils/helpers';
-import settings from '@/data/settings.json';
+import settings from '@/data/site/settings.json';
 
 const { connectforms_link } = settings;
 
+const SEND_MAIL_COOKIE = 'SEND_MAIL';
+
 interface UseFormSubmissionParams {
   formName: string;
+  ct_routeKey?: string;
   setIsTyping: (value: boolean) => void;
   setMessages: React.Dispatch<React.SetStateAction<any[]>>;
   setCurrentStep: (step: string) => void;
@@ -24,6 +27,7 @@ interface UseFormSubmissionParams {
  */
 export function useFormSubmission({
   formName,
+  ct_routeKey = '',
   setIsTyping,
   setMessages,
   setCurrentStep,
@@ -41,6 +45,12 @@ export function useFormSubmission({
    */
   const sendLead = useCallback(async (data: Record<string, any>) => {
     setIsTyping(true);
+
+    // Динамический импорт: модуль содержит browser-only код (window.*), SSR его не должен трогать
+    const { reachGoal, setCookie, deleteCookie, createRequest } = await import('@alexsab-ru/scripts');
+
+    // Отправляем цель «форма отправлена»
+    reachGoal("form_submit");
 
     // Создаём копию, чтобы не мутировать исходный объект (state)
     const payload: Record<string, any> = { ...data };
@@ -62,6 +72,27 @@ export function useFormSubmission({
       console.log(payload);
     }
 
+    // Объект для аналитики (аналог getFormDataObject из @alexsab-ru/scripts)
+    const formDataObj = {
+      eventProperties: { ...payload, formID: formName },
+      eventCategory: "Lead",
+      sourceName: "page",
+    };
+
+    // Запрос на колл-бэк в КолТач (если передан ct_routeKey)
+    if (ct_routeKey) {
+      try {
+        const requestData = await createRequest(ct_routeKey, data.phone || '', data.name || '');
+        payload.ct_callback = true;
+        payload.ctw_createRequest = JSON.stringify(requestData);
+      } catch (error) {
+        payload.ctw_createRequest = String(error);
+        if (window.location.hostname === "localhost") {
+          console.log('Ошибка createRequest КолТач', error);
+        }
+      }
+    }
+
     const options = {
       method: "POST",
       mode: "cors",
@@ -74,16 +105,22 @@ export function useFormSubmission({
 
     try {
       const response = await axios(options);
-      
+
       if (window.location.hostname === "localhost") {
         console.log('Отправка письма', response);
       }
 
       const res = response.data;
       if (res?.answer && res.answer.toLowerCase() === 'ok') {
+        // Отправляем цель «успешная отправка» + данные в колтач (через reachGoal)
+        reachGoal("form_success", formDataObj);
+        // Ставим куку, как connectForms, чтобы не было повторных отправок
+        setCookie(SEND_MAIL_COOKIE, true, { domain: window.location.hostname, path: '/', expires: 600 });
         setIsFinished(true);
       } else {
         const errorMsg = res?.error || "Ошибка на стороне сервера. Попробуйте еще раз.";
+        reachGoal("form_error");
+        deleteCookie(SEND_MAIL_COOKIE);
         setMessages(prev => [
           ...prev,
           {
@@ -100,6 +137,8 @@ export function useFormSubmission({
       if (window.location.hostname === "localhost") {
         console.log('Ошибка отправки письма', error);
       }
+      reachGoal("form_error");
+      deleteCookie(SEND_MAIL_COOKIE);
       setMessages(prev => [
         ...prev,
         {
@@ -115,7 +154,7 @@ export function useFormSubmission({
       setIsTyping(false);
       scroll();
     }
-  }, [formName, setIsTyping, setMessages, setCurrentStep, scroll]);
+  }, [formName, ct_routeKey, setIsTyping, setMessages, setCurrentStep, scroll]);
 
   return {
     isFinished,

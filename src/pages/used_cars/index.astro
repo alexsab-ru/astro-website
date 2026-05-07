@@ -1,9 +1,14 @@
 ---
+import { isRouteDisabled, SITE_NOT_FOUND_PATH } from '@/js/utils/siteRoutes';
+if (isRouteDisabled('/used_cars/')) {
+	return Astro.rewrite(SITE_NOT_FOUND_PATH);
+}
 import PageLayout from "@/layouts/PageLayout.astro";
 import { getCollection } from "astro:content";
-import settings from '@/data/settings.json';
+import settings from '@/data/site/settings.json';
 const { site_name, brand, legal_city_where } = settings;
 import CarsList from '@/components/Cars/List.astro';
+import SeoText from '@/components/Seo/Index.astro';
 const rawCars = await getCollection("used_cars");
 let cars: any, image: string;
 import { getRandomInt } from "@/js/utils/numbers.format";
@@ -37,4 +42,5 @@ export const breadcrumb = { name: "Авто с пробегом", href: "/used_c
 			<p>Скоро здесь появится список автомобилей с пробегом.</p>
 		)
 	}
+	<SeoText mdx="used_cars" noPadding />
 </PageLayout>

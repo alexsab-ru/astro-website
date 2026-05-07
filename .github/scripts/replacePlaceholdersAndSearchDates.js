@@ -8,15 +8,21 @@ import { fileURLToPath } from 'url';
 
 dotenv.config();
 
+const NOTIFICATIONS_DIR = './tmp/notifications';
+const getModelBrandId = (model) =>
+    model?.brand?.id || (model?.mark_id ? String(model.mark_id).toLowerCase() : '');
+
 const ReportFile = {
-    SPECIAL_OFFERS: './special-offers-dates.txt',
-    SPECIAL_OFFERS_MARKETING: './special-offers-dates-marketing.txt'
+    DATES: `${NOTIFICATIONS_DIR}/dates.txt`,
+    DATES_MARKETING: `${NOTIFICATIONS_DIR}/dates-marketing.txt`,
+    RASSROCHKA: `${NOTIFICATIONS_DIR}/rassrochka.txt`,
+    RASSROCHKA_MARKETING: `${NOTIFICATIONS_DIR}/rassrochka-marketing.txt`,
 };
 
 class PlaceholderProcessor {
     constructor() {
         // Пути к директориям
-        this.dataDirectory = path.join(process.cwd(), 'src', 'data');
+        this.dataDirectory = path.join(process.cwd(), 'src', 'data', 'site');
         this.contentDirectory = path.join(process.cwd(), 'src', 'content');
         this.pagesDirectory = path.join(process.cwd(), 'src', 'pages');
         
@@ -26,6 +32,7 @@ class PlaceholderProcessor {
         // Массивы для отслеживания
         this.modifiedFiles = [];
         this.filesWithUpcomingDates = [];
+        this.filesWithRassrochka = [];
         
         // Данные
         this.carsData = [];
@@ -100,7 +107,16 @@ class PlaceholderProcessor {
     createSettingsPlaceholders() {
         if (Object.keys(this.settingsData).length === 0) return;
         
-        const settingsKeys = ['brand', 'site_name', 'site_description', 'legal_city', 'legal_city_where', 'phone_common'];
+        const settingsKeys = [
+            'brand',
+            'site_name',
+            'site_description',
+            'legal_entity',
+            'legal_inn',
+            'legal_city',
+            'legal_city_where',
+            'phone_common'
+        ];
 
         Object.keys(this.settingsData).forEach(sKey => {
             if (settingsKeys.includes(sKey)) {
@@ -289,7 +305,8 @@ class PlaceholderProcessor {
             if (value > 0 && model) {
                 // Форматируем значение с дисклеймером
                 let formatted = currencyFormat(value);
-                const carId = `${model.mark_id.toLowerCase()}-${model.id}`;
+                const brandId = getModelBrandId(model);
+                const carId = brandId ? `${brandId}-${model.id}` : model.id;
                 
                 if (this.disclaimerData[carId]?.[disclaimerKey] && this.disclaimerData[carId][disclaimerKey] !== '') {
                     formatted += quoteEscaper(
@@ -326,22 +343,49 @@ class PlaceholderProcessor {
         setPlaceholders('max-benefit', maxBenefit, maxBenefitModel, 'benefit', 'до', '-to');
     }
 
-    // Функция для замены плейсхолдеров в содержимом файла
-    replacePlaceholders(content, filePath = '') {
-        // Определяем, является ли файл seo.json - для него используем плейсхолдеры без дисклеймера
+    // Собирает и кеширует полный объект плейсхолдеров
+    // Для seo.json используются плейсхолдеры без дисклеймера, для остальных — с дисклеймером (кешируется)
+    getAllPlaceholders(filePath = '') {
         const isSeoFile = filePath && path.basename(filePath) === 'seo.json';
-        
-        // Выбираем набор ценовых плейсхолдеров в зависимости от файла
-        const carsPlaceholdersToUse = isSeoFile 
-            ? this.carsPlaceholderWithoutDisclaimer 
-            : this.carsPlaceholder;
-        
-        // Выбираем набор плейсхолдеров для минимальной цены и максимальной выгоды
-        const minMaxPlaceholdersToUse = isSeoFile
-            ? this.minPriceMaxBenefitPlaceholdersWithoutDisclaimer
-            : this.minPriceMaxBenefitPlaceholders;
-        
-        const placeholders = {
+
+        // До вызова buildBasePlaceholders() (ранние этапы) собираем на лету
+        if (!this._basePlaceholders) {
+            return {
+                '{{firstDay}}': FIRST_DAY,
+                '{{lastDay}}': LAST_DAY,
+                '{{month}}': MONTH,
+                '{{monthNominative}}': MONTH_NOMINATIVE,
+                '{{monthGenitive}}': MONTH_GENITIVE,
+                '{{monthPrepositional}}': MONTH_PREPOSITIONAL,
+                '{{year}}': YEAR,
+                ...this.settingsPlaceholder,
+                ...this.carsPlaceholder,
+                ...this.minPriceMaxBenefitPlaceholders,
+            };
+        }
+
+        if (isSeoFile) {
+            return {
+                ...this._basePlaceholders,
+                ...this.carsPlaceholderWithoutDisclaimer,
+                ...this.minPriceMaxBenefitPlaceholdersWithoutDisclaimer,
+            };
+        }
+
+        if (!this._cachedPlaceholders) {
+            this._cachedPlaceholders = {
+                ...this._basePlaceholders,
+                ...this.carsPlaceholder,
+                ...this.minPriceMaxBenefitPlaceholders,
+            };
+        }
+
+        return this._cachedPlaceholders;
+    }
+
+    // Формирует базовые (общие) плейсхолдеры — вызывается один раз после создания всех данных
+    buildBasePlaceholders() {
+        this._basePlaceholders = {
             '{{firstDay}}': FIRST_DAY,
             '{{lastDay}}': LAST_DAY,
             '{{month}}': MONTH,
@@ -350,9 +394,13 @@ class PlaceholderProcessor {
             '{{monthPrepositional}}': MONTH_PREPOSITIONAL,
             '{{year}}': YEAR,
             ...this.settingsPlaceholder,
-            ...carsPlaceholdersToUse,
-            ...minMaxPlaceholdersToUse,
         };
+        this._cachedPlaceholders = null;
+    }
+
+    // Функция для замены плейсхолдеров в содержимом файла
+    replacePlaceholders(content, filePath = '') {
+        const placeholders = this.getAllPlaceholders(filePath);
 
         let hasChanges = false;
         let updatedContent = content;
@@ -455,6 +503,13 @@ class PlaceholderProcessor {
         }
     }
 
+    // Поиск слова "Рассрочка" в файле
+    searchRassrochkaWord(content, filePath) {
+        if (/рассрочк/i.test(content)) {
+            this.filesWithRassrochka.push(filePath);
+        }
+    }
+
     // Функция для формирования URL в зависимости от расположения файла
     buildUrl(relativePath, domain) {
         const sanitizedPath = relativePath.replace(/^src\/(content|pages)\//, '');
@@ -488,6 +543,9 @@ class PlaceholderProcessor {
 
             // Проверяем даты в файле
             this.searchDates(content, filePath);
+
+            // Проверяем наличие слова "Рассрочка"
+            this.searchRassrochkaWord(content, filePath);
 
             if (hasChanges) {
                 fs.writeFileSync(filePath, updatedContent, 'utf-8');
@@ -546,18 +604,15 @@ class PlaceholderProcessor {
         }
     }
 
-    // Очищаем старые отчеты по датам перед запуском
-    clearSpecialOffersReports() {
-        const reportFiles = [
-            ReportFile.SPECIAL_OFFERS,
-            ReportFile.SPECIAL_OFFERS_MARKETING
-        ];
-
-        reportFiles.forEach(filePath => {
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-        });
+    // Очищаем папку с уведомлениями перед запуском
+    clearNotifications() {
+        if (fs.existsSync(NOTIFICATIONS_DIR)) {
+            fs.readdirSync(NOTIFICATIONS_DIR).forEach(file => {
+                fs.unlinkSync(path.join(NOTIFICATIONS_DIR, file));
+            });
+        } else {
+            fs.mkdirSync(NOTIFICATIONS_DIR, { recursive: true });
+        }
     }
 
     // Вывод информации о приближающихся датах
@@ -590,17 +645,128 @@ class PlaceholderProcessor {
             )
             .join('\n\n');
 
-        const outputPath = ReportFile.SPECIAL_OFFERS;
-        fs.writeFileSync(outputPath, htmlOutput, 'utf8');
-        const outputPathMarketing = ReportFile.SPECIAL_OFFERS_MARKETING;
-        fs.writeFileSync(outputPathMarketing, htmlOutputMarketing, 'utf8');
-        console.log(`\nРезультаты сохранены в файл: ${outputPath}, ${outputPathMarketing}`);
+        fs.writeFileSync(ReportFile.DATES, htmlOutput, 'utf8');
+        fs.writeFileSync(ReportFile.DATES_MARKETING, htmlOutputMarketing, 'utf8');
+        console.log(`\nРезультаты сохранены в: ${ReportFile.DATES}, ${ReportFile.DATES_MARKETING}`);
+    }
+
+    // Вывод информации о файлах, содержащих слово "Рассрочка"
+    outputRassrochkaFiles() {
+        if (this.filesWithRassrochka.length === 0) return;
+
+        const domain = process.env.DOMAIN;
+        console.log('\n⚠️ Найдено слово "Рассрочка" в следующих файлах:');
+
+        const parsedFiles = this.filesWithRassrochka.map(filePath => {
+            const relativePath = path.relative(process.cwd(), filePath);
+            const url = this.generateUrl(filePath, domain);
+            return { relativePath, url };
+        });
+
+        parsedFiles.forEach(({ relativePath, url }) => {
+            console.log(`\nФайл: \`${relativePath}\`\nURL: ${url}`);
+        });
+
+        const htmlHeader = '<b>⚠️ Найдено слово "Рассрочка":</b>\n\n';
+        const htmlContent = htmlHeader + parsedFiles
+            .map(({ relativePath, url }) =>
+                `<strong>Файл:</strong> <code>${relativePath}</code>\n<strong>URL:</strong> <a href="${url}">${url}</a>`
+            )
+            .join('\n\n');
+
+        const htmlContentMarketing = htmlHeader + parsedFiles
+            .map(({ url }) =>
+                `<strong>URL:</strong> <a href="${url}">${url}</a>`
+            )
+            .join('\n\n');
+
+        fs.writeFileSync(ReportFile.RASSROCHKA, htmlContent, 'utf8');
+        fs.writeFileSync(ReportFile.RASSROCHKA_MARKETING, htmlContentMarketing, 'utf8');
+        console.log(`\nИнформация о "Рассрочке" сохранена в: ${ReportFile.RASSROCHKA}, ${ReportFile.RASSROCHKA_MARKETING}`);
+    }
+
+    // Экспорт всех доступных плейсхолдеров в TSV файл в папку tmp
+    exportPlaceholdersTSV() {
+        const tmpDir = path.join(process.cwd(), 'tmp');
+        if (!fs.existsSync(tmpDir)) {
+            fs.mkdirSync(tmpDir, { recursive: true });
+        }
+
+        const allPlaceholders = this.getAllPlaceholders();
+        const lines = ['placeholder\tvalue'];
+        let count = 0;
+
+        for (const [key, value] of Object.entries(allPlaceholders)) {
+            if (value === '' || value === null || value === undefined) continue;
+            const safeValue = String(value).replace(/\t/g, ' ').replace(/\n/g, ' ');
+            lines.push(`${key}\t${safeValue}`);
+            count++;
+        }
+
+        const tsvPath = path.join(tmpDir, 'placeholders.tsv');
+        fs.writeFileSync(tsvPath, lines.join('\n'), 'utf-8');
+        console.log(`\nСписок плейсхолдеров (${count} шт.) сохранён в ${tsvPath}`);
+    }
+
+    // Поиск незаменённых плейсхолдеров {{...}} в обработанных файлах
+    checkUnreplacedPlaceholders() {
+        const unreplaced = [];
+        const placeholderRegex = /\{\{[a-zA-Z0-9_\-]+\}\}/g;
+
+        const checkFile = (filePath) => {
+            try {
+                const content = fs.readFileSync(filePath, 'utf-8');
+                const matches = content.match(placeholderRegex);
+                if (matches) {
+                    const unique = [...new Set(matches)];
+                    unreplaced.push({ filePath, placeholders: unique });
+                }
+            } catch (error) {
+                // ignore read errors
+            }
+        };
+
+        const walkDirectory = (directory, fileExtensions) => {
+            if (!fs.existsSync(directory)) return;
+            const files = fs.readdirSync(directory);
+            files.forEach(file => {
+                const filePath = path.join(directory, file);
+                const stat = fs.statSync(filePath);
+                if (stat.isDirectory()) {
+                    walkDirectory(filePath, fileExtensions);
+                } else if (fileExtensions.includes(path.extname(filePath))) {
+                    checkFile(filePath);
+                }
+            });
+        };
+
+        walkDirectory(this.dataDirectory, ['.json']);
+        walkDirectory(this.contentDirectory, ['.mdx']);
+        walkDirectory(this.pagesDirectory, ['.astro']);
+
+        if (unreplaced.length > 0) {
+            console.log('\n⚠️ Найдены незаменённые плейсхолдеры:');
+            const outputLines = [];
+
+            unreplaced.forEach(({ filePath, placeholders }) => {
+                const relativePath = path.relative(process.cwd(), filePath);
+                const msg = `Незаменённые плейсхолдеры в ${relativePath}: ${placeholders.join(', ')}`;
+                console.log(`  ${msg}`);
+                outputLines.push(msg);
+            });
+
+            // Дописываем в output.txt
+            const outputTxtPath = path.join(process.cwd(), 'output.txt');
+            const header = '⚠️ Незаменённые плейсхолдеры после обработки:\n';
+            fs.appendFileSync(outputTxtPath, header + outputLines.join('\n') + '\n', 'utf-8');
+            console.log(`\nОшибки записаны в output.txt`);
+        }
     }
 
     // Главная функция запуска всей обработки
     run() {
-        // 0. Удаляем старые отчеты о спецпредложениях
-        this.clearSpecialOffersReports();
+        // 0. Очищаем папку уведомлений
+        this.clearNotifications();
 
         // 1. Загружаем все данные
         this.loadData();
@@ -625,15 +791,27 @@ class PlaceholderProcessor {
         
         // 4.3. Создаем плейсхолдеры для минимальной цены и максимальной выгоды
         this.createMinPriceMaxBenefitPlaceholders();
-        
-        // 5. Обрабатываем все директории
+
+        // 4.4. Собираем и кешируем итоговый объект плейсхолдеров
+        this.buildBasePlaceholders();
+
+        // 5. Экспортируем список всех плейсхолдеров в tmp/placeholders.tsv
+        this.exportPlaceholdersTSV();
+
+        // 6. Обрабатываем все директории
         this.processAllDirectories();
-        
-        // 6. Выводим результаты
+
+        // 7. Проверяем незаменённые плейсхолдеры
+        this.checkUnreplacedPlaceholders();
+
+        // 8. Выводим результаты
         this.outputResults();
-        
-        // 7. Выводим информацию о приближающихся датах
+
+        // 9. Выводим информацию о приближающихся датах
         this.outputUpcomingDates();
+
+        // 10. Выводим информацию о файлах с "Рассрочкой"
+        this.outputRassrochkaFiles();
     }
 }
 

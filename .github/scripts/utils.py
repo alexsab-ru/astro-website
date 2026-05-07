@@ -3,6 +3,7 @@ import os
 import re
 import copy
 import string
+import hashlib
 import yaml
 import json
 import shutil
@@ -18,7 +19,241 @@ from config import *
 from bs4 import BeautifulSoup
 
 
-def process_friendly_url(friendly_url, replace = "-"):
+## ── Транслитерация и перевод кириллицы для URL ────────────────────────────
+
+CYRILLIC_TO_LATIN = {
+    'а': 'a',  'б': 'b',  'в': 'v',  'г': 'g',  'д': 'd',  'е': 'e',  'ё': 'yo',
+    'ж': 'zh', 'з': 'z',  'и': 'i',  'й': 'y',  'к': 'k',  'л': 'l',  'м': 'm',
+    'н': 'n',  'о': 'o',  'п': 'p',  'р': 'r',  'с': 's',  'т': 't',  'у': 'u',
+    'ф': 'f',  'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch',
+    'ъ': '',   'ы': 'y',  'ь': '',   'э': 'e',  'ю': 'yu', 'я': 'ya',
+}
+
+
+def _load_settings_common():
+    """Загружает settings-common.json и возвращает словари переводов."""
+    settings_path = Path('./src/data/common/settings-common.json')
+    try:
+        with open(settings_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except Exception:
+        data = {}
+    return (
+        data.get('url_translations', {}),
+        data.get('url_translations_by_brand', {}),
+    )
+
+
+def _build_complectation_translation_map():
+    """Строит словарь {русское_название_lower: английское_название}
+    из layered-каталога моделей (уже загружен в config.py)."""
+    trans = {}
+    for model in model_catalog_data:
+        for comp in model.get('complectations', []):
+            caption = comp.get('displayName') or comp.get('caption', '')
+            name = comp.get('name', '')
+            if not caption or not name:
+                continue
+            # caption формата "Русское / English" или "Русское - English"
+            for sep in (' / ', ' - '):
+                if sep in caption:
+                    rus_part = caption.split(sep, 1)[0].strip()
+                    if rus_part and re.search(r'[а-яёА-ЯЁ]', rus_part):
+                        trans[rus_part.lower()] = name
+                    break
+    return trans
+
+
+# Загружаем один раз при старте
+_url_translations, _url_translations_by_brand = _load_settings_common()
+_complectation_map = _build_complectation_translation_map()
+# Сортируем по длине (самые длинные первые) для корректной замены
+_complectation_sorted = sorted(_complectation_map.items(), key=lambda x: len(x[0]), reverse=True)
+
+
+def _has_cyrillic(text):
+    return bool(re.search(r'[а-яёА-ЯЁ]', text))
+
+
+def _lookup_complectation_name(value, mark_id=None, folder_id=None):
+    """Ищет английское название комплектации по точному совпадению с русской частью caption.
+
+    Порядок поиска:
+    1. Комплектации конкретной модели (mark_id + folder_id) — точное совпадение
+    2. Глобальный словарь всех комплектаций (_complectation_map) — точное совпадение
+    """
+    value_lower = value.strip().lower()
+
+    # 1. Точный поиск в комплектациях конкретной модели
+    if mark_id and folder_id:
+        brand_bucket = model_index_by_brand.get(mark_id.lower(), {})
+        model_obj = brand_bucket.get(folder_id.lower())
+        if model_obj:
+            for comp in model_obj.get('complectations', []):
+                caption = comp.get('displayName') or comp.get('caption', '')
+                name = comp.get('name', '')
+                if not caption or not name:
+                    continue
+                for sep in (' / ', ' - '):
+                    if sep in caption:
+                        rus_part = caption.split(sep, 1)[0].strip().lower()
+                        if rus_part == value_lower:
+                            return name
+                        break
+
+    # 2. Глобальный словарь (все модели)
+    return _complectation_map.get(value_lower)
+
+
+def translate_field_for_url(value, field_name, mark_id=None, folder_id=None, vin=None, log_warnings=True):
+    """Переводит значение отдельного поля для использования в URL.
+
+    Для complectation_name — точный поиск в справочнике комплектаций.
+    Для остальных полей — общая трансляция (аббревиатуры + транслитерация).
+    """
+    if not value:
+        return value
+    value = str(value)
+    if not _has_cyrillic(value):
+        return value
+
+    if field_name == 'complectation_name':
+        result = _lookup_complectation_name(value, mark_id, folder_id)
+        if result:
+            return result
+
+    if field_name == 'color' and mark_id and folder_id:
+        color_entry = get_model_info(mark_id, folder_id, property='color', color=value, vin=vin, log_errors=False)
+        if isinstance(color_entry, dict) and color_entry.get('id'):
+            return color_entry['id']
+        # Цвет не найден в конфиге — транслитерируем без предупреждения (предупреждение отдельно)
+        return _translate_russian_in_url(value, mark_id, folder_id, vin, log_warnings=False)
+
+    return _translate_russian_in_url(value, mark_id, folder_id, vin, log_warnings)
+
+
+def _transliterate(text):
+    """Транслитерация кириллицы в латиницу."""
+    result = []
+    for ch in text:
+        lower = ch.lower()
+        if lower in CYRILLIC_TO_LATIN:
+            mapped = CYRILLIC_TO_LATIN[lower]
+            result.append(mapped.upper() if ch.isupper() else mapped)
+        else:
+            result.append(ch)
+    return ''.join(result)
+
+
+def _get_brand_model_overrides(mark_id, folder_id):
+    """Собирает переопределения для конкретного бренда/модели.
+
+    Структура url_translations_by_brand:
+    {
+        "BrandName": {
+            "слово": "translation",        ← для всех моделей бренда
+            "model_id": {                   ← переопределения конкретной модели
+                "слово": "translation"
+            }
+        }
+    }
+
+    Приоритет: модель > бренд (модельные переопределения перезаписывают брендовые).
+    """
+    if not mark_id or not _url_translations_by_brand:
+        return {}
+
+    brand_key = mark_id.lower()
+    overrides = {}
+
+    for cfg_brand, cfg_value in _url_translations_by_brand.items():
+        if cfg_brand.lower() != brand_key or not isinstance(cfg_value, dict):
+            continue
+        # Собираем строковые значения — это брендовые переводы
+        for k, v in cfg_value.items():
+            if isinstance(v, str):
+                overrides[k.lower()] = v
+        # Если есть модельные переопределения — они перезаписывают
+        if folder_id:
+            model_key = folder_id.lower()
+            for k, v in cfg_value.items():
+                if isinstance(v, dict) and k.lower() == model_key:
+                    for mk, mv in v.items():
+                        overrides[mk.lower()] = mv
+        break
+
+    return overrides
+
+
+def _translate_russian_in_url(text, mark_id=None, folder_id=None, vin=None, log_warnings=True):
+    """Переводит русские слова в строке для URL на английский.
+
+    Порядок:
+    1. Замена «Nх» на «Nx» (например, «4х4» → «4x4», «2х4» → «2x4»)
+    1.1. Замена «л.с.» / «л.с)» → «h.p.» / «h.p.)» (потом удалятся → hp)
+    2. Бренд/модель-специфичные переопределения из settings-common.json
+    3. Комплектации из layered-каталога моделей
+    4. Аббревиатуры из url_translations (settings-common.json)
+    5. Логирование непереведённых слов
+    6. Транслитерация оставшейся кириллицы
+    """
+    if not _has_cyrillic(text):
+        return text
+
+    # 1. Паттерн «цифраХцифра» — русская Х → латинская x
+    text = re.sub(r'(\d)[хХ](\d)', r'\1x\2', text)
+
+    # 1.1. «л.с.» / «л.с)» → «h.p.» / «h.p.)» (точки/скобки потом удалятся → hp)
+    text = re.sub(r'л\.с([.)])', r'h.p\1', text, flags=re.IGNORECASE)
+
+    # 2. Бренд/модель переопределения (высший приоритет)
+    brand_overrides = _get_brand_model_overrides(mark_id, folder_id)
+    if brand_overrides:
+        brand_sorted = sorted(brand_overrides.items(), key=lambda x: len(x[0]), reverse=True)
+        text_lower = text.lower()
+        for rus, eng in brand_sorted:
+            idx = text_lower.find(rus)
+            if idx != -1:
+                text = text[:idx] + eng + text[idx + len(rus):]
+                text_lower = text.lower()
+
+    # 3. Комплектации из layered-каталога моделей (базовый словарь, для оставшейся кириллицы)
+    if _has_cyrillic(text):
+        text_lower = text.lower()
+        for rus, eng in _complectation_sorted:
+            idx = text_lower.find(rus)
+            if idx != -1:
+                text = text[:idx] + eng + text[idx + len(rus):]
+                text_lower = text.lower()
+
+    # 4. Пословная замена аббревиатур из settings-common.json
+    if _has_cyrillic(text):
+        def _replace_abbrev(m):
+            w_lower = m.group(0).lower()
+            return _url_translations.get(w_lower, m.group(0))
+        text = re.sub(r'[а-яёА-ЯЁ]+', _replace_abbrev, text)
+
+    # 5. Логируем, если после всех замен остались кириллические слова
+    if log_warnings and _has_cyrillic(text):
+        cyrillic_words = [w for w in text.split() if _has_cyrillic(w)]
+        print_message(
+            f"\nvin: <code>{vin}</code>\n"
+            f"<b>Не найден перевод для URL</b>: <code>{', '.join(cyrillic_words)}</code> "
+            f"модели <code>{folder_id or '?'}</code> бренда <code>{mark_id or '?'}</code>",
+            'warning',
+        )
+
+    # 6. Транслитерация оставшейся кириллицы
+    if _has_cyrillic(text):
+        text = _transliterate(text)
+
+    return text
+
+
+def process_friendly_url(friendly_url, replace="-", mark_id=None, folder_id=None, vin=None, log_warnings=True):
+    # Перевод кириллицы на английский / латиницу
+    # friendly_url = _translate_russian_in_url(friendly_url, mark_id, folder_id, vin, log_warnings)
+
     # Удаление специальных символов
     processed_id = re.sub(r'[\/\\?%*:|"<>.,;\'\[\]()&]', '', friendly_url)
 
@@ -142,6 +377,306 @@ def process_description(desc_text):
     return result_html
 
 
+THUMB_REQUEST_TIMEOUT = (5, 15)
+DEFAULT_CAR_IMAGE = "https://cdn.alexsab.ru/errors/404.webp"
+
+
+def _normalize_header_value(value):
+    if value is None:
+        return None
+
+    value = value.strip()
+    return value or None
+
+
+def _is_http_url(value):
+    parsed = urllib.parse.urlparse(str(value))
+    return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+
+
+@lru_cache(maxsize=2048)
+def _inspect_remote_image(img_url):
+    last_error = None
+    accessible_result = None
+
+    for method in ("HEAD", "GET"):
+        response = None
+
+        try:
+            if method == "HEAD":
+                response = requests.head(
+                    img_url,
+                    allow_redirects=True,
+                    timeout=THUMB_REQUEST_TIMEOUT,
+                )
+            else:
+                response = requests.get(
+                    img_url,
+                    allow_redirects=True,
+                    timeout=THUMB_REQUEST_TIMEOUT,
+                    stream=True,
+                )
+
+            if response.status_code >= 400:
+                if method == "HEAD":
+                    continue
+                response.raise_for_status()
+
+            accessible_result = {
+                "accessible": True,
+                "status_code": response.status_code,
+                "etag": _normalize_header_value(response.headers.get("ETag")),
+                "last_modified": _normalize_header_value(response.headers.get("Last-Modified")),
+                "content_length": _normalize_header_value(response.headers.get("Content-Length")),
+                "error": None,
+            }
+
+            # Некоторые CDN почти ничего полезного не отдают на HEAD, но отдают на GET.
+            if method == "HEAD" and not accessible_result["etag"] and not accessible_result["last_modified"]:
+                continue
+
+            return accessible_result
+        except requests.RequestException as e:
+            last_error = e
+        finally:
+            if response is not None:
+                response.close()
+
+    if accessible_result is not None:
+        return accessible_result
+
+    return {
+        "accessible": False,
+        "status_code": None,
+        "etag": None,
+        "last_modified": None,
+        "content_length": None,
+        "error": str(last_error) if last_error is not None else "Не удалось получить изображение",
+    }
+
+
+def _fetch_remote_image_headers(img_url):
+    inspection = _inspect_remote_image(img_url)
+
+    return {
+        "etag": inspection["etag"],
+        "last_modified": inspection["last_modified"],
+        "content_length": inspection["content_length"],
+    }
+
+
+def _log_invalid_feed_image(img_url, vin, error):
+    details = [f"<b>Удалено недоступное изображение из feed</b>", f"<pre>{img_url}</pre>"]
+
+    if vin:
+        details.insert(0, f"vin: <code>{vin}</code>")
+
+    if error:
+        details.append(f"<code>{error}</code>")
+
+    print_message("\n".join(details), "warning")
+
+
+def _filter_valid_image_urls(image_urls, vin=None):
+    valid_urls = []
+
+    for img_url in image_urls:
+        if img_url is None:
+            continue
+
+        img_url = str(img_url).strip()
+        if not img_url or img_url in valid_urls:
+            continue
+
+        if not _is_http_url(img_url):
+            valid_urls.append(img_url)
+            continue
+
+        inspection = _inspect_remote_image(img_url)
+        if inspection["accessible"]:
+            valid_urls.append(img_url)
+            continue
+
+        _log_invalid_feed_image(img_url, vin, inspection["error"])
+
+    return valid_urls
+
+
+def _get_thumb_version_token(img_url):
+    headers = _fetch_remote_image_headers(img_url)
+    etag = headers["etag"]
+    last_modified = headers["last_modified"]
+    content_length = headers["content_length"]
+
+    if etag:
+        version_source = f"etag:{etag}"
+    elif last_modified:
+        version_source = f"last-modified:{last_modified}|content-length:{content_length or ''}"
+    else:
+        return None
+
+    return hashlib.sha1(version_source.encode("utf-8")).hexdigest()[:12]
+
+
+def _get_color_fallback_image(brand, model, color, vin, skip_check_thumb):
+    if skip_check_thumb:
+        return DEFAULT_CAR_IMAGE
+
+    color_image = get_color_filename(brand, model, color, vin, log_errors=False)
+    if not color_image:
+        return DEFAULT_CAR_IMAGE
+
+    if not _is_http_url(color_image):
+        return color_image
+
+    inspection = _inspect_remote_image(color_image)
+    if inspection["accessible"]:
+        return color_image
+
+    error_text = (
+        f"\nvin: <code>{vin}</code>\n"
+        f"<b>Не удалось найти заглушку цвета модели</b>\n"
+        f"<pre>{color_image}</pre>\n"
+        f"<code>{inspection['error']}</code>"
+    )
+    print_message(error_text, "error")
+    return DEFAULT_CAR_IMAGE
+
+
+def _merge_car_image_urls(existing_images, new_images):
+    merged_images = []
+
+    for img in list(existing_images or []) + list(new_images or []):
+        if img is None:
+            continue
+
+        img = str(img).strip()
+        if img and img not in merged_images:
+            merged_images.append(img)
+
+    return merged_images
+
+
+def _merge_and_validate_car_images(existing_images, new_images, vin):
+    return _filter_valid_image_urls(_merge_car_image_urls(existing_images, new_images), vin)
+
+
+def _is_mirror_cdn_image_url(image_url, config):
+    if not image_url:
+        return False
+
+    cdn_base_url = config.get('mirror_cdn_base_url') or 'https://cdn.alexsab.ru'
+    remote_prefix = (config.get('mirror_remote_prefix') or 'cars').strip('/')
+    parsed_url = urllib.parse.urlparse(str(image_url))
+    parsed_base = urllib.parse.urlparse(cdn_base_url)
+
+    if parsed_url.netloc.lower() != parsed_base.netloc.lower():
+        return False
+
+    base_path = parsed_base.path.rstrip('/')
+    mirror_path_prefix = f"{base_path}/{remote_prefix}/" if base_path else f"/{remote_prefix}/"
+    return parsed_url.path.startswith(mirror_path_prefix)
+
+
+def _filter_mirror_cdn_image_urls(image_urls, config):
+    return [
+        image_url
+        for image_url in list(image_urls or [])
+        if not _is_mirror_cdn_image_url(image_url, config)
+    ]
+
+
+def _apply_car_images_to_data(data, incoming_images, friendly_url, current_thumbs, config, vin, brand=None, model=None, color=None):
+    if config.get('skip_thumbs'):
+        data['images'] = []
+        data['imageSets'] = []
+        data['image'] = _get_color_fallback_image(
+            data.get('mark_id', brand or ''),
+            data.get('folder_id', model or ''),
+            data.get('color', color or ''),
+            vin,
+            config['skip_check_thumb'],
+        )
+        data['thumbs'] = []
+        return
+
+    if config.get('mirror_images'):
+        merged_images = _merge_car_image_urls(
+            _filter_mirror_cdn_image_urls(data.get('images', []), config),
+            _filter_mirror_cdn_image_urls(incoming_images, config),
+        )
+    else:
+        merged_images = _merge_and_validate_car_images(data.get('images', []), incoming_images, vin)
+
+    if config.get('mirror_images') and merged_images:
+        from image_mirror import ImageMirror, MirrorConfig
+
+        mirror_config = MirrorConfig(
+            site=config['domain'],
+            category=config.get('category_type') or ('used' if config.get('path_car_page') == '/used_cars/' else 'new'),
+            cdn_base_url=config.get('mirror_cdn_base_url') or 'https://cdn.alexsab.ru',
+            remote_prefix=config.get('mirror_remote_prefix') or 'cars',
+            local_root=Path(config.get('mirror_local_root') or 'tmp/image_mirror'),
+            probe_count=int(config.get('mirror_probe_count') or 3),
+            avito_autoload_max_new_per_car=int(
+                config.get('mirror_avito_autoload_max_new_per_car')
+                if config.get('mirror_avito_autoload_max_new_per_car') is not None
+                else 1
+            ),
+            autoload_download_delay_seconds=float(
+                config.get('mirror_autoload_download_delay_seconds')
+                or 1
+            ),
+            dry_run=config.get('mirror_dry_run', False),
+        )
+        mirror_result = ImageMirror(mirror_config).mirror_car_images(vin, merged_images, friendly_url)
+        data['images'] = mirror_result.images
+        data['imageSets'] = mirror_result.image_sets
+        data['image'] = (
+            mirror_result.image_sets[0].get('medium')
+            if mirror_result.image_sets
+            else mirror_result.image
+        ) or _get_color_fallback_image(
+            data.get('mark_id', brand or ''),
+            data.get('folder_id', model or ''),
+            data.get('color', color or ''),
+            vin,
+            config['skip_check_thumb'],
+        )
+        data['thumbs'] = mirror_result.thumbs
+        return
+
+    data['images'] = merged_images
+    data['image'] = data['images'][0] if data['images'] else _get_color_fallback_image(
+        data.get('mark_id', brand or ''),
+        data.get('folder_id', model or ''),
+        data.get('color', color or ''),
+        vin,
+        config['skip_check_thumb'],
+    )
+
+    if data['images']:
+        data['thumbs'] = createThumbs(
+            data['images'],
+            friendly_url,
+            current_thumbs,
+            config['thumbs_dir'],
+            config['temp_thumbs_dir'],
+            config['skip_thumbs'],
+            config['count_thumbs'],
+        )
+    else:
+        data['thumbs'] = []
+
+
+def _sync_processed_images_to_car_data(car_data, data):
+    for key in ('images',):
+        if key in data:
+            car_data[key] = data[key]
+    if data.get('images'):
+        car_data['image'] = data['images'][0]
+
+
 def createThumbs(image_urls, friendly_url, current_thumbs, thumbs_dir, temp_thumbs_dir, skip_thumbs=False, count_thumbs=5):
     # Ensure count_thumbs is an integer
     # Convert string or other types to integer, with fallback to default value
@@ -173,27 +708,37 @@ def createThumbs(image_urls, friendly_url, current_thumbs, thumbs_dir, temp_thum
             
             # Получение последних 5 символов имени файла (без расширения)
             last_5_chars = filename_without_extension[-5:]
+
+            version_token = _get_thumb_version_token(img_url)
+            version_suffix = f"_{version_token}" if version_token else ""
             
             # Формирование имени файла с учетом последних 5 символов
-            output_filename = f"thumb_{friendly_url}_{last_5_chars}_{index}.webp"
+            output_filename = f"thumb_{friendly_url}_{last_5_chars}_{index}{version_suffix}.webp"
             output_path = os.path.join(thumbs_dir, output_filename)
-            temp_output_path = os.path.join(temp_thumbs_dir, output_filename)
             relative_output_path = os.path.join(relative_thumbs_dir, output_filename)
 
             # print(f"   📁 Путь к превью: {output_path}")
 
-            # Проверка существования файла
-            if not os.path.exists(output_path) and not skip_thumbs:
-                # print(f"   ⬇️ Загружаю изображение...")
-                # Загрузка и обработка изображения, если файла нет
-                response = requests.get(img_url)
+            file_exists = os.path.exists(output_path)
+
+            # Без ETag/Last-Modified не можем доверять имени файла и перегенерируем превью.
+            should_generate = not skip_thumbs and (
+                version_token is None or not file_exists
+            )
+
+            if should_generate:
+                response = requests.get(img_url, timeout=THUMB_REQUEST_TIMEOUT)
+                response.raise_for_status()
                 image = Image.open(BytesIO(response.content))
                 aspect_ratio = image.width / image.height
                 new_width = 360
                 new_height = int(new_width / aspect_ratio)
                 resized_image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
                 resized_image.save(output_path, "WEBP")
-                print(f"   ✅ Создано превью: {relative_output_path}")
+                if version_token is None and file_exists:
+                    print(f"   ♻️ Обновлено превью без HTTP-валидаторов: {relative_output_path}")
+                else:
+                    print(f"   ✅ Создано превью: {relative_output_path}")
             else:
                 print(f"   ⚠️ Файл уже существует: {relative_output_path} или пропущен флагом skip_thumbs: {skip_thumbs}")
 
@@ -265,12 +810,20 @@ def join_car_data(car, *elements):
     Returns:
         str: The string containing extracted elements (joined by spaces).
     """
-    car_parts = []
+    mark_id_el = car.find('mark_id')
+    folder_id_el = car.find('folder_id')
+    mark_id = mark_id_el.text.strip() if mark_id_el is not None and mark_id_el.text else None
+    folder_id = folder_id_el.text.strip() if folder_id_el is not None and folder_id_el.text else None
+    vin = car.find('vin').text.strip() if car.find('vin') is not None and car.find('vin').text else None
+    log_warnings = True
 
+    car_parts = []
     for element_name in elements:
         element = car.find(element_name)
         if element is not None and element.text is not None:
-            car_parts.append(element.text.strip())
+            value = element.text.strip()
+            value = translate_field_for_url(value, element_name, mark_id, folder_id, vin, log_warnings)
+            car_parts.append(value)
 
     return " ".join(car_parts)
 
@@ -315,9 +868,9 @@ def load_avito_color_mapping() -> Dict[str, str]:
 
     Приоритет источников:
     1) AVITO_COLOR_MAPPING_PATH (env)
-    2) src/data/all-avito-colors.json
-    3) src/data/avito-colors.json
-    4) ../astro-json/src/avito-colors.json (локальная разработка в mono-workspace)
+    2) src/data/common/avito-colors.json (от корня репозитория)
+    3) ../astro-json/src/avito-colors.json (локальная разработка в mono-workspace)
+    4) src/data/common/avito-colors.json (относительно текущей директории)
     5) Встроенный fallback-словарь
     """
     repo_root = Path(__file__).resolve().parents[2]
@@ -328,11 +881,9 @@ def load_avito_color_mapping() -> Dict[str, str]:
         candidates.append(Path(env_path))
 
     candidates.extend([
-        repo_root / 'src/data/all-avito-colors.json',
-        repo_root / 'src/data/avito-colors.json',
+        repo_root / 'src/data/common/avito-colors.json',
         repo_root.parent / 'astro-json/src/avito-colors.json',
-        Path('./src/data/all-avito-colors.json'),
-        Path('./src/data/avito-colors.json'),
+        Path('./src/data/common/avito-colors.json'),
     ])
 
     seen_paths = set()
@@ -444,9 +995,9 @@ def load_localized_value_translations() -> Dict[str, str]:
 
     Приоритет источников:
     1) LOCALIZED_VALUE_TRANSLATIONS_PATH / TRANSLATIONS_MAPPING_PATH (env)
-    2) src/data/all-translations.json
-    3) src/data/translations.json
-    4) ../astro-json/src/translations.json (локальная разработка в mono-workspace)
+    2) src/data/common/translations.json (от корня репозитория)
+    3) ../astro-json/src/translations.json (локальная разработка в mono-workspace)
+    4) src/data/common/translations.json (относительно текущей директории)
     5) Встроенный fallback-словарь
     """
     repo_root = Path(__file__).resolve().parents[2]
@@ -457,11 +1008,9 @@ def load_localized_value_translations() -> Dict[str, str]:
         candidates.append(Path(env_path))
 
     candidates.extend([
-        repo_root / 'src/data/all-translations.json',
-        repo_root / 'src/data/translations.json',
+        repo_root / 'src/data/common/translations.json',
         repo_root.parent / 'astro-json/src/translations.json',
-        Path('./src/data/all-translations.json'),
-        Path('./src/data/translations.json'),
+        Path('./src/data/common/translations.json'),
     ])
 
     seen_paths = set()
@@ -508,7 +1057,7 @@ def load_localized_value_translations() -> Dict[str, str]:
     return _LOCALIZED_VALUE_TRANSLATIONS_FALLBACK
 
 
-def load_price_data(file_path: str = "./src/data/dealer-cars_price.json") -> Dict[str, Dict[str, int]]:
+def load_price_data(file_path: str = "./src/data/site/dealer-cars_price.json") -> Dict[str, Dict[str, int]]:
     """
     Загружает данные о ценах из JSON файла.
     
@@ -684,11 +1233,11 @@ def check_local_files(brand, model, color, vin):
             else:
                 errorText = f"\nvin: <code>{vin}</code>\n<b>Не найден локальный файл</b>\n<pre>{color_image}</pre>\n<code>public/{thumb_path}</code>\n<code>public/{thumb_brand_path}</code>"
                 print_message(errorText)
-                return "https://cdn.alexsab.ru/errors/404.webp"
+                return DEFAULT_CAR_IMAGE
         else:
-            return "https://cdn.alexsab.ru/errors/404.webp"
+            return DEFAULT_CAR_IMAGE
     else:
-        return "https://cdn.alexsab.ru/errors/404.webp"
+        return DEFAULT_CAR_IMAGE
 
 
 def create_file(car_data, filename, friendly_url, current_thumbs, sort_storage_data, dealer_photos_for_cars_avito, config, existing_files):
@@ -709,45 +1258,6 @@ def create_file(car_data, filename, friendly_url, current_thumbs, sort_storage_d
     brand = car_data.get('mark_id', '')
     run = car_data.get('run', 0)
 
-    # Сначала получаем изображения из car_data
-    images = car_data.get('images', [])
-    # Добавляем фото дилера, если есть
-    if vin in dealer_photos_for_cars_avito:
-        new_images = [img for img in dealer_photos_for_cars_avito[vin]['images'] if img not in images]
-        images.extend(new_images)
-    
-    # Проверяем, есть ли у машины свои превью
-    has_own_images = len(images) > 0
-
-    thumb = "https://cdn.alexsab.ru/errors/404.webp"
-    
-    # Логика выбора изображения для thumb:
-    # 1. Если у машины есть свои превью - используем первое из них
-    # 2. Если нет своих превью - ищем заглушку по цвету модели на CDN
-    # 3. Если заглушка на CDN не найдена - выводим ошибку
-    
-    if has_own_images:
-        # У машины есть свои превью - используем первое изображение
-        thumb = images[0]
-    elif not config['skip_check_thumb']:
-        # Своих превью нет - ищем заглушку по цвету модели на CDN
-        color_image = get_color_filename(brand, model, color, vin, log_errors=False)
-        
-        if color_image:
-            cdn_path = f"{color_image}"
-            try:
-                response = requests.head(cdn_path)
-                if response.status_code == 200:
-                    thumb = cdn_path
-                else:
-                    # Заглушка на CDN не найдена - выводим ошибку
-                    errorText = f"\n<b>Не удалось найти файл на CDN</b>. Статус <b>{response.status_code}</b>\n<pre>{color_image}</pre>\n<a href='{cdn_path}'>{cdn_path}</a>"
-                    print_message(errorText, 'error')
-            except requests.RequestException as e:
-                # Ошибка при проверке CDN
-                errorText = f"\nОшибка при проверке CDN: {str(e)}"
-                print_message(errorText, 'error')
-
     data = dict(car_data)  # Копируем все поля из car_data
     # Определяем порядок (order)
     if vin in sort_storage_data:
@@ -759,7 +1269,6 @@ def create_file(car_data, filename, friendly_url, current_thumbs, sort_storage_d
     data['vin_list'] = vin
     data['vin_hidden'] = vin_hidden
     data['color'] = color
-    data['image'] = thumb
     data['run'] = run
 
     # Корректно формируем total
@@ -784,10 +1293,16 @@ def create_file(car_data, filename, friendly_url, current_thumbs, sort_storage_d
     if vin in dealer_photos_for_cars_avito and dealer_photos_for_cars_avito[vin]['description'] and not description_for_content:
         description_for_content = dealer_photos_for_cars_avito[vin]['description']
 
+    # Сначала получаем изображения из car_data
+    images = list(car_data.get('images', []))
+    # Добавляем фото дилера, если есть
+    if vin in dealer_photos_for_cars_avito:
+        new_images = [img for img in dealer_photos_for_cars_avito[vin]['images'] if img not in images]
+        images.extend(new_images)
+
     # Обработка изображений (images уже получены и обработаны выше)
-    data['images'] = images
-    thumbs_files = createThumbs(images, friendly_url, current_thumbs, config['thumbs_dir'], config['temp_thumbs_dir'], config['skip_thumbs'], config['count_thumbs'])
-    data['thumbs'] = thumbs_files
+    _apply_car_images_to_data(data, images, friendly_url, current_thumbs, config, vin, brand=brand, model=model, color=color)
+    _sync_processed_images_to_car_data(car_data, data)
 
     # Приводим определённые числовые поля к int, если они есть
     for key in ["max_discount", "price", "priceWithDiscount", "run", "sale_price", "year", "credit_discount", "optional_discount", "insurance_discount", "tradein_discount"]:
@@ -849,11 +1364,32 @@ def update_yaml(car_data, filename, friendly_url, current_thumbs, sort_storage_d
     vin = car_data.get('vin')
     # Проверка: если vin уже есть в vin_list, не обновляем файл (логика на dict)
     if vin and 'vin_list' in data and vin in [v.strip() for v in data['vin_list'].split(',')]:
-        for thumb in data.get('thumbs', []):
-            if thumb not in current_thumbs:
-                current_thumbs.append(f"public{thumb}")
+        images = list(car_data.get('images', []))
+        if vin in dealer_photos_for_cars_avito:
+            new_images = [img for img in dealer_photos_for_cars_avito[vin]['images'] if img not in images]
+            images.extend(new_images)
+
+        _apply_car_images_to_data(
+            data,
+            images,
+            friendly_url,
+            current_thumbs,
+            config,
+            vin,
+            brand=data.get('mark_id', car_data.get('mark_id', '')),
+            model=data.get('folder_id', car_data.get('folder_id', '')),
+            color=data.get('color', str(car_data.get('color', '')).capitalize()),
+        )
+        _sync_processed_images_to_car_data(car_data, data)
+
+        updated_yaml_block = yaml.safe_dump(data, default_flow_style=False, allow_unicode=True)
+        updated_content = yaml_delimiter.join([parts[0], updated_yaml_block, yaml_delimiter.join(parts[2:])])
+
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(updated_content)
+
         existing_files.add(filename)
-        print(f"Такой VIN {vin} уже есть в файле")
+        print(f"Такой VIN {vin} уже есть в файле, обновлены только изображения")
         return filename
     if vin:
         data['vin_list'] += ", " + vin
@@ -909,6 +1445,11 @@ def update_yaml(car_data, filename, friendly_url, current_thumbs, sort_storage_d
         except ValueError:
             pass
 
+    # Добавляем model_id и model_name, если их нет в файле, но есть в car_data
+    for field in ('model_id', 'model_name'):
+        if field not in data and field in car_data:
+            data[field] = car_data[field]
+
     if 'order' not in data:
         if vin in sort_storage_data:
             order = sort_storage_data[vin]
@@ -918,17 +1459,22 @@ def update_yaml(car_data, filename, friendly_url, current_thumbs, sort_storage_d
             order = sort_storage_data['order']
         data['order'] = order
 
-    images = car_data.get('images', [])
+    images = list(car_data.get('images', []))
     if vin in dealer_photos_for_cars_avito:
         new_images = [img for img in dealer_photos_for_cars_avito[vin]['images'] if img not in images]
         images.extend(new_images)
-    if images:
-        existing_images = data.get('images', [])
-        unique_images = list(dict.fromkeys(existing_images + images))
-        data['images'] = unique_images
-        if 'thumbs' not in data or (len(data['thumbs']) < 5):
-            thumbs_files = createThumbs(images, friendly_url, current_thumbs, config['thumbs_dir'], config['temp_thumbs_dir'], config['skip_thumbs'], config['count_thumbs'])
-            data.setdefault('thumbs', []).extend(thumbs_files)
+    _apply_car_images_to_data(
+        data,
+        images,
+        friendly_url,
+        current_thumbs,
+        config,
+        vin,
+        brand=data.get('mark_id', car_data.get('mark_id', '')),
+        model=data.get('folder_id', car_data.get('folder_id', '')),
+        color=data.get('color', str(car_data.get('color', '')).capitalize()),
+    )
+    _sync_processed_images_to_car_data(car_data, data)
     updated_yaml_block = yaml.safe_dump(data, default_flow_style=False, allow_unicode=True)
 
     # Reassemble the content with the updated YAML block
@@ -1027,18 +1573,40 @@ def duplicate_car(car, config, n, status="в пути", offset=0):
     
     return duplicates
 
+def _load_env_json() -> Dict[str, Any]:
+    """
+    Загружает env.json как фолбек для переменных окружения.
+    Ищет файл в нескольких местах.
+    """
+    repo_root = Path(__file__).resolve().parents[2]
+    candidates = [
+        repo_root / 'src/data/site/env.json',
+        Path('./src/data/site/env.json'),
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            try:
+                with open(candidate, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception:
+                pass
+    return {}
+
+
 def load_env_config(source_type: str, default_config) -> Dict[str, Any]:
     """
-    Загружает конфигурацию из переменных окружения.
+    Загружает конфигурацию из переменных окружения или env.json (фолбек).
     Формат переменных:
     CARS_[SOURCE_TYPE]_[PARAM_NAME] = value
-    
+
     Например:
     CARS_AUTORU_REMOVE_MARK_IDS = '["mark1", "mark2"]'
     CARS_AVITO_ELEMENTS_TO_LOCALIZE = '["elem1", "elem2"]'
+
+    Приоритет: os.environ > src/data/site/env.json > default_config
     """
     prefix = f"CARS_{source_type.upper()}_"
-    
+
     # Маппинг переменных окружения на ключи конфигурации
     env_mapping = {
         f"{prefix}MOVE_VIN_ID_UP": "move_vin_id_up",
@@ -1048,18 +1616,37 @@ def load_env_config(source_type: str, default_config) -> Dict[str, Any]:
         f"{prefix}ELEMENTS_TO_LOCALIZE": "elements_to_localize",
         f"{prefix}REMOVE_CARS_AFTER_DUPLICATE": "remove_cars_after_duplicate",
         f"{prefix}REMOVE_MARK_IDS": "remove_mark_ids",
-        f"{prefix}REMOVE_FOLDER_IDS": "remove_folder_ids"
+        f"{prefix}REMOVE_FOLDER_IDS": "remove_folder_ids",
+        f"{prefix}H1_TEMPLATE": "h1_template",
+        f"{prefix}BREADCRUMB_TEMPLATE": "breadcrumb_template",
+        f"{prefix}TITLE_TEMPLATE": "title_template",
+        f"{prefix}DESCRIPTION_TEMPLATE": "description_template",
     }
-    
+
+    env_json_data = _load_env_json()
+
     for env_var, config_key in env_mapping.items():
+        raw_value = None
+
         if env_var in os.environ:
-            try:
-                value = json.loads(os.environ[env_var])
+            raw_value = os.environ[env_var]
+        elif env_var in env_json_data:
+            raw_value = env_json_data[env_var]
+
+        if raw_value is None:
+            continue
+
+        try:
+            if isinstance(raw_value, (list, dict)):
+                # Уже распарсено (из env.json напрямую)
+                default_config[config_key] = raw_value
+            else:
+                value = json.loads(raw_value)
                 default_config[config_key] = value
-            except json.JSONDecodeError:
-                print(f"Ошибка при парсинге значения переменной {env_var}")
-                # Оставляем значение по умолчанию
-    
+        except json.JSONDecodeError:
+            print(f"Ошибка при парсинге значения переменной {env_var}")
+            # Оставляем значение по умолчанию
+
     return default_config
 
 def load_github_config(source_type: str, github_config: Dict[str, str], default_config) -> Dict[str, Any]:
