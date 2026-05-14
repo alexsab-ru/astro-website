@@ -35,8 +35,9 @@ const infoItems = [
 ];
 
 import CarsList from '@/components/Cars/List.astro';
-import { getCollection } from "astro:content";
-const cars = await getCollection("cars");
+import { getSafeCollection } from '@/js/utils/safeContent';
+import { filterVisibleCars } from '@/js/utils/car';
+const cars = filterVisibleCars(await getSafeCollection("cars"));
 
 import reviews from '@/data/site/reviews.json';
 import Reviews from '@/components/Reviews/Index.astro';
@@ -71,7 +72,7 @@ import Reviews from '@/components/Reviews/Index.astro';
 			<div class="container">
 				<h2 class="text-xl sm:text-4xl mb-8 sm:mb-14">{`Автомобили ${brand} в наличии в ${legal_city_where}`}</h2>
 
-				<CarsList />
+				<CarsList cars={cars} />
 
 			</div>
 		</section>

@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getSafeCollection } from '@/js/utils/safeContent';
 import SliderNavigation from '@/components/SliderNav/Navigation.astro';
 import SliderPagination from '@/components/SliderNav/Pagination.astro';
 import PostItem from '@/components/Post/Item.astro';
@@ -30,7 +30,7 @@ const {
 	showAllButton = false,
 } = Astro.props;
 let posts = [];
-let rawPosts = await getCollection(collectionName);
+let rawPosts = await getSafeCollection(collectionName);
 let diffLimit: number;
 if (rawPosts && rawPosts.length) {
 	rawPosts = sortingAndFilteringPosts(rawPosts);

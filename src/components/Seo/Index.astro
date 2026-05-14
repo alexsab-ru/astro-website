@@ -1,5 +1,6 @@
 ---
-import { getEntry, render } from 'astro:content';
+import { render } from 'astro:content';
+import { getSafeEntry } from '@/js/utils/safeContent';
 
 interface Props {
   mdx: string;
@@ -10,7 +11,7 @@ interface Props {
 const { mdx, noPadding = false, sectionPaddingBlock = false } = Astro.props;
 
 // Попробуем получить запись из коллекции 'seo' по слагу
-const content = await getEntry('seo', mdx);
+const content = await getSafeEntry('seo', mdx);
 let showseo = false;
 let Content = null;
 

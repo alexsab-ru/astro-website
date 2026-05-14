@@ -115,6 +115,28 @@ const cards = [
 		</div>
 	</section>
 	{MARQUEE.show && <Morquee marquee={ MARQUEE } />}
+	<section class="py-6 lg:py-8">
+		<div class="container flex flex-col gap-8 lg:gap-16">
+			<CardMedia imgPlacement={`left`} images={[{imageUrl: 'https://cdn.alexsab.ru/pages/2605/family-rest-1000x1000.webp', thumbUrl: 'https://cdn.alexsab.ru/pages/2605/family-rest-1000x1000.webp'}]}>
+				<Fragment slot="card-content">
+					<h2 class="m-0! p-0! before:hidden text-2xl! lg:text-4xl!">СЕМЕЙНЫЙ ОТДЫХ ВМЕСТЕ С GAC!</h2>
+					<p>Купите новый автомобиль GAC в мае — и станьте участником акции отдыха на турбазе для всей семьи за наш счёт.</p>
+					<p>Это отличная возможность выбрать современный автомобиль и подарить себе и близким незабываемые выходные, наполненные комфортом, природой и приятными впечатлениями</p>
+					
+					<div class={`grid gap-3 sm:grid-cols-2`}>
+						<Button 
+							view="link"
+							classes="w-full flex items-center justify-center px-4 xl:px-8 py-2 xl:py-3 text-base text-white no-underline text-center bg-accent-500 hover:bg-accent-600"
+							url="/special-offers/family-rest/" 
+							title="Посмотреть условия акции"
+							dataTitle={`Посмотреть условия акции`}
+							dataFormName={`Посмотреть условия акции`}
+						/>
+					</div>
+				</Fragment>
+			</CardMedia>
+		</div>
+	</section>
 	<section class="ptop-[2.7] pbottom-[2.5] bg-accent-500">
 		<div class="container">
 			<PageH1 h1=`Автомобили ${brand} в&nbsp;наличии в&nbsp;${legal_city_where}` classes="text-center fz-3 text-white leading-none" />

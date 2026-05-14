@@ -305,6 +305,7 @@ jobs:
       env:
         CSV_URL: ${{ env.DEALER_CARS_PRICE_CSV_URL }}
         DEALER_CARS_PRICE_CSV_URL: ${{ env.DEALER_CARS_PRICE_CSV_URL }}
+        DEALER_CARS_PRICE_OVERRIDE: ${{ env.DEALER_CARS_PRICE_OVERRIDE }}
 
     - name: Download image mirror manifests from CDN
       if: ${{ vars.MIRROR_CAR_IMAGES == 'true' }}
@@ -374,6 +375,7 @@ jobs:
         CDN_BASE_URL: ${{ secrets.CDN_BASE_URL }}
         MIRROR_CAR_IMAGES: ${{ vars.MIRROR_CAR_IMAGES }}
         MIRROR_AUTOLOAD_DOWNLOAD_DELAY_SECONDS: ${{ vars.MIRROR_AUTOLOAD_DOWNLOAD_DELAY_SECONDS }}
+        DEALER_CARS_PRICE_OVERRIDE: ${{ env.DEALER_CARS_PRICE_OVERRIDE }}
 
     - name: Upload mirrored car images to CDN
       if: ${{ always() && vars.MIRROR_CAR_IMAGES == 'true' }}

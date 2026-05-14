@@ -4,6 +4,7 @@ import CarItem from "@/components/Cars/Item.astro";
 import SortSelect from "@/components/Cars/SortSelect.astro";
 import FilterItemBtn from '@/components/Filter/ItemBtn.astro'
 import { groupArrayByKey } from "@/js/utils/groupArrayByKey";
+import { filterVisibleCars } from "@/js/utils/car";
 
 interface Props {
 	cars?: any[];
@@ -17,8 +18,7 @@ const rawCars = inputCars || await (getCollection as any)(collection);
 let cars: any, models = {}, years = {}, groupCars = {};
 
 if (rawCars && rawCars.length > 0) {
-	// Исключаем файлы начинающиеся с '__'
-	cars = rawCars.filter((car) => !(typeof car?.id === 'string' && car.id.startsWith('__')));
+	cars = filterVisibleCars(rawCars);
 
 	groupCars = groupArrayByKey(cars, 'mark_id');
 	

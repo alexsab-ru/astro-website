@@ -6,13 +6,14 @@ import PageH1 from '@/components/PageH1/Index.astro';
 const title = 'Ошибка 404';
 const description = '404. Такая страница не найдена';
 const h1 = '404. Такая страница не найдена';
-import { getCollection } from 'astro:content';
+import { getSafeCollection } from '@/js/utils/safeContent';
+import { filterVisibleCars } from '@/js/utils/car';
 // Фильтруем записи коллекций на 404, чтобы исключить тестовые/черновые/просроченные
 import { sortingAndFilteringPosts } from '@/js/utils/sortingAndFilteringPosts';
-const rawCars = await (getCollection as any)('cars');
-const cars = rawCars?.filter((car: any) => !(typeof car?.id === 'string' && car.id.startsWith('__'))) || [];
+const rawCars = await getSafeCollection('cars');
+const cars = filterVisibleCars(rawCars);
 // Получаем все записи спецпредложений и применяем единую фильтрацию
-const specialAll = await getCollection('special-offers');
+const specialAll = await getSafeCollection('special-offers');
 const special = sortingAndFilteringPosts(specialAll);
 // if(Astro.url.pathname.slice(-1) != "/") {
 	// return Astro.redirect(Astro.url.pathname+'/', 308);

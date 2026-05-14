@@ -4,18 +4,18 @@ if (isRouteDisabled('/cars/')) {
 	return Astro.rewrite(SITE_NOT_FOUND_PATH);
 }
 import PageLayout from "@/layouts/PageLayout.astro";
-import { getCollection } from "astro:content";
+import { getSafeCollection } from '@/js/utils/safeContent';
 import settings from '@/data/site/settings.json';
 if(settings.brand === 'Livan') { settings.brand = 'ЛИВЭН (LIVAN)'; }
 const { site_name, brand, legal_city_where } = settings;
 import CarsList from '@/components/Cars/List.astro';
 import SeoText from '@/components/Seo/Index.astro';
-const rawCars = await (getCollection as any)("cars");
+import { filterVisibleCars } from '@/js/utils/car';
+const rawCars = await getSafeCollection("cars");
 let cars: any, image: string;
 import { getRandomInt } from "@/js/utils/numbers.format";
 if (rawCars && rawCars.length > 0) {
-	// Исключаем скрытые файлы
-	cars = rawCars.filter((car) => !(typeof car?.id === 'string' && car.id.startsWith('__')));
+	cars = filterVisibleCars(rawCars);
 	// Проверяем что есть автомобили после фильтрации и что у них есть данные
 	if (cars.length > 0 && cars[0]?.data) {
 		image = cars[getRandomInt(0, cars.length)].data.image;
@@ -37,8 +37,8 @@ export const breadcrumb = { name: "Авто в наличии", href: "/cars/" }
 	backLink={true}
 >
 	{
-		cars ? (
-			<CarsList cars={rawCars} collection="cars" path="/cars/" />
+		cars?.length ? (
+			<CarsList cars={cars} collection="cars" path="/cars/" />
 		) : (
 			<p>Скоро здесь появится список новых автомобилей.</p>
 		)

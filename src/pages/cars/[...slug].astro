@@ -1,23 +1,22 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
 import CarPageLayout from '@/layouts/CarPageLayout.astro';
-import { findModelByCarData } from '@/js/utils/car';
+import { filterVisibleCars, findModelByCarData } from '@/js/utils/car';
 import { getModelBrandId } from '@/js/utils/modelFields';
 import { normalizeModelId } from '@/js/utils/normalizeModelId';
 import { isRouteDisabled } from '@/js/utils/siteRoutes';
+import { getSafeCollection } from '@/js/utils/safeContent';
 
 export async function getStaticPaths() {
 	if (isRouteDisabled('/cars/')) return [];
-	const cars = await (getCollection as any)('cars');
+	const cars = await getSafeCollection('cars');
 
 	// Проверяем, что массив cars не пустой перед обработкой
 	if (cars && cars.length > 0) {
-		return cars
-			.filter((car) => !(typeof car.id === 'string' && car.id.startsWith('__')))
-			.map((car) => ({
-				params: { slug: car.id },
-				props: car,
-			}));
+		return filterVisibleCars(cars).map((car) => ({
+			params: { slug: car.id },
+			props: car,
+		}));
 	} else {
 		// Если массив пустой, возвращаем пустой массив путей
 		return [];

@@ -801,11 +801,11 @@ class CarProcessor:
     def calculate_max_discount(self, car_data: Dict[str, any]) -> int:
         """Расчёт максимальной скидки в зависимости от типа источника"""
         if self.source_type in ['catalog_vehicles_vehicle', 'vehicles_vehicle', 'data_cars_car']:
-            credit_discount = int(car_data.get('credit_discount', 0) or 0)
-            tradein_discount = int(car_data.get('tradein_discount', 0) or 0)
+            credit_discount = to_int(car_data.get('credit_discount'))
+            tradein_discount = to_int(car_data.get('tradein_discount'))
             return credit_discount + tradein_discount
         else:
-            return int(car_data.get('max_discount', 0) or 0)
+            return to_int(car_data.get('max_discount'))
 
     def create_car_element(self, car_data: Dict[str, any]) -> ET.Element:
         """
@@ -909,25 +909,32 @@ class CarProcessor:
         print(f"\n\n🆔 Уникальный идентификатор: {friendly_url}")
         
         # Получаем цену из car_data, если она есть, иначе используем 0
-        price = int(car_data.get('price', 0) or 0)
+        price = to_int(car_data.get('price'))
 
         # Если max_discount уже есть в car_data, не пересчитываем, иначе считаем
         if 'max_discount' not in car_data:
             max_discount = self.calculate_max_discount(car_data)
             car_data['max_discount'] = max_discount
         else:
-            max_discount = int(car_data['max_discount'] or 0)
+            max_discount = to_int(car_data['max_discount'])
 
         # Если priceWithDiscount уже есть, не пересчитываем, иначе считаем
         if 'priceWithDiscount' not in car_data:
             sale_price = price - max_discount
             car_data['priceWithDiscount'] = sale_price
         else:
-            sale_price = int(car_data['priceWithDiscount'] or 0)
+            sale_price = to_int(car_data['priceWithDiscount'])
 
         # Если sale_price уже есть, не пересчитываем, иначе присваиваем sale_price
         if 'sale_price' not in car_data:
             car_data['sale_price'] = sale_price
+        else:
+            sale_price = to_int(car_data['sale_price'])
+
+        car_data['price'] = price
+        car_data['max_discount'] = max_discount
+        car_data['priceWithDiscount'] = sale_price
+        car_data['sale_price'] = sale_price
 
         car_data['currency'] = "RUR"
 
@@ -947,7 +954,11 @@ class CarProcessor:
         self.register_deferred_color_error(car_data, file_path, friendly_url, ignore_feed_images=config.get('skip_thumbs', False))
 
         # Обновляем цены и скидки на основе car_data
-        update_car_prices(car_data, self.prices_data)
+        update_car_prices(
+            car_data,
+            self.prices_data,
+            config.get('dealer_cars_price_override', False),
+        )
 
         # --- Формирование данных для JSON с ценами и скидками из фида ---
         # Группировка и агрегация данных сразу в готовом формате
@@ -962,15 +973,15 @@ class CarProcessor:
             
             if key in self.cars_price_data:
                 # Обновляем минимальную цену и максимальную скидку
-                self.cars_price_data[key]['price'] = min(self.cars_price_data[key]['price'], sale_price)
-                self.cars_price_data[key]['benefit'] = max(self.cars_price_data[key]['benefit'], max_discount)
+                self.cars_price_data[key]['price'] = min(self.cars_price_data[key]['price'], car_data['sale_price'])
+                self.cars_price_data[key]['benefit'] = max(self.cars_price_data[key]['benefit'], car_data['max_discount'])
             else:
                 # Создаем новый объект в готовом для JSON формате
                 self.cars_price_data[key] = {
                     'brand': brand,
                     'model': model,
-                    'price': sale_price,
-                    'benefit': max_discount
+                    'price': car_data['sale_price'],
+                    'benefit': car_data['max_discount']
                 }
         # --- конец блока ---
 
@@ -1183,7 +1194,8 @@ def main():
         "h1_template": "",
         "breadcrumb_template": "",
         "title_template": "",
-        "description_template": ""
+        "description_template": "",
+        "dealer_cars_price_override": False,
     }
 
     # Определяем режим работы
@@ -1295,6 +1307,7 @@ def main():
             current_config['move_vin_id_up'] = source_config['move_vin_id_up']
             current_config['new_address'] = source_config['new_address']
             current_config['new_phone'] = source_config['new_phone']
+            current_config['dealer_cars_price_override'] = source_config.get('dealer_cars_price_override', False)
             current_config['category_type'] = category_type
                         
             # Инициализация XML
@@ -1409,6 +1422,7 @@ def main():
         config['move_vin_id_up'] = source_config['move_vin_id_up']
         config['new_address'] = source_config['new_address']
         config['new_phone'] = source_config['new_phone']
+        config['dealer_cars_price_override'] = source_config.get('dealer_cars_price_override', False)
         config['category_type'] = 'used' if config.get('path_car_page') == '/used_cars/' else 'new'
 
         # Инициализация процессора для конкретного источника

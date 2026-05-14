@@ -192,6 +192,49 @@ process.stdout.write(out.join("\n"));
 NODE
 }
 
+normalize_brand() {
+  local raw_brand="$1"
+
+  echo "$raw_brand" \
+    | xargs \
+    | tr '[:upper:]' '[:lower:]' \
+    | sed -E 's/[^a-z0-9 ]//g; s/[[:space:]]+/-/g; s/^-+|-+$//g'
+}
+
+collect_brand_paths_from_settings() {
+  local settings_file="$1"
+  local brands_raw
+
+  BRANDS=()
+  BRAND_DOMAINS=()
+  BRAND_SPARSE_PATHS=()
+
+  brands_raw=$(extract_brands "$settings_file")
+  if [ -z "$brands_raw" ]; then
+    echo "▶ Brands are not set in settings.json"
+    return 0
+  fi
+
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+
+    local raw_brand
+    local normalized_brand
+    local brand_domain
+    raw_brand=$(echo "$line" | xargs)
+    normalized_brand=$(normalize_brand "$raw_brand")
+
+    if [ -z "$normalized_brand" ]; then
+      continue
+    fi
+
+    brand_domain="${normalized_brand}.alexsab.ru"
+    BRANDS+=("$raw_brand")
+    BRAND_DOMAINS+=("$brand_domain")
+    BRAND_SPARSE_PATHS+=("/src/$brand_domain")
+  done <<< "$brands_raw"
+}
+
 cleanup() {
   local code=$?
   if [ "${KEEP_TMP:-false}" = false ] && [ -n "${TMP_DIR:-}" ] && [ -d "${TMP_DIR:-}" ]; then
@@ -236,6 +279,36 @@ clean_data_dir() {
   find "$COMMON_DATA_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 }
 
+sync_remote_content() {
+  local copied_any_brand=false
+
+  for brand_domain in "${BRAND_DOMAINS[@]}"; do
+    local src_dir="$TMP_DIR/src/$brand_domain/content"
+
+    if [ -d "$src_dir" ]; then
+      mkdir -p "$ASTRO_CONTENT_DIR"
+      rsync -a "$src_dir/" "$ASTRO_CONTENT_DIR/"
+      echo "  ✔ Brand content: $brand_domain/content → $ASTRO_CONTENT_DIR"
+      copied_any_brand=true
+    else
+      echo "  ⚠ Brand content not found: src/$brand_domain/content"
+    fi
+  done
+
+  if [ "$copied_any_brand" = false ] && [ ${#BRAND_DOMAINS[@]} -gt 0 ]; then
+    echo "▶ No brand content directories were found"
+  fi
+
+  local site_content_dir="$TMP_DIR/$REMOTE_DATA_PATH/content"
+  if [ -d "$site_content_dir" ]; then
+    mkdir -p "$ASTRO_CONTENT_DIR"
+    rsync -a "$site_content_dir/" "$ASTRO_CONTENT_DIR/"
+    echo "  ✔ Site content: $REMOTE_DATA_PATH/content → $ASTRO_CONTENT_DIR"
+  else
+    echo "▶ Site content not found: $REMOTE_DATA_PATH/content"
+  fi
+}
+
 # ==================================================
 # Подготовка env
 # ==================================================
@@ -272,6 +345,7 @@ REMOTE_DATA_PATH="src/$DOMAIN"
 LOCAL_DATA_DIR="src/data"
 SITE_DATA_DIR="$LOCAL_DATA_DIR/site"
 COMMON_DATA_DIR="$LOCAL_DATA_DIR/common"
+ASTRO_CONTENT_DIR="src/content"
 ASTRO_JSON_DATA_PATH="data"
 
 trap cleanup EXIT INT TERM
@@ -294,19 +368,37 @@ git clone \
 
 cd "$TMP_DIR"
 
-git sparse-checkout init --no-cone
-git sparse-checkout set \
-  "src/$DOMAIN" \
-  "src/cars.json" \
-  "src/avito-colors.json" \
-  "src/settings-common.json" \
-  "src/translations.json" \
-  "$ASTRO_JSON_DATA_PATH"
-
 DEFAULT_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')
 if [ -z "$DEFAULT_BRANCH" ]; then
   DEFAULT_BRANCH="main"
 fi
+
+SETTINGS_FOR_BRANDS_FILE=".settings-for-brand-detection.json"
+if git show "origin/$DEFAULT_BRANCH:$REMOTE_DATA_PATH/settings.json" > "$SETTINGS_FOR_BRANDS_FILE" 2>/dev/null; then
+  collect_brand_paths_from_settings "$SETTINGS_FOR_BRANDS_FILE"
+else
+  BRANDS=()
+  BRAND_DOMAINS=()
+  BRAND_SPARSE_PATHS=()
+  echo "▶ settings.json not found in $REMOTE_DATA_PATH before sparse checkout; brand content will be skipped"
+fi
+
+SPARSE_PATHS=(
+  "/src/$DOMAIN" \
+  "/src/cars.json" \
+  "/src/avito-colors.json" \
+  "/src/settings-common.json" \
+  "/src/translations.json" \
+  "/$ASTRO_JSON_DATA_PATH"
+)
+
+if [ ${#BRAND_SPARSE_PATHS[@]} -gt 0 ]; then
+  SPARSE_PATHS+=("${BRAND_SPARSE_PATHS[@]}")
+  echo "▶ Brand sparse paths: ${BRAND_SPARSE_PATHS[*]}"
+fi
+
+git sparse-checkout init --no-cone
+git sparse-checkout set "${SPARSE_PATHS[@]}"
 
 git checkout "$DEFAULT_BRANCH"
 
@@ -343,10 +435,14 @@ else
   # Копируем все файлы из папки data
   if [ "$SKIP_DEALER_FILES" = false ]; then
     rsync -a \
+        --exclude "content/" \
         "$TMP_DIR/$REMOTE_DATA_PATH/" \
         "$SITE_DATA_DIR/"
   fi
 fi
+
+echo "▶ Sync content…"
+sync_remote_content
 
 # Копируем внутренности astro-json/data для дальнейшей обработки.
 if [ -d "$TMP_DIR/$ASTRO_JSON_DATA_PATH" ]; then
