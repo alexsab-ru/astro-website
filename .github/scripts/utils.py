@@ -30,9 +30,9 @@ CYRILLIC_TO_LATIN = {
 }
 
 
-def _load_settings_common():
-    """Загружает settings-common.json и возвращает словари переводов."""
-    settings_path = Path('./src/data/common/settings-common.json')
+def _load_site_settings():
+    """Загружает итоговый settings.json и возвращает словари переводов."""
+    settings_path = Path('./src/data/site/settings.json')
     try:
         with open(settings_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -65,7 +65,7 @@ def _build_complectation_translation_map():
 
 
 # Загружаем один раз при старте
-_url_translations, _url_translations_by_brand = _load_settings_common()
+_url_translations, _url_translations_by_brand = _load_site_settings()
 _complectation_map = _build_complectation_translation_map()
 # Сортируем по длине (самые длинные первые) для корректной замены
 _complectation_sorted = sorted(_complectation_map.items(), key=lambda x: len(x[0]), reverse=True)
@@ -191,9 +191,9 @@ def _translate_russian_in_url(text, mark_id=None, folder_id=None, vin=None, log_
     Порядок:
     1. Замена «Nх» на «Nx» (например, «4х4» → «4x4», «2х4» → «2x4»)
     1.1. Замена «л.с.» / «л.с)» → «h.p.» / «h.p.)» (потом удалятся → hp)
-    2. Бренд/модель-специфичные переопределения из settings-common.json
+    2. Бренд/модель-специфичные переопределения из settings.json
     3. Комплектации из layered-каталога моделей
-    4. Аббревиатуры из url_translations (settings-common.json)
+    4. Аббревиатуры из url_translations (settings.json)
     5. Логирование непереведённых слов
     6. Транслитерация оставшейся кириллицы
     """
@@ -226,7 +226,7 @@ def _translate_russian_in_url(text, mark_id=None, folder_id=None, vin=None, log_
                 text = text[:idx] + eng + text[idx + len(rus):]
                 text_lower = text.lower()
 
-    # 4. Пословная замена аббревиатур из settings-common.json
+    # 4. Пословная замена аббревиатур из settings.json
     if _has_cyrillic(text):
         def _replace_abbrev(m):
             w_lower = m.group(0).lower()
@@ -1601,6 +1601,52 @@ def _load_env_json() -> Dict[str, Any]:
     return {}
 
 
+def _load_dotenv_file() -> Dict[str, str]:
+    """
+    Загружает простые KEY=VALUE пары из локального .env.
+    Нужен как fallback для Python-скриптов, которые запускаются не через shell source.
+    """
+    repo_root = Path(__file__).resolve().parents[2]
+    candidates = [
+        repo_root / '.env',
+        Path('./.env'),
+    ]
+    for candidate in candidates:
+        if not candidate.exists():
+            continue
+
+        values = {}
+        try:
+            with open(candidate, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith('#') or '=' not in line:
+                        continue
+
+                    if line.startswith('export '):
+                        line = line[len('export '):].strip()
+
+                    key, value = line.split('=', 1)
+                    key = key.strip()
+                    value = value.strip()
+
+                    if (
+                        len(value) >= 2
+                        and value[0] == value[-1]
+                        and value[0] in ('"', "'")
+                    ):
+                        value = value[1:-1]
+                        if line.split('=', 1)[1].strip().startswith('"'):
+                            value = value.replace(r'\"', '"').replace(r'\\', '\\')
+
+                    values[key] = value
+            return values
+        except Exception:
+            pass
+
+    return {}
+
+
 def load_env_config(source_type: str, default_config) -> Dict[str, Any]:
     """
     Загружает конфигурацию из переменных окружения или env.json (фолбек).
@@ -1611,7 +1657,7 @@ def load_env_config(source_type: str, default_config) -> Dict[str, Any]:
     CARS_AUTORU_REMOVE_MARK_IDS = '["mark1", "mark2"]'
     CARS_AVITO_ELEMENTS_TO_LOCALIZE = '["elem1", "elem2"]'
 
-    Приоритет: os.environ > src/data/site/env.json > default_config
+    Приоритет: os.environ > .env > src/data/site/env.json > default_config
     """
     prefix = f"CARS_{source_type.upper()}_"
 
@@ -1632,13 +1678,23 @@ def load_env_config(source_type: str, default_config) -> Dict[str, Any]:
         f"{prefix}DESCRIPTION_TEMPLATE": "description_template",
     }
 
+    config = copy.deepcopy(default_config)
+    env_file_data = _load_dotenv_file()
     env_json_data = _load_env_json()
+    template_keys = {
+        "h1_template",
+        "breadcrumb_template",
+        "title_template",
+        "description_template",
+    }
 
     for env_var, config_key in env_mapping.items():
         raw_value = None
 
         if env_var in os.environ:
             raw_value = os.environ[env_var]
+        elif env_var in env_file_data:
+            raw_value = env_file_data[env_var]
         elif env_var in env_json_data:
             raw_value = env_json_data[env_var]
 
@@ -1646,17 +1702,21 @@ def load_env_config(source_type: str, default_config) -> Dict[str, Any]:
             continue
 
         try:
+            if config_key in template_keys:
+                config[config_key] = str(raw_value)
+                continue
+
             if isinstance(raw_value, (list, dict)):
                 # Уже распарсено (из env.json напрямую)
-                default_config[config_key] = raw_value
+                config[config_key] = raw_value
             else:
                 value = json.loads(raw_value)
-                default_config[config_key] = value
+                config[config_key] = value
         except json.JSONDecodeError:
             print(f"Ошибка при парсинге значения переменной {env_var}")
             # Оставляем значение по умолчанию
 
-    return default_config
+    return config
 
 def load_github_config(source_type: str, github_config: Dict[str, str], default_config) -> Dict[str, Any]:
     """
