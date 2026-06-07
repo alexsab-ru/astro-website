@@ -20,12 +20,16 @@ Options:
   -d, --skip-dealer-files    Skip copying dealer data files from src/$DOMAIN
   -c, --skip-cars            Skip copying cars.json
   -k, --keep-tmp             Keep cloned repo in tmp/
+  -l, --local                Use local astro-json directory instead of cloning JSON_REPO
+      --local-path PATH      Local astro-json directory (default: ../astro-json)
   -cd, --clean-data          Remove generated files from src/data/site and src/data/common
 
 Env:
   JSON_REPO                  Git repository URL (without .git)
   DOMAIN                     Domain folder under src/
   FINE_GRAINED_PAT           Optional GitHub PAT for private repos
+  ASTRO_JSON_LOCAL           Set to 1/true to use local astro-json directory
+  ASTRO_JSON_LOCAL_PATH      Local astro-json directory (default: ../astro-json)
   (If .env exists, JSON_REPO and DOMAIN are read from it.)
 
 Examples:
@@ -36,6 +40,8 @@ Examples:
   pnpm downloadCommonRepo -f settings.json,faq.json
   pnpm downloadCommonRepo --skip-dealer-files
   pnpm downloadCommonRepo --skip-cars
+  pnpm downloadCommonRepo --local
+  pnpm downloadCommonRepo --local --local-path ../astro-json
   JSON_REPO=https://github.com/org/repo DOMAIN=site.com pnpm downloadCommonRepo
 
 Warning:
@@ -49,6 +55,8 @@ SKIP_DEALER_FILES=false
 SKIP_CARS=false
 KEEP_TMP=false
 CLEAN_DATA=false
+LOCAL_SOURCE=false
+LOCAL_SOURCE_PATH="${ASTRO_JSON_LOCAL_PATH:-../astro-json}"
 while [[ $# -gt 0 ]]; do
     case $1 in
         -h|--help)
@@ -79,6 +87,20 @@ while [[ $# -gt 0 ]]; do
         -k|--keep-tmp)
             KEEP_TMP=true
             shift
+            ;;
+        -l|--local)
+            LOCAL_SOURCE=true
+            shift
+            ;;
+        --local-path)
+            if [ -z "${2-}" ] || [[ "$2" == -* ]]; then
+                echo "❌ Error: --local-path requires an argument"
+                show_help
+                exit 1
+            fi
+            LOCAL_SOURCE=true
+            LOCAL_SOURCE_PATH="$2"
+            shift 2
             ;;
         -cd|--clean-data|--clear-data)
             CLEAN_DATA=true
@@ -237,6 +259,10 @@ collect_brand_paths_from_settings() {
 
 cleanup() {
   local code=$?
+  if [ "${LOCAL_SOURCE:-false}" = true ]; then
+    return $code
+  fi
+
   if [ "${KEEP_TMP:-false}" = false ] && [ -n "${TMP_DIR:-}" ] && [ -d "${TMP_DIR:-}" ]; then
     rm -rf "$TMP_DIR"
   fi
@@ -316,6 +342,91 @@ sync_remote_content() {
   fi
 }
 
+extract_page_template() {
+  local settings_file="$1"
+
+  if [ ! -f "$settings_file" ]; then
+    return 0
+  fi
+
+  if command -v jq >/dev/null 2>&1; then
+    jq -r '
+      (.pageTemplate // .siteType // "") |
+      if type == "string" then . else "" end
+    ' "$settings_file"
+    return
+  fi
+
+  if ! command -v node >/dev/null 2>&1; then
+    echo "❌ Error: node is required to parse pageTemplate when jq is unavailable"
+    exit 1
+  fi
+
+  node - "$settings_file" <<'NODE'
+const fs = require("fs");
+
+const file = process.argv[2];
+const data = JSON.parse(fs.readFileSync(file, "utf8"));
+const template = data.pageTemplate ?? data.siteType ?? "";
+process.stdout.write(typeof template === "string" ? template : "");
+NODE
+}
+
+sync_remote_pages() {
+  local copied_any_brand=false
+  local common_pages_dir="$TMP_DIR/$ASTRO_JSON_DATA_PATH/pages"
+  local settings_file="$TMP_DIR/$REMOTE_DATA_PATH/settings.json"
+  local page_template
+
+  page_template=$(extract_page_template "$settings_file" | xargs)
+
+  mkdir -p "$ASTRO_PAGES_DIR"
+
+  if [ -d "$common_pages_dir" ]; then
+    rsync -a "$common_pages_dir/" "$ASTRO_PAGES_DIR/"
+    echo "  ✔ Common pages: $ASTRO_JSON_DATA_PATH/pages → $ASTRO_PAGES_DIR"
+  else
+    echo "▶ Common pages not found: $ASTRO_JSON_DATA_PATH/pages"
+  fi
+
+  for brand_domain in "${BRAND_DOMAINS[@]}"; do
+    local src_dir="$TMP_DIR/src/$brand_domain/pages"
+
+    if [ -d "$src_dir" ]; then
+      rsync -a "$src_dir/" "$ASTRO_PAGES_DIR/"
+      echo "  ✔ Brand pages: $brand_domain/pages → $ASTRO_PAGES_DIR"
+      copied_any_brand=true
+    else
+      echo "  ⚠ Brand pages not found: src/$brand_domain/pages"
+    fi
+  done
+
+  if [ "$copied_any_brand" = false ] && [ ${#BRAND_DOMAINS[@]} -gt 0 ]; then
+    echo "▶ No brand pages directories were found"
+  fi
+
+  if [ -n "$page_template" ]; then
+    local template_pages_dir="$TMP_DIR/$ASTRO_JSON_DATA_PATH/pages-template/$page_template"
+
+    if [ -d "$template_pages_dir" ]; then
+      rsync -a "$template_pages_dir/" "$ASTRO_PAGES_DIR/"
+      echo "  ✔ Template pages: $ASTRO_JSON_DATA_PATH/pages-template/$page_template → $ASTRO_PAGES_DIR"
+    else
+      echo "▶ Page template not found, skipped: $ASTRO_JSON_DATA_PATH/pages-template/$page_template"
+    fi
+  else
+    echo "▶ pageTemplate is not set; template pages skipped"
+  fi
+
+  local site_pages_dir="$TMP_DIR/$REMOTE_DATA_PATH/pages"
+  if [ -d "$site_pages_dir" ]; then
+    rsync -a "$site_pages_dir/" "$ASTRO_PAGES_DIR/"
+    echo "  ✔ Site pages: $REMOTE_DATA_PATH/pages → $ASTRO_PAGES_DIR"
+  else
+    echo "▶ Site pages not found: $REMOTE_DATA_PATH/pages"
+  fi
+}
+
 # ==================================================
 # Подготовка env
 # ==================================================
@@ -327,7 +438,11 @@ if [ -z "${DOMAIN:-}" ] && [ -f .env ]; then
   export DOMAIN=$(grep '^DOMAIN=' .env | awk -F= '{print $2}' | sed 's/^"//; s/"$//')
 fi
 
-if [ -z "${JSON_REPO:-}" ]; then
+if [[ "${ASTRO_JSON_LOCAL:-}" =~ ^(1|true|yes)$ ]]; then
+  LOCAL_SOURCE=true
+fi
+
+if [ "$LOCAL_SOURCE" = false ] && [ -z "${JSON_REPO:-}" ]; then
   echo "❌ Error: JSON_REPO is not set"
   exit 1
 fi
@@ -337,78 +452,99 @@ if [ -z "${DOMAIN:-}" ]; then
   exit 1
 fi
 
-echo "▶ JSON_REPO: $JSON_REPO"
 echo "▶ DOMAIN:    $DOMAIN"
 
 # ==================================================
 # Переменные
 # ==================================================
-GIT_REPO_URL=$(build_git_clone_url "$JSON_REPO")
-CLONE_URL=$(apply_pat_to_url "$GIT_REPO_URL")
-REPO_NAME=$(basename "$GIT_REPO_URL" .git)
-TMP_DIR="tmp/$REPO_NAME"
-
 REMOTE_DATA_PATH="src/$DOMAIN"
 LOCAL_DATA_DIR="src/data"
 SITE_DATA_DIR="$LOCAL_DATA_DIR/site"
 COMMON_DATA_DIR="$LOCAL_DATA_DIR/common"
 ASTRO_CONTENT_DIR="src/content"
+ASTRO_PAGES_DIR="src/pages"
 ASTRO_JSON_DATA_PATH="data"
 
 trap cleanup EXIT INT TERM
 
 # ==================================================
-# Клонирование (sparse checkout)
+# Подготовка источника данных
 # ==================================================
-echo "▶ Git repo: $GIT_REPO_URL"
+if [ "$LOCAL_SOURCE" = true ]; then
+  TMP_DIR="$LOCAL_SOURCE_PATH"
+  echo "▶ Local astro-json: $TMP_DIR"
 
-mkdir -p tmp
-rm -rf "$TMP_DIR"
+  if [ ! -d "$TMP_DIR" ]; then
+    echo "❌ Error: local astro-json directory not found: $TMP_DIR"
+    exit 1
+  fi
 
-git clone \
-  --filter=blob:none \
-  --depth=1 \
-  --single-branch \
-  --no-checkout \
-  "$CLONE_URL" \
-  "$TMP_DIR"
-
-cd "$TMP_DIR"
-
-DEFAULT_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')
-if [ -z "$DEFAULT_BRANCH" ]; then
-  DEFAULT_BRANCH="main"
-fi
-
-SETTINGS_FOR_BRANDS_FILE=".settings-for-brand-detection.json"
-if git show "origin/$DEFAULT_BRANCH:$REMOTE_DATA_PATH/settings.json" > "$SETTINGS_FOR_BRANDS_FILE" 2>/dev/null; then
-  collect_brand_paths_from_settings "$SETTINGS_FOR_BRANDS_FILE"
+  if [ -f "$TMP_DIR/$REMOTE_DATA_PATH/settings.json" ]; then
+    collect_brand_paths_from_settings "$TMP_DIR/$REMOTE_DATA_PATH/settings.json"
+  else
+    BRANDS=()
+    BRAND_DOMAINS=()
+    BRAND_SPARSE_PATHS=()
+    echo "▶ settings.json not found in $REMOTE_DATA_PATH; brand content will be skipped"
+  fi
 else
-  BRANDS=()
-  BRAND_DOMAINS=()
-  BRAND_SPARSE_PATHS=()
-  echo "▶ settings.json not found in $REMOTE_DATA_PATH before sparse checkout; brand content will be skipped"
+  echo "▶ JSON_REPO: $JSON_REPO"
+
+  GIT_REPO_URL=$(build_git_clone_url "$JSON_REPO")
+  CLONE_URL=$(apply_pat_to_url "$GIT_REPO_URL")
+  REPO_NAME=$(basename "$GIT_REPO_URL" .git)
+  TMP_DIR="tmp/$REPO_NAME"
+
+  echo "▶ Git repo: $GIT_REPO_URL"
+
+  mkdir -p tmp
+  rm -rf "$TMP_DIR"
+
+  git clone \
+    --filter=blob:none \
+    --depth=1 \
+    --single-branch \
+    --no-checkout \
+    "$CLONE_URL" \
+    "$TMP_DIR"
+
+  cd "$TMP_DIR"
+
+  DEFAULT_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')
+  if [ -z "$DEFAULT_BRANCH" ]; then
+    DEFAULT_BRANCH="main"
+  fi
+
+  SETTINGS_FOR_BRANDS_FILE=".settings-for-brand-detection.json"
+  if git show "origin/$DEFAULT_BRANCH:$REMOTE_DATA_PATH/settings.json" > "$SETTINGS_FOR_BRANDS_FILE" 2>/dev/null; then
+    collect_brand_paths_from_settings "$SETTINGS_FOR_BRANDS_FILE"
+  else
+    BRANDS=()
+    BRAND_DOMAINS=()
+    BRAND_SPARSE_PATHS=()
+    echo "▶ settings.json not found in $REMOTE_DATA_PATH before sparse checkout; brand content will be skipped"
+  fi
+
+  SPARSE_PATHS=(
+    "/src/$DOMAIN" \
+    "/src/cars.json" \
+    "/src/avito-colors.json" \
+    "/src/translations.json" \
+    "/$ASTRO_JSON_DATA_PATH"
+  )
+
+  if [ ${#BRAND_SPARSE_PATHS[@]} -gt 0 ]; then
+    SPARSE_PATHS+=("${BRAND_SPARSE_PATHS[@]}")
+    echo "▶ Brand sparse paths: ${BRAND_SPARSE_PATHS[*]}"
+  fi
+
+  git sparse-checkout init --no-cone
+  git sparse-checkout set "${SPARSE_PATHS[@]}"
+
+  git checkout "$DEFAULT_BRANCH"
+
+  cd ../..
 fi
-
-SPARSE_PATHS=(
-  "/src/$DOMAIN" \
-  "/src/cars.json" \
-  "/src/avito-colors.json" \
-  "/src/translations.json" \
-  "/$ASTRO_JSON_DATA_PATH"
-)
-
-if [ ${#BRAND_SPARSE_PATHS[@]} -gt 0 ]; then
-  SPARSE_PATHS+=("${BRAND_SPARSE_PATHS[@]}")
-  echo "▶ Brand sparse paths: ${BRAND_SPARSE_PATHS[*]}"
-fi
-
-git sparse-checkout init --no-cone
-git sparse-checkout set "${SPARSE_PATHS[@]}"
-
-git checkout "$DEFAULT_BRANCH"
-
-cd ../..
 
 # ==================================================
 # Копирование JSON
@@ -456,6 +592,7 @@ else
   if [ "$SKIP_DEALER_FILES" = false ]; then
     rsync -a \
         --exclude "content/" \
+        --exclude "pages/" \
         "$TMP_DIR/$REMOTE_DATA_PATH/" \
         "$SITE_DATA_DIR/"
   fi
@@ -473,12 +610,21 @@ node .github/scripts/mergeLayeredJson.js
 echo "▶ Sync content…"
 sync_remote_content
 
+if [ ${#SPECIFIC_FILES[@]} -gt 0 ]; then
+  echo "▶ Sync pages skipped for specific file download"
+else
+  echo "▶ Sync pages…"
+  sync_remote_pages
+fi
+
 # Копируем внутренности astro-json/data для дальнейшей обработки.
 if [ -d "$TMP_DIR/$ASTRO_JSON_DATA_PATH" ]; then
   echo "▶ Sync astro-json/data → $COMMON_DATA_DIR…"
   rsync -a \
     --exclude "content/" \
     --exclude "json/" \
+    --exclude "pages/" \
+    --exclude "pages-template/" \
     "$TMP_DIR/$ASTRO_JSON_DATA_PATH/" \
     "$COMMON_DATA_DIR/"
 else
@@ -542,7 +688,9 @@ if [ -f "$SCRIPT_DIR/envJsonToDotenv.sh" ]; then
   ENV_JSON_PATH="$SITE_DATA_DIR/env.json" bash "$SCRIPT_DIR/envJsonToDotenv.sh"
 fi
 
-if [ "$KEEP_TMP" = true ]; then
+if [ "$LOCAL_SOURCE" = true ]; then
+  printf "\n${BGYELLOW}Локальный astro-json оставлен без изменений: $TMP_DIR${Color_Off}\n"
+elif [ "$KEEP_TMP" = true ]; then
   printf "\n${BGYELLOW}Сохраняем временный репозиторий: $TMP_DIR${Color_Off}\n"
 else
   printf "\n${BGYELLOW}Удаляем временный репозиторий...${Color_Off}\n"

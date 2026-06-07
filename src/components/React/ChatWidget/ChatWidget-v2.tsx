@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Header,
   Message,
@@ -17,8 +17,14 @@ import { useFormSubmission } from './hooks/useFormSubmission';
 import { useAnswerHandler } from './hooks/useAnswerHandler';
 import { useInputHandler } from './hooks/useInputHandler';
 import { useChatInit } from './hooks/useChatInit';
+import {
+  DEFAULT_CHAT_SUCCESS_MESSAGE,
+  interpolateChatTemplate,
+} from './utils';
 
 // ──────────────── component ────────────────
+// Финал успешной заявки: isFinished + SuccessMessage (messages.success),
+// не шаг done в useChatSteps (done только для пустого конфига).
 
 export function ChatWidget({ config }: ChatWidgetProps) {
   const settings = config.settings || {};
@@ -108,9 +114,13 @@ export function ChatWidget({ config }: ChatWidgetProps) {
     addErrorMessage,
     sendLead,
     handleAnswer,
+    config,
   });
 
-  setInputValueRef.current = setInputValue;
+  // Ref для sendLead при ошибке: синхронизация через effect, не при каждом рендере
+  useEffect(() => {
+    setInputValueRef.current = setInputValue;
+  }, [setInputValue, setInputValueRef]);
 
   useChatInit({
     steps,
@@ -124,6 +134,16 @@ export function ChatWidget({ config }: ChatWidgetProps) {
   }, [messages, showOptions, scrollIfEnabled]);
 
   const cfg = steps[currentStep];
+
+  // Текст после sendLead OK; fallback — DEFAULT_CHAT_SUCCESS_MESSAGE в utils.ts
+  const successMessageText = useMemo(
+    () =>
+      interpolateChatTemplate(
+        config.messages?.success || DEFAULT_CHAT_SUCCESS_MESSAGE,
+        { name: answers.name || '' },
+      ),
+    [config.messages?.success, answers.name],
+  );
 
   return (
     <div className="w-full max-w-5xl 2xl:max-w-7xl mx-auto px-0 md:px-5">
@@ -146,12 +166,15 @@ export function ChatWidget({ config }: ChatWidgetProps) {
             <OptionsList
               options={cfg.options}
               currentStep={currentStep}
+              multiple={cfg.multiple}
               onSelect={handleAnswer}
               onHide={() => setShowOptions(false)}
             />
           )}
 
-          {isFinished && !isTyping && <SuccessMessage />}
+          {isFinished && !isTyping && (
+            <SuccessMessage text={successMessageText} />
+          )}
         </div>
 
         {/* Input area */}

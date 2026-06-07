@@ -1,4 +1,8 @@
 // ──────────────── Хук для управления шагами чата ────────────────
+//
+// Обычный поток: intro → вопросы → name → phone → отправка лида (useInputHandler).
+// Успех после телефона НЕ через шаг done: isFinished + SuccessMessage (ChatWidget-v2).
+// Шаг done только при пустом конфиге (квиз недоступен).
 
 import { useState, useMemo } from 'react';
 import type {
@@ -8,27 +12,24 @@ import type {
   AnswerOption,
   ModelData
 } from '../types';
+import { interpolateChatTemplate } from '../utils';
 
-/**
- * Подставляет переменные в шаблон строки
- */
-function interpolate(template: string, vars: Record<string, string>): string {
-  return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] || '');
-}
+/** id шага «офлайн» — единственный сценарий, где используется done */
+export const CHAT_OFFLINE_STEP_ID = 'done';
 
 /**
  * Собирает уникальные цвета выбранных моделей + кнопку "Ещё не определился"
- * Поддерживает множественный выбор (через запятую)
+ * Поддерживает множественный выбор (id моделей через запятую)
  */
 function getColorOptions(modelAnswer: string | undefined, models: ModelData[]): AnswerOption[] {
   if (!modelAnswer) return [{ label: 'Ещё выбираю', value: 'Ещё выбираю' }];
 
-  const selectedNames = modelAnswer.split(',').map(s => s.trim());
+  const selectedIds = modelAnswer.split(',').map(s => s.trim());
   const seen = new Set<string>();
   const options: AnswerOption[] = [];
 
-  for (const name of selectedNames) {
-    const model = models.find(m => m.name === name);
+  for (const modelId of selectedIds) {
+    const model = models.find(m => m.id === modelId);
     if (!model?.colors) continue;
     for (const color of model.colors) {
       if (color.name && !seen.has(color.name)) {
@@ -67,28 +68,30 @@ export function useChatSteps(config: ChatLandingConfig) {
 
     const map: Record<string, StepConfig> = {};
 
-    // ───── если конфиг пуст — сразу на done ─────
+    // ───── конфиг без вопросов: один шаг done, без лида ─────
     if (!isOnline) {
       map.intro = {
         botMessages: [],
-        nextStep: () => "done",
+        nextStep: () => CHAT_OFFLINE_STEP_ID,
       };
-      map.done = {
-        botMessages: ['Временно недоступно, оставьте сообщение через кнопку "Заказать звонок" в верху страницы'],
-        nextStep: () => "done",
+      map[CHAT_OFFLINE_STEP_ID] = {
+        botMessages: [
+          'Временно недоступно, оставьте сообщение через кнопку "Заказать звонок" в верху страницы',
+        ],
+        nextStep: () => CHAT_OFFLINE_STEP_ID,
       };
       return map;
     }
 
     // ───── введение ─────
     const introMessages: string[] = [];
-    if (messages.greeting) introMessages.push(interpolate(messages.greeting, vars));
-    if (messages.intro) introMessages.push(interpolate(messages.intro, vars));
-    if (messages.callToAction) introMessages.push(interpolate(messages.callToAction, vars));
+    if (messages.greeting) introMessages.push(interpolateChatTemplate(messages.greeting, vars));
+    if (messages.intro) introMessages.push(interpolateChatTemplate(messages.intro, vars));
+    if (messages.callToAction) introMessages.push(interpolateChatTemplate(messages.callToAction, vars));
 
     map.intro = {
       botMessages: introMessages,
-      nextStep: () => questions[0]?.id || "done",
+      nextStep: () => questions[0].id,
     };
 
     // ───── вопросы квиза ─────
@@ -116,8 +119,9 @@ export function useChatSteps(config: ChatLandingConfig) {
         });
       }
 
+      // Пустой title — шаг без реплики бота (см. silentBridge в chat-landing.json)
       map[q.id] = {
-        botMessages: [q.title],
+        botMessages: q.title?.trim() ? [q.title] : [],
         options,
         multiple: q.type === "checkbox",
         nextStep: () => next,
@@ -126,8 +130,8 @@ export function useChatSteps(config: ChatLandingConfig) {
 
     // ───── шаг ввода имени ─────
     const nameMessages: string[] = [];
-    if (messages.beforeName) nameMessages.push(interpolate(messages.beforeName, vars));
-    if (messages.askName) nameMessages.push(interpolate(messages.askName, vars));
+    if (messages.beforeName) nameMessages.push(interpolateChatTemplate(messages.beforeName, vars));
+    if (messages.askName) nameMessages.push(interpolateChatTemplate(messages.askName, vars));
 
     map.name = {
       botMessages: nameMessages,
@@ -139,8 +143,8 @@ export function useChatSteps(config: ChatLandingConfig) {
       nextStep: () => "phone",
     };
 
-    // ───── шаг ввода телефона ─────
-    // botMessages пустой — персонализированные сообщения формируются в useAnswerHandler
+    // ───── телефон — последний шаг квиза; лид уходит из useInputHandler ─────
+    // messages.success показывается через isFinished (см. useFormSubmission)
     map.phone = {
       botMessages: [],
       inputField: {
@@ -148,15 +152,7 @@ export function useChatSteps(config: ChatLandingConfig) {
         type: "tel",
         name: "phone"
       },
-      nextStep: () => "done",
-    };
-
-    // ───── финальный шаг ─────
-    map.done = {
-      botMessages: [
-        interpolate(messages.success || "Спасибо, {name}! Ваша заявка принята ✅", vars),
-      ],
-      nextStep: () => "done",
+      nextStep: () => "phone",
     };
 
     return map;

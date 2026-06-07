@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import type { ChatLandingConfig, StepConfig } from '../types';
+import { CHAT_OFFLINE_STEP_ID } from './useChatSteps';
 
 interface UseAnswerHandlerParams {
   currentStep: string;
@@ -39,12 +40,12 @@ export function useAnswerHandler({
    * Обрабатывает ответ пользователя
    * Сохраняет ответ, переходит к следующему шагу и показывает соответствующие сообщения
    * 
-   * @param value - значение ответа пользователя
+   * @param value - значение для сохранения (id модели и т.п.)
+   * @param displayText - текст в пузыре пользователя (если отличается от value)
    */
   const handleAnswer = useCallback(
-    (value: string) => {
-      // Добавляем сообщение пользователя
-      addUserMessage(value);
+    (value: string, displayText?: string) => {
+      addUserMessage(displayText ?? value);
 
       // Включаем автоскролл после первого ответа пользователя
       onFirstAnswer?.();
@@ -74,10 +75,20 @@ export function useAnswerHandler({
       }
 
       const nextCfg = steps[nextKey];
-      if (nextCfg?.botMessages?.length) {
-        addBotMessages(nextCfg.botMessages, () => {
-          if (nextKey !== "done") setShowOptions(true);
-        });
+      const botTexts = (nextCfg?.botMessages ?? []).filter((t) => t.trim());
+
+      const revealNextStepUi = () => {
+        // done — только офлайн-режим без квиза, без опций/полей
+        if (nextKey === CHAT_OFFLINE_STEP_ID) return;
+        if (nextCfg?.options?.length || nextCfg?.inputField) {
+          setShowOptions(true);
+        }
+      };
+
+      if (botTexts.length) {
+        addBotMessages(botTexts, revealNextStepUi);
+      } else {
+        revealNextStepUi();
       }
     },
     [
