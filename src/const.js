@@ -1,4 +1,3 @@
-import { phoneFormat } from '@/js/utils/numbers.format';
 import { LAST_DAY, MONTH, YEAR } from '@/js/utils/date';
 // Конечное время для таймера
 //string 2025-12-31T23:59:59+04:00
@@ -7,10 +6,6 @@ export const TIMER = { title: 'До конца акции осталось',subt
 export const MARQUEE = { title: `Тотальная распродажа до ${LAST_DAY}.${MONTH}.${YEAR}`, count: 8, speed: 20, show: false };
 // Ссылка яндекс-виджета
 export const LINK_WIDGET = 'https://yandex.ru/map-widget/v1/-/';
-
-import settings from '@/data/site/settings.json';
-const { phone_common } = settings;
-
 
 // Ссылки под хедером
 import { groupArrayByKey } from '@/js/utils/groupArrayByKey';
