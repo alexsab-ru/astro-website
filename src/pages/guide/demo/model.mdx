@@ -6,12 +6,15 @@ import BackLink from '@/components/BackLink.astro';
 import Model from '@/components/Model/Model.astro';
 import ModelMdx from '@/components/guide/ModelMdx.mdx';
 import modelsData from '@/data/site/models.json';
-export const model = modelsData.models.filter(model => model.show)[1];
+import { getModelBrandId, getModelTitle } from '@/js/utils/modelFields';
+export const model = modelsData.models.filter(model => model.status === 'enable')[1];
+export const brandId = getModelBrandId(model);
+export const modelTitle = getModelTitle(model);
 export const breadcrumb = { name: `Модели`, href: "/models/" };
 
 
 <div class="content">
-    <Model model={model} breadcrumb={[breadcrumb, {name: model.name, href: model.id}]} />
+    <Model model={model} breadcrumb={[breadcrumb, {name: modelTitle, href: brandId}]} />
 </div>
 
 <div class="container content mt-10">
