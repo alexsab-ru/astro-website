@@ -2,8 +2,8 @@
 layout: "@/layouts/Layout.astro"
 title: "Демо Секции с изображением"
 ---
-import BackLink from '@/components/BackLink.astro';
-import InfoSectionWithImage from '@/components/InfoSectionWithImage/InfoSectionWithImage.astro';
+import BackLink from '@/ui/back-link/BackLink.astro';
+import InfoSectionWithImage from '@/blocks/info-section-with-image/InfoSectionWithImage.astro';
 
 <div class="container content mt-10">
 # InfoSectionWithImage
@@ -24,7 +24,7 @@ interface Props {
 
 ```js
 ---
-import InfoSectionWithImage from '@/components/InfoSectionWithImage/InfoSectionWithImage.astro';
+import InfoSectionWithImage from '@/blocks/info-section-with-image/InfoSectionWithImage.astro';
 ---
 
 <InfoSectionWithImage image={{

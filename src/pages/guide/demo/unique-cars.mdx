@@ -2,9 +2,9 @@
 layout: "@/layouts/Layout.astro"
 title: "Демо АВН с включенными фильтрами"
 ---
-import BackLink from '@/components/BackLink.astro';
-import CarList from '@/components/Cars/List.astro';
-import UniqueCarsMdx from '@/components/guide/UniqueCarsMdx.mdx';
+import BackLink from '@/ui/back-link/BackLink.astro';
+import CarList from '@/blocks/cars/CarsList.astro';
+import UniqueCarsMdx from '@/guide/UniqueCarsMdx.mdx';
 
 import { getCollection } from "astro:content";
 export const allCars = await getCollection("cars");

@@ -1,0 +1,26 @@
+# PageH1
+
+### Входные параметры
+
+```js
+interface Props {
+	title?: string;
+}
+
+const { title } = Astro.props;
+```
+### Использование
+```js
+---
+import PageH1 from '@/ui/page-h1/PageH1.astro';
+---
+
+<PageH1 title={`Автомобили ${BRAND} в наличии в ${LEGAL_CITY_WHERE}`} />
+
+```
+
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|title|Автомобили `${BRAND}` в наличии в `${LEGAL_CITY_WHERE}`|Необязательный параметр. Возможность передать HTML теги.|
+</div>

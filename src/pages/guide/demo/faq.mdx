@@ -2,9 +2,9 @@
 layout: "@/layouts/Layout.astro"
 title: "Демо Секции FAQ"
 ---
-import BackLink from '@/components/BackLink.astro';
-import Faq from '@/components/Faq/Index.astro';
-import FaqMdx from '@/components/guide/FaqMdx.mdx';
+import BackLink from '@/ui/back-link/BackLink.astro';
+import Faq from '@/blocks/faq/Faq.astro';
+import FaqMdx from '@/guide/FaqMdx.mdx';
 import faqItems from '@/data/site/faq.json';
 
 <Faq items={faqItems} title="FAQ" class="bg-gray-50" />

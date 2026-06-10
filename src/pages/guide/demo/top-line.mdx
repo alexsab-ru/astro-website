@@ -2,9 +2,9 @@
 layout: "@/layouts/Layout.astro"
 title: "Демо Top Line"
 ---
-import BackLink from '@/components/BackLink.astro';
-import TopLineMdx from '@/components/guide/TopLineMdx.mdx';
-import HeaderTopLine from '@/components/Header/HeaderTopLine.astro';
+import BackLink from '@/ui/back-link/BackLink.astro';
+import TopLineMdx from '@/guide/TopLineMdx.mdx';
+import HeaderTopLine from '@/site-shell/header/HeaderTopLine.astro';
 export const content = `Спецпредложение!!! Только сегодня - <a href="/guide/demo/top-line/" class="underline !text-white">подробнее</a>`;
 
 <div x-data="header">

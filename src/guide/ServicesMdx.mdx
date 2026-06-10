@@ -1,0 +1,44 @@
+# Services
+
+### Входные параметры
+
+```js
+type TService = {
+	title: string;
+	icon?: string;
+	url?: string;
+	target?: string;
+}
+interface Props {
+	title?: string;
+	services?: TService[]
+}
+```
+**По умолчанию:** данные `services` из `src/data/sevices.json`
+
+### Использование
+```js
+---
+import Services from '@/blocks/services/Services/Index.astro';
+import services from '@/data/site/services.json';
+---
+
+<Services services={services} title="Услуги дилерского центра" />
+
+```
+
+<div class="*:!text-left my-10">
+### TService
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|title *|-|Заголовок. **Обязательный параметр**|
+    |icon|-|Иконка. Задается имя [Material Design Icons](https://pictogrammers.com/library/mdi/), например, `mdi:car-key`, либо имя svg иконки, расположенной в `src/icons/` |
+    |url|-|Ссылка, если нужен переход на другую страницу. Необязательный параметер.|
+    |target|-|Цель ссылки, например, `_blank`. Необязательный параметер.|
+</div>
+
+<div class="*:!text-left mb-10">
+    |**Имя параметра**|**По умолчанию**|**Описание**|
+    |--|--|--|
+	|title|Услуги дилерского центра|Заголовок секции. Необязательный параметр|
+</div>
